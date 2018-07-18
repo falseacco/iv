@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+    </head>
+    <body>
+        <style>
+        #interval {
+            color: DimGray;
+        }
+        </style>
+        
+        time per image: <input id="interval" type="text" value="00:00:10">
+        <br>
+        <button id="reset" type="button">reset</button>
+        <button id="start/stop" type="button">start</button>
+        <text id="timer">[paused]</text>
+        <br>
+        <input id="library" type="file" onchange="updateLibrary();" webkitdirectory directory multiple>
+        <br>
+        <img id="display" src="">
+        <br>
+        <a id="prev" href="#a"><</a> <a id="next" href="#a">></a>
+        
+        <script type="text/javascript">
+        // utility
+        function print(x) {
+            console.log(x);
+        }
+        
+        function $id(id) {
+            return document.getElementById(id);
+        }
+        
+        function rng(min = 0, range = 10) {
+            // It's best to avoid using a negative range
+            return Math.floor((Math.random() * range) + min);
+        }
+        
+        function padNum(n) {
+            if (n < 10) {
+                return '0' + n;
+            }
+            else {
+                return n;
+            }
+        }
+        
+        function milliToTime(n) {//messy
+            let rawSeconds = Math.floor(n / 1000),
+                hours = Math.floor(rawSeconds / 3600),
+                minutes = Math.floor((rawSeconds - (hours * 3600)) / 60),
+                seconds = rawSeconds - (hours * 3600) - (minutes * 60),
+                string;
+            return padNum(hours) + ':' + padNum(minutes) + ':' + padNum(seconds);
+        }
+        
+        function secToMilli(n) {
+            return n * 1000;
+        }
+        
+        function minToMilli(n) {
+            return secToMilli(n * 60);
+        }
+        
+        function hourToMilli(n) {
+            return minToMilli(n * 60);
+        }
+        
+        // global events
+        function broadcast (event) {
+            if (event === 'timerReset') { // overlaps with skip to next...
+                $id('next').click();
+            }
+            else if (event === 'browsingHistory') {
+                reset();
+            }
+            else if (event === 'goToNextItem') {
+                reset();
+                start();
+            }
+        }
+        
+        // imgs
+        let library, // Array of image files.
+            length, // Length of above minus one.
+            history = [], // Record of displayed items this session.
+            currIndex = 0, // Where the user is in history, 0 is the most recent.
+            exclude = []; // List of items that are not to be displayed. Resets when length exceeds that of library.
+            
+        function updateExcludeList(index) {
+            exclude.unshift(index);
+            if (exclude.length >= length) {
+                exclude = [];
+            }
+        }
+        
+        function updateHistory(index) {
+            history.unshift(index);
+        }
+            
+        function updateLibrary() {
+            library = $id('library');
+            length = library.files.length - 1;
+            // Display something to start.
+            display(3);
+            updateHistory(3);
+            updateExcludeList(3);
+        }
+        updateLibrary();
+        
+        function display(index = 0) { // confusing param name, currIndex?
+            if (library.files && library.files[index]) {
+                let reader = new FileReader();
+                
+                // Update display with the new image
+                reader.onload = (e)=>{
+                    $id('display').src = e.target.result;
+                };
+                
+                reader.readAsDataURL(library.files[index]);
+            }
+        }
+        
+        $id('prev').onclick = ()=>{
+            // if past hist go, otherwise don't bother
+            if (currIndex < history.length - 1) {
+                currIndex += 1;
+                display(history[currIndex]);
+                //..
+                broadcast('browsingHistory');
+            }
+        };
+        $id('next').onclick = ()=>{
+            // check if in past
+            if (currIndex === 0) {
+                let next;
+                while (true) {
+                    // Don't repeat images until all have been displayed.
+                    let n = rng(0, length);
+                    if (exclude.indexOf(n) === -1) {
+                        next = n;
+                        break;
+                    }
+                }
+                
+                display(next);
+                // ..
+                updateHistory(next);
+                updateExcludeList(next);
+                //..
+                broadcast('goToNextItem');
+            }
+            else {
+                currIndex -= 1;
+                display(history[currIndex]);
+            }
+        };
+        
+        // timer
+        // time per image:
+        let pattern = /([0-9]+(:|.)){0,2}[0-9]+/; // Too flexible, 1a0 reads as 10
+        $id('interval').onblur = ()=>{
+            // Check that time is in correct format.
+            let input = pattern.exec($id('interval').value)[0];
+            $id('interval').value = input ? input : '00:10:00';
+            // Fade text out.
+            $id('interval').style.color = 'DimGray';
+        }
+        $id('interval').onfocus = ()=>{
+            // in
+            $id('interval').style.color = 'Black';
+        }
+    
+        // counter
+        let isPaused = true,
+            deadline,
+            timeLeft = $id('interval').value, // better name?
+            i;
+        
+        // handle clicks
+        $id('reset').onclick = reset;
+        
+        function start() {
+            $id('start/stop').innerHTML = 'stop';
+            count();
+            isPaused = false;
+        }
+        
+        function stop() {
+            $id('start/stop').innerHTML = 'start';
+            clearCount();
+            isPaused = true;
+        }
+        
+        $id('start/stop').onclick = ()=>{
+            if (isPaused) {
+                start();
+            }
+            else {
+                stop();
+            }
+        };
+        
+        // functionality
+        function getDeadline(seconds, minutes, hours) {
+            seconds = seconds || 0;
+            minutes = minutes || 0;
+            hours = hours || 0;
+        
+            return Date.now() + hourToMilli(hours) + minToMilli(minutes) + secToMilli(seconds);
+        }
+         
+        function set(timeString) {
+            //
+            let time = timeString.split(':').reverse();
+            deadline = getDeadline(Number(time[0]) + 1, Number(time[1]), Number(time[2]));                
+            $id('timer').innerHTML = timeLeft = timeString;
+        }
+        
+        function clearCount() {
+            timeLeft = $id('timer').innerHTML;
+            clearInterval(i);
+        }
+        
+        function reset() {
+            set($id('interval').value);
+            $id('start/stop').innerHTML = 'start';
+            clearCount();
+            isPaused = true;
+        }
+         
+        function count() {
+            set(timeLeft);
+            i = setInterval(function() {
+                let delta = deadline - Date.now();
+                // Reset timer when it reaches zero.
+                if (delta <= 500) {
+                    set($id('interval').value);
+                    // And fresh image
+                    broadcast('timerReset');
+                }
+                // Update the outer display.
+                $id('timer').innerHTML = milliToTime(delta);
+            }, 100);
+        }
+        
+        // image tag system (don't edit anything, just poop out an archive)
+        // image tag editor [chickenegg]
+        </script>
+    </body>
+</html>
