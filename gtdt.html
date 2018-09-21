@@ -19,12 +19,21 @@
         <input id="library" type="file" onchange="updateLibrary();" webkitdirectory directory multiple>
         <br>
         <img id="display" src="">
-        <br>
-        <a id="prev" href="#a"><</a> <a id="next" href="#a">></a>
+        <div id="right-box">
+            <ul id="tags"></ul>
+            
+            <input id="select-tags-input" list="select-tags">
+            <datalist id="select-tags">
+            </datalist>
+            
+            <text id="count"></text> <br>
+            <a id="prev" href="#a"><</a>
+            <a id="next" href="#a">></a>
+        </div>
         
         <script type="text/javascript">
         // utility
-        function print(x) {
+        function print(x = 1) {
             console.log(x);
         }
         
@@ -33,7 +42,7 @@
         }
         
         function rng(min = 0, range = 10) {
-            // It's best to avoid using a negative range
+            // Don't use a negative range.
             return Math.floor((Math.random() * range) + min);
         }
         
@@ -79,38 +88,111 @@
                 reset();
                 start();
             }
+            else if (event === 'updateLibrary') {
+                for (let i = 0; i < tags.length; i += 1) {
+                    let tag = tags[i];
+                    //... add
+                    $id('tags').innerHTML += '<li><a href="#a">' + tag + '</a></li>';
+                    //... add
+                    $id('select-tags').innerHTML += '<option value="' + tag + ' ">'; // space hax
+                }
+            }
+            else if (event === 'filter') {
+                $id('count').innerHTML = selectFrom.length + ' items queued';
+            }
         }
         
         // imgs
-        let library, // Array of image files.
-            length, // Length of above minus one.
-            history = [], // Record of displayed items this session.
-            currIndex = 0, // Where the user is in history, 0 is the most recent.
-            exclude = []; // List of items that are not to be displayed. Resets when length exceeds that of library.
+        let library = {}, // Array of images to be displayed.
+            tags, // Collection of image tags for current library.
             
-        function updateExcludeList(index) {
-            exclude.unshift(index);
-            if (exclude.length >= length) {
-                exclude = [];
+            selectedTags = [], //...
+            selectFrom = [], //...
+            
+            history = [], // Record of displayed items this session.
+            currIndex = 0, // Where the user is in history, 0 is the most recent. <timeIndex?>
+            alreadySeen = []; // List of items that have already been displayed. Resets.
+            
+        function updateAlreadySeen(index) {
+            alreadySeen.unshift(index);
+            if (alreadySeen.length >= selectFrom.length) {
+                // Don't want to repeat same item twice.
+                alreadySeen = [index];
             }
         }
         
         function updateHistory(index) {
             history.unshift(index);
         }
-            
+        
+        function filter() {
+            //...
+            selectFrom = library.slice();
+            if (selectedTags.length > 0) {
+                //...
+                let offset = 0;
+                for (let i = 0; i < library.length; i += 1) {
+                    let obj = library[i],
+                        objTags = obj[1];
+                    for (let q = 0; q < selectedTags.length; q += 1) {
+                        let currTag = selectedTags[q];
+                        if (objTags.indexOf(currTag) === -1) {
+                            selectFrom.splice(i - offset, 1);
+                            offset += 1;
+                        }
+                    }
+                }
+            }
+            broadcast('filter');
+        }
+
         function updateLibrary() {
-            library = $id('library');
-            length = library.files.length - 1;
-            // Display something to start.
-            display(3);
-            updateHistory(3);
-            updateExcludeList(3);
+            let files = $id('library').files,
+                data;
+            // Empty previous library.
+            library = [];
+            // Search for tags.json
+            for (let i = 0; i < files.length; i += 1) {
+                let obj = files[i];
+                if (obj.name === 'tags.json') {
+                    let reader = new FileReader();
+                    
+                    reader.onload = ()=>{
+                        data = JSON.parse(reader.result);
+                        tags = data[0];
+                        // Fill out library with the images in the selected directory. <repeated code, messy> include tags in json[1]?
+                        for (let i = 0; i < files.length; i += 1) {
+                            let obj = files[i],
+                                name = obj.name;
+                            if (obj.name !== 'tags.json') {
+                                if (tags) {
+                                    library.push([obj, data[1][name]]);
+                                }
+                                else {
+                                    library.push([obj]);
+                                }
+                            }
+                        }
+                        //...
+                        filter()
+                        //...
+                        broadcast('updateLibrary');
+                        // Display something to start.
+                        let n = rng(0, selectFrom.length);
+                        display(n);
+                        updateHistory(n);
+                        updateAlreadySeen(n);
+                    };
+                    
+                    reader.readAsText(obj);
+                    break;
+                }
+            }
         }
         updateLibrary();
         
-        function display(index = 0) { // confusing param name, currIndex?
-            if (library.files && library.files[index]) {
+        function display(index = 0) {
+            if (selectFrom) {// I forgot what this test is for...
                 let reader = new FileReader();
                 
                 // Update display with the new image
@@ -118,7 +200,7 @@
                     $id('display').src = e.target.result;
                 };
                 
-                reader.readAsDataURL(library.files[index]);
+                reader.readAsDataURL(selectFrom[index][0]);
             }
         }
         
@@ -137,8 +219,8 @@
                 let next;
                 while (true) {
                     // Don't repeat images until all have been displayed.
-                    let n = rng(0, length);
-                    if (exclude.indexOf(n) === -1) {
+                    let n = rng(0, selectFrom.length);
+                    if (alreadySeen.indexOf(n) === -1) {
                         next = n;
                         break;
                     }
@@ -147,7 +229,7 @@
                 display(next);
                 // ..
                 updateHistory(next);
-                updateExcludeList(next);
+                updateAlreadySeen(next);
                 //..
                 broadcast('goToNextItem');
             }
@@ -245,8 +327,32 @@
             }, 100);
         }
         
-        // image tag system (don't edit anything, just poop out an archive)
-        // image tag editor [chickenegg]
+        // crappy workaround that doesn't even work, spend more time on this later
+        $id('select-tags-input').oninput = (e) => {
+            if ($id('select-tags-input').value.slice(-1) === ' ') {
+                $id('select-tags').innerHTML = '';
+                for (let i = 0; i < tags.length; i += 1) {
+                    let tag = tags[i];
+                    $id('select-tags').innerHTML += '<option value="' + $id('select-tags-input').value + tag + ' ">';
+                }
+                tags = $id('select-tags-input').value.split(' ');
+                filter();
+            }
+        }
+        
+        // (here) onclick link update state
+        // put everything in the right place - css
+        $id('tags').onclick = (e) => {
+            print(e.explicitOriginalTarget.textContent);
+        }
+        
+        // 用
+        
+        // host on pages
+        // image tag editor
+        // make it look nice
+        // clean code, replace all those for loops, access abstract dom too, add array fun to replace indexOf test
+        // ^ bcast should access an obj of funs, search
         </script>
     </body>
 </html>
