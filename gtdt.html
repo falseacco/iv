@@ -1,358 +1,501 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="utf-8">
-    </head>
-    <body>
-        <style>
-        #interval {
-            color: DimGray;
-        }
-        </style>
-        
-        time per image: <input id="interval" type="text" value="00:00:10">
-        <br>
+  <head>
+    <meta charset="utf-8">
+    <title>draw tool</title>
+  </head>
+  <body>
+  <style>
+    .hidden-overlap {
+      width: 300px;
+      position: absolute;
+      margin-left: auto;
+      margin-right: auto;
+      left: 0;
+      right: 0;
+    }
+    #screen-home {
+      visibility: visible;
+    }
+    #screen-tool {
+      visibility: hidden;
+    }
+    #interval {
+      color: DimGray;
+    }
+    #home-timer-config {
+      overflow-y: auto;
+      height: 50px;
+      background: gray;
+    }
+    #simple-config {
+      visibility: visible;
+    }
+    #simple-config input {
+      font-family: monospace;
+      /*
+      color: DimGray;
+      background-color: white;
+      border: none;
+      */
+    }
+    #class-preset-config {
+      visibility: hidden;
+    }
+    </style>
+    <!-- upload files -->
+      <div id="screen-home" class="hidden-overlap">
+        session:
+        <form>
+          timer:<br>
+          <input id="session-simple" type="radio" name="session"
+            value="simple" checked>simple<br>
+          <input id="session-class-preset" type="radio" name="session"
+            value="class-preset">class preset<br>
+          <!--<input type="radio" name="session" value="custom">
+            custom--><br>
+            
+          <div id="home-timer-config">
+            <div id="simple-config" class="hidden-overlap">
+              <input id="timer-hr" type="text"
+                size="3" maxlength="3" value="000">
+              :
+              <input id="timer-min" type="text"
+                size="2" maxlength="2" value="10">
+              :
+              <input id="timer-sec" type="text"
+                size="2" maxlength="2" value="00">
+            </div>
+            
+            <div id="class-preset-config" class="hidden-overlap">
+              <select id="class-format">
+                <option value="30min">30 min. (Line of Action)</option>
+                <option value="1hr">1 hour (Line of Action)</option>
+                <option value="2hr">2 hour (Line of Action)</option>
+                <option value="3hr">3 hour (Line of Action)</option>
+                <option value="6hr">6 hour (Line of Action)</option>
+              </select>
+            </div>
+          </div>
+          img:
+          <form>
+            <input id="upload" type="file" webkitdirectory directory multiple>
+          </form>
+          <!--
+            <input id="library"
+              type="file"
+              onchange="updateLibrary();"
+              webkitdirectory directory multiple>-->
+          <br>
+          <button id="session-start" type="button" disabled>start</button>
+        </form>
+        <!--<input id="interval" type="text" value="00:10:00">timer: per image, class-->
+      </div>
+      <div id="screen-tool" class="hidden-overlap">
         <button id="reset" type="button">reset</button>
         <button id="start/stop" type="button">start</button>
         <text id="timer">[paused]</text>
         <br>
-        <input id="library" type="file" onchange="updateLibrary();" webkitdirectory directory multiple>
-        <br>
         <img id="display" src="">
-        <div id="right-box">
-            <ul id="tags"></ul>
-            
-            <input id="select-tags-input" list="select-tags">
-            <datalist id="select-tags">
-            </datalist>
-            
-            <text id="count"></text> <br>
-            <a id="prev" href="#a"><</a>
-            <a id="next" href="#a">></a>
-        </div>
         
-        <script type="text/javascript">
-        // utility
-        function print(x = 1) {
-            console.log(x);
-        }
-        
-        function $id(id) {
-            return document.getElementById(id);
-        }
-        
-        function rng(min = 0, range = 10) {
-            // Don't use a negative range.
-            return Math.floor((Math.random() * range) + min);
-        }
-        
-        function padNum(n) {
-            if (n < 10) {
-                return '0' + n;
-            }
-            else {
-                return n;
-            }
-        }
-        
-        function milliToTime(n) {//messy
-            let rawSeconds = Math.floor(n / 1000),
-                hours = Math.floor(rawSeconds / 3600),
-                minutes = Math.floor((rawSeconds - (hours * 3600)) / 60),
-                seconds = rawSeconds - (hours * 3600) - (minutes * 60),
-                string;
-            return padNum(hours) + ':' + padNum(minutes) + ':' + padNum(seconds);
-        }
-        
-        function secToMilli(n) {
-            return n * 1000;
-        }
-        
-        function minToMilli(n) {
-            return secToMilli(n * 60);
-        }
-        
-        function hourToMilli(n) {
-            return minToMilli(n * 60);
-        }
-        
-        // global events
-        function broadcast (event) {
-            if (event === 'timerReset') { // overlaps with skip to next...
-                $id('next').click();
-            }
-            else if (event === 'browsingHistory') {
-                reset();
-            }
-            else if (event === 'goToNextItem') {
-                reset();
-                start();
-            }
-            else if (event === 'updateLibrary') {
-                for (let i = 0; i < tags.length; i += 1) {
-                    let tag = tags[i];
-                    //... add
-                    $id('tags').innerHTML += '<li><a href="#a">' + tag + '</a></li>';
-                    //... add
-                    $id('select-tags').innerHTML += '<option value="' + tag + ' ">'; // space hax
-                }
-            }
-            else if (event === 'filter') {
-                $id('count').innerHTML = selectFrom.length + ' items queued';
-            }
-        }
-        
-        // imgs
-        let library = {}, // Array of images to be displayed.
-            tags, // Collection of image tags for current library.
-            
-            selectedTags = [], //...
-            selectFrom = [], //...
-            
-            history = [], // Record of displayed items this session.
-            currIndex = 0, // Where the user is in history, 0 is the most recent. <timeIndex?>
-            alreadySeen = []; // List of items that have already been displayed. Resets.
-            
-        function updateAlreadySeen(index) {
-            alreadySeen.unshift(index);
-            if (alreadySeen.length >= selectFrom.length) {
-                // Don't want to repeat same item twice.
-                alreadySeen = [index];
-            }
-        }
-        
-        function updateHistory(index) {
-            history.unshift(index);
-        }
-        
-        function filter() {
-            //...
-            selectFrom = library.slice();
-            if (selectedTags.length > 0) {
-                //...
-                let offset = 0;
-                for (let i = 0; i < library.length; i += 1) {
-                    let obj = library[i],
-                        objTags = obj[1];
-                    for (let q = 0; q < selectedTags.length; q += 1) {
-                        let currTag = selectedTags[q];
-                        if (objTags.indexOf(currTag) === -1) {
-                            selectFrom.splice(i - offset, 1);
-                            offset += 1;
-                        }
-                    }
-                }
-            }
-            broadcast('filter');
-        }
-
-        function updateLibrary() {
-            let files = $id('library').files,
-                data;
-            // Empty previous library.
-            library = [];
-            // Search for tags.json
-            for (let i = 0; i < files.length; i += 1) {
-                let obj = files[i];
-                if (obj.name === 'tags.json') {
-                    let reader = new FileReader();
-                    
-                    reader.onload = ()=>{
-                        data = JSON.parse(reader.result);
-                        tags = data[0];
-                        // Fill out library with the images in the selected directory. <repeated code, messy> include tags in json[1]?
-                        for (let i = 0; i < files.length; i += 1) {
-                            let obj = files[i],
-                                name = obj.name;
-                            if (obj.name !== 'tags.json') {
-                                if (tags) {
-                                    library.push([obj, data[1][name]]);
-                                }
-                                else {
-                                    library.push([obj]);
-                                }
-                            }
-                        }
-                        //...
-                        filter()
-                        //...
-                        broadcast('updateLibrary');
-                        // Display something to start.
-                        let n = rng(0, selectFrom.length);
-                        display(n);
-                        updateHistory(n);
-                        updateAlreadySeen(n);
-                    };
-                    
-                    reader.readAsText(obj);
-                    break;
-                }
-            }
-        }
-        updateLibrary();
-        
-        function display(index = 0) {
-            if (selectFrom) {// I forgot what this test is for...
-                let reader = new FileReader();
-                
-                // Update display with the new image
-                reader.onload = (e)=>{
-                    $id('display').src = e.target.result;
-                };
-                
-                reader.readAsDataURL(selectFrom[index][0]);
-            }
-        }
-        
-        $id('prev').onclick = ()=>{
-            // if past hist go, otherwise don't bother
-            if (currIndex < history.length - 1) {
-                currIndex += 1;
-                display(history[currIndex]);
-                //..
-                broadcast('browsingHistory');
-            }
-        };
-        $id('next').onclick = ()=>{
-            // check if in past
-            if (currIndex === 0) {
-                let next;
-                while (true) {
-                    // Don't repeat images until all have been displayed.
-                    let n = rng(0, selectFrom.length);
-                    if (alreadySeen.indexOf(n) === -1) {
-                        next = n;
-                        break;
-                    }
-                }
-                
-                display(next);
-                // ..
-                updateHistory(next);
-                updateAlreadySeen(next);
-                //..
-                broadcast('goToNextItem');
-            }
-            else {
-                currIndex -= 1;
-                display(history[currIndex]);
-            }
-        };
-        
-        // timer
-        // time per image:
-        let pattern = /([0-9]+(:|.)){0,2}[0-9]+/; // Too flexible, 1a0 reads as 10
-        $id('interval').onblur = ()=>{
-            // Check that time is in correct format.
-            let input = pattern.exec($id('interval').value)[0];
-            $id('interval').value = input ? input : '00:10:00';
-            // Fade text out.
-            $id('interval').style.color = 'DimGray';
-        }
-        $id('interval').onfocus = ()=>{
-            // in
-            $id('interval').style.color = 'Black';
-        }
+        <text id="count"></text> <br>
+        <a id="prev" href="#a"><</a>
+        <a id="next" href="#a">></a>
+      </div>
     
-        // counter
-        let isPaused = true,
-            deadline,
-            timeLeft = $id('interval').value, // better name?
-            i;
+    <!--
+    <ul id="tags"></ul>
+    <input id="select-tags-input" list="select-tags">
+    <datalist id="select-tags">
+    </datalist>
+    -->
+    
+    <script type="text/javascript">
+    "use strict;"
+    let $$SESSION_TYPE = 'simple',
+        $$SIMPLE_CONFIG = [0, 10, 0],
+        $$PRESET_CONFIG = '30min',
+        $$UPLOAD = [];
         
-        // handle clicks
-        $id('reset').onclick = reset;
+    $id('timer-hr').onchange = ()=>{
+      $$SIMPLE_CONFIG[0] = Number($id('timer-hr').value);
+      print('$$SIMPLE_CONFIG: ' + $$SIMPLE_CONFIG);
+    };
+    
+    $id('timer-min').onchange = ()=>{
+      $$SIMPLE_CONFIG[1] = Number($id('timer-min').value);
+      print('$$SIMPLE_CONFIG: ' + $$SIMPLE_CONFIG);
+    };
+    
+    $id('timer-sec').onchange = ()=>{
+      $$SIMPLE_CONFIG[2] = Number($id('timer-sec').value);
+      print('$$SIMPLE_CONFIG: ' + $$SIMPLE_CONFIG);
+    };
+    
+    $id('class-format').onchange = ()=>{
+      $$PRESET_CONFIG = $id('class-format').value;
+    };
         
-        function start() {
-            $id('start/stop').innerHTML = 'stop';
-            count();
-            isPaused = false;
-        }
-        
-        function stop() {
-            $id('start/stop').innerHTML = 'start';
-            clearCount();
-            isPaused = true;
-        }
-        
-        $id('start/stop').onclick = ()=>{
-            if (isPaused) {
-                start();
+    // Clicks
+    $id('session-simple').onclick = ()=>{
+      $$SESSION_TYPE = 'simple';
+      $id('simple-config').style.visibility = 'visible';
+      $id('class-preset-config').style.visibility = 'hidden';
+    };
+    
+    $id('session-class-preset').onclick = ()=>{
+      $$SESSION_TYPE = 'preset';
+      $id('simple-config').style.visibility = 'hidden';
+      $id('class-preset-config').style.visibility = 'visible';
+    };
+    
+    $id('upload').onchange = ()=>{ // (hereish) display image, arrows + history
+      $$UPLOAD = Array.from($id('upload').files);
+      // There are images to display, user can move on now.
+      if ($$UPLOAD.length !== 0) {
+        $id('session-start').disabled = false;
+      }
+    };
+    /*function updateLibrary() {
+      let files = $id('library').files,
+        data;
+      // Empty previous library.
+      library = [];
+      // Search for tags.json
+      for (let i = 0; i < files.length; i += 1) {
+        let obj = files[i];
+        if (obj.name === 'tags.json') {
+          let reader = new FileReader();
+          
+          reader.onload = ()=>{
+            data = JSON.parse(reader.result);
+            tags = data[0];
+            // Fill out library with the images in the selected directory. <repeated code, messy> include tags in json[1]?
+            for (let i = 0; i < files.length; i += 1) {
+              let obj = files[i],
+                name = obj.name;
+              if (obj.name !== 'tags.json') {
+                if (tags) {
+                  library.push([obj, data[1][name]]);
+                }
+                else {
+                  library.push([obj]);
+                }
+              }
             }
-            else {
-                stop();
+            //...
+            filter()
+            //...
+            broadcast('updateLibrary');
+            // Display something to start.
+            let n = rng(0, selectFrom.length);
+            display(n);
+            updateHistory(n);
+            updateAlreadySeen(n);
+          };
+          
+          reader.readAsText(obj);
+          break;
+        }
+      }
+    }
+    //updateLibrary();*/
+    
+    $id('session-start').onclick = ()=>{
+      $id('screen-home').style.visibility = 'hidden';
+      $id('screen-tool').style.visibility = 'visible';
+    };
+    
+    function init() {
+      $id('timer-hr').value = $$SIMPLE_CONFIG[0];
+      $id('timer-min').value = $$SIMPLE_CONFIG[1];
+      $id('timer-sec').value = $$SIMPLE_CONFIG[2];
+      $id('class-format').value = $$PRESET_CONFIG;
+      $id('session-simple').click();
+      $id('upload').onchange(); // keep old dir after reload
+      print();
+    }
+    
+    function print(x = 0) {
+      console.log(x);
+    }
+    
+    function $id(id) {
+      return document.getElementById(id);
+    }
+    
+    function rng(min = 0, range = 10) {
+      // Don't use a negative range.
+      return Math.floor((Math.random() * range) + min);
+    }
+    
+    function padNum(n) {
+      if (n < 10) {
+        return '0' + n;
+      }
+      else {
+        return n;
+      }
+    }
+    
+    function milliToTime(n) {//messy
+      let rawSeconds = Math.floor(n / 1000),
+        hours = Math.floor(rawSeconds / 3600),
+        minutes = Math.floor((rawSeconds - (hours * 3600)) / 60),
+        seconds = rawSeconds - (hours * 3600) - (minutes * 60),
+        string;
+      return padNum(hours) + ':' + padNum(minutes) + ':' + padNum(seconds);
+    }
+    
+    function secToMilli(n) {
+      return n * 1000;
+    }
+    
+    function minToMilli(n) {
+      return secToMilli(n * 60);
+    }
+    
+    function hourToMilli(n) {
+      return minToMilli(n * 60);
+    }
+    
+    // global events
+    function broadcast (event) {
+      if (event === 'timerReset') { // overlaps with skip to next...
+        $id('next').click();
+      }
+      else if (event === 'browsingHistory') {
+        reset();
+      }
+      else if (event === 'goToNextItem') {
+        reset();
+        start();
+      }
+      else if (event === 'updateLibrary') {
+        for (let i = 0; i < tags.length; i += 1) {
+          let tag = tags[i];
+          //... add
+          $id('tags').innerHTML += '<li><a href="#a">' + tag + '</a></li>';
+          //... add
+          $id('select-tags').innerHTML += '<option value="' + tag + ' ">'; // space hax
+        }
+      }
+      else if (event === 'filter') {
+        $id('count').innerHTML = selectFrom.length + ' items queued';
+      }
+    }
+    
+    // imgs
+    let library = {}, // Array of images to be displayed.
+      tags, // Collection of image tags for current library.
+      
+      selectedTags = [], //...
+      selectFrom = [], //...
+      
+      history = [], // Record of displayed items this session.
+      currIndex = 0, // Where the user is in history, 0 is the most recent. <timeIndex?>
+      alreadySeen = []; // List of items that have already been displayed. Resets.
+      
+    function updateAlreadySeen(index) {
+      alreadySeen.unshift(index);
+      if (alreadySeen.length >= selectFrom.length) {
+        // Don't want to repeat same item twice.
+        alreadySeen = [index];
+      }
+    }
+    
+    function updateHistory(index) {
+      history.unshift(index);
+    }
+    
+    function filter() {
+      //...
+      selectFrom = library.slice();
+      if (selectedTags.length > 0) {
+        //...
+        let offset = 0;
+        for (let i = 0; i < library.length; i += 1) {
+          let obj = library[i],
+            objTags = obj[1];
+          for (let q = 0; q < selectedTags.length; q += 1) {
+            let currTag = selectedTags[q];
+            if (objTags.indexOf(currTag) === -1) {
+              selectFrom.splice(i - offset, 1);
+              offset += 1;
             }
+          }
+        }
+      }
+      broadcast('filter');
+    }
+
+    function display(index = 0) {
+      if (selectFrom) {// I forgot what this test is for...
+        let reader = new FileReader();
+        
+        // Update display with the new image
+        reader.onload = (e)=>{
+          $id('display').src = e.target.result;
         };
         
-        // functionality
-        function getDeadline(seconds, minutes, hours) {
-            seconds = seconds || 0;
-            minutes = minutes || 0;
-            hours = hours || 0;
-        
-            return Date.now() + hourToMilli(hours) + minToMilli(minutes) + secToMilli(seconds);
-        }
-         
-        function set(timeString) {
-            //
-            let time = timeString.split(':').reverse();
-            deadline = getDeadline(Number(time[0]) + 1, Number(time[1]), Number(time[2]));                
-            $id('timer').innerHTML = timeLeft = timeString;
-        }
-        
-        function clearCount() {
-            timeLeft = $id('timer').innerHTML;
-            clearInterval(i);
-        }
-        
-        function reset() {
-            set($id('interval').value);
-            $id('start/stop').innerHTML = 'start';
-            clearCount();
-            isPaused = true;
-        }
-         
-        function count() {
-            set(timeLeft);
-            i = setInterval(function() {
-                let delta = deadline - Date.now();
-                // Reset timer when it reaches zero.
-                if (delta <= 500) {
-                    set($id('interval').value);
-                    // And fresh image
-                    broadcast('timerReset');
-                }
-                // Update the outer display.
-                $id('timer').innerHTML = milliToTime(delta);
-            }, 100);
+        reader.readAsDataURL(selectFrom[index][0]);
+      }
+    }
+    
+    $id('prev').onclick = ()=>{
+      // if past hist go, otherwise don't bother
+      if (currIndex < history.length - 1) {
+        currIndex += 1;
+        display(history[currIndex]);
+        //..
+        broadcast('browsingHistory');
+      }
+    };
+    $id('next').onclick = ()=>{
+      // check if in past
+      if (currIndex === 0) {
+        let next;
+        while (true) {
+          // Don't repeat images until all have been displayed.
+          let n = rng(0, selectFrom.length);
+          if (alreadySeen.indexOf(n) === -1) {
+            next = n;
+            break;
+          }
         }
         
-        // crappy workaround that doesn't even work, spend more time on this later
-        $id('select-tags-input').oninput = (e) => {
-            if ($id('select-tags-input').value.slice(-1) === ' ') {
-                $id('select-tags').innerHTML = '';
-                for (let i = 0; i < tags.length; i += 1) {
-                    let tag = tags[i];
-                    $id('select-tags').innerHTML += '<option value="' + $id('select-tags-input').value + tag + ' ">';
-                }
-                tags = $id('select-tags-input').value.split(' ');
-                filter();
-            }
+        display(next);
+        // ..
+        updateHistory(next);
+        updateAlreadySeen(next);
+        //..
+        broadcast('goToNextItem');
+      }
+      else {
+        currIndex -= 1;
+        display(history[currIndex]);
+      }
+    };
+    /*
+    // Timer
+    // time per image:
+    let pattern = /([0-9]+(:|.)){0,2}[0-9]+/; // Too flexible, 1a0 reads as 10
+    $id('interval').onblur = ()=>{
+      // Check that time is in correct format.
+      let input = pattern.exec($id('interval').value)[0];
+      $id('interval').value = input ? input : '00:10:00';
+      // Fade text out.
+      $id('interval').style.color = 'DimGray';
+    }
+    $id('interval').onfocus = ()=>{
+      // in
+      $id('interval').style.color = 'Black';
+    }
+  
+    // counter
+    let isPaused = true,
+      deadline,
+      timeLeft = $id('interval').value, // better name?
+      i;
+    
+    // handle clicks
+    $id('reset').onclick = reset;
+    
+    function start() {
+      $id('start/stop').innerHTML = 'stop';
+      count();
+      isPaused = false;
+    }
+    
+    function stop() {
+      $id('start/stop').innerHTML = 'start';
+      clearCount();
+      isPaused = true;
+    }
+    
+    $id('start/stop').onclick = ()=>{
+      if (isPaused) {
+        start();
+      }
+      else {
+        stop();
+      }
+    };
+    
+    // functionality
+    function getDeadline(seconds, minutes, hours) {
+      seconds = seconds || 0;
+      minutes = minutes || 0;
+      hours = hours || 0;
+    
+      return Date.now() + hourToMilli(hours) + minToMilli(minutes) + secToMilli(seconds);
+    }
+     
+    function set(timeString) {
+      //
+      let time = timeString.split(':').reverse();
+      deadline = getDeadline(Number(time[0]) + 1, Number(time[1]), Number(time[2]));        
+      $id('timer').innerHTML = timeLeft = timeString;
+    }
+    
+    function clearCount() {
+      timeLeft = $id('timer').innerHTML;
+      clearInterval(i);
+    }
+    
+    function reset() {
+      set($id('interval').value);
+      $id('start/stop').innerHTML = 'start';
+      clearCount();
+      isPaused = true;
+    }
+     
+    function count() {
+      set(timeLeft);
+      i = setInterval(function() {
+        let delta = deadline - Date.now();
+        // Reset timer when it reaches zero.
+        if (delta <= 500) {
+          set($id('interval').value);
+          // And fresh image
+          broadcast('timerReset');
         }
-        
-        // (here) onclick link update state
-        // put everything in the right place - css
-        $id('tags').onclick = (e) => {
-            print(e.explicitOriginalTarget.textContent);
+        // Update the outer display.
+        $id('timer').innerHTML = milliToTime(delta);
+      }, 100);
+    }*/
+    /*
+    // crappy workaround that doesn't even work, spend more time on this later
+    $id('select-tags-input').oninput = (e) => {
+      if ($id('select-tags-input').value.slice(-1) === ' ') {
+        $id('select-tags').innerHTML = '';
+        for (let i = 0; i < tags.length; i += 1) {
+          let tag = tags[i];
+          $id('select-tags').innerHTML += '<option value="' + $id('select-tags-input').value + tag + ' ">';
         }
-        
-        // 用
-        
-        // host on pages
-        // image tag editor
-        // make it look nice
-        // clean code, replace all those for loops, access abstract dom too, add array fun to replace indexOf test
-        // ^ bcast should access an obj of funs, search
-        </script>
-    </body>
+        tags = $id('select-tags-input').value.split(' ');
+        filter();
+      }
+    }
+    
+    // onclick link update state put everything in the right place - css
+    $id('tags').onclick = (e) => {
+      print(e.explicitOriginalTarget.textContent);
+    }
+    */
+    
+    init();
+    
+    // 用
+    // more robust timer (custom/class mode)
+    // host on pages +  github acc?
+    // make it pretty (gui colors) / dynamic
+    
+    // track photos in draw_tool_config.txt
+    // image tags + editor
+    // custom timer formulas
+
+    // clean code, replace all those for loops, global configs
+    </script>
+  </body>
 </html>
