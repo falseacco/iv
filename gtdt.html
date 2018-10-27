@@ -63,6 +63,22 @@
     #tool-display {
       max-height: 90vh;
     }
+    #thumbnails {
+      list-style-type: none;
+    }
+    #thumbnails > li {
+      display: inline-block;
+    }
+    .thumbnail {
+      height: 20vh;
+      margin: 5px;
+      border: 1px solid #ddd; /* Gray border */
+      border-radius: 2px;  /* Rounded border */
+      padding: 5px; /* Some padding */
+    }
+    .thumbnail:hover {
+    box-shadow: 0 0 2px 1px rgba(0, 140, 186, 0.5);
+    }
     </style>
       <div id="box-home" class="hidden-overlap">
         session:
@@ -110,6 +126,7 @@
         <button id="start/stop" type="button">start</button>
         <text id="tool-timer">[paused]</text>
         <button id="next" type="button">></button>
+        <button id="end-session" type="button">End session</button>
         <br>
         <img id="tool-display" class="horizontally-centered" src="">
       </div>
@@ -117,9 +134,13 @@
         <text id="rest-message" class="horizontally-centered">Rest for a bit.</text>
         <img id="rest-display" class="horizontally-centered" src="">
         <text id="rest-timer"></text>
-        <button id="next" type="button">Skip...</button>
+        <button id="rest-skip" type="button">Skip...</button>
       </div>
       <div id="box-finish" class="hidden-overlap">
+        <text id="finish-message">You're done! Good job</text>
+        <button id="finish-home" type="button">Home</button>
+        <button id="download" type="button">Download History</button>
+        <ul id="thumbnails"></ul>
       </div>
     
     <!--
@@ -132,9 +153,12 @@
     <script type="text/javascript">
     "use strict;"
     // (here
-    // box-rest | display rest-box + rest-timer | fetch specific img by path
-    // box-finish | link home | image thumbnails | simple finish options
-    
+    // side timer box layout + circular |
+    // noise background https://www.cssscript.com/create-noise-background-javascript-canvas/ |
+    // startup/rest images | css
+    // host on pages +  github acc?
+    // flip image by moving mouse over
+    // wait for image load before start timer | pretty
     let PRESET = {'30minLoA': [[0, 0, 30], [0, 0, 30], [0, 0, 30], [0, 0, 30],
                                 [0, 0, 30], [0, 0, 30], [0, 0, 30], [0, 0, 30],
                                 [0, 0, 30], [0, 0, 30], [0, 1, 0], [0, 1, 0],
@@ -177,16 +201,20 @@
         UPLOAD = []; // Images uploaded by user.
         
     // Home ui
+    function setVisible(id, value) {
+      $(id).style.visibility = value ? 'visible' : 'hidden';
+    }
+    
     $('session-simple').onclick = ()=>{
         SESSION_TYPE = 'simple';
-      $('simple-config').style.visibility = 'visible';
-      $('class-config').style.visibility = 'hidden';
+      setVisible('simple-config', true);
+      setVisible('class-config', false);
     };
     
     $('session-class').onclick = ()=>{
         SESSION_TYPE = 'class';
-      $('simple-config').style.visibility = 'hidden';
-      $('class-config').style.visibility = 'visible';
+      setVisible('simple-config', false);
+      setVisible('class-config', true);
     };
     
     $('upload').onchange = ()=>{
@@ -197,7 +225,24 @@
       }
     };
     
+    {
+      let boxes = ['home', 'tool', 'rest', 'finish'];
+      function d_displayBox(box) {
+        boxes.forEach((str)=>{
+          setVisible('box-' + str, false);
+        });
+        
+        setVisible('box-' + box, true);
+      }
+    }
+    
     $('session-start').onclick = ()=>{
+      {//clear thumbnails
+        let ul = $('thumbnails');
+        while(ul.firstChild) {
+          ul.removeChild(ul.firstChild);
+        }
+      }
       // Set vars and print for debug.
       if ($('session-simple').checked) {
         SESSION_TYPE = 'simple';
@@ -218,15 +263,18 @@
       
       print('Config: ' + CONFIG);
       // Switch from the home box.
-      $('box-home').style.visibility = 'hidden';
-      $('box-tool').style.visibility = 'visible';
+      //d_displayTool();
+      d_displayBox('tool');
       
       // Display an image to start.
-      gotoBlock(getNextBlock(), 'placeholder');
+      gotoBlock(getNextBlock());
       //a_display(rng(0, UPLOAD.length));
     };
     
-    // Tool ui
+    // ui
+    $('end-session').onclick = ()=>{
+      gotoBlock('finish');
+    };
     {
       let repeats = [], // Record of previously displayed images, resets.
           history = [], // Same as above, does not reset.
@@ -269,6 +317,14 @@
         history.unshift(i);
       }
       
+      function d_clearRepeats() {
+        repeats.length = 0;
+      }
+      
+      function d_clearHistory() {
+        history.length = 0;
+      }
+      
       function rng_excludeSingle(exclude, min, range) {
         while (true) {
           let i = rng(min, UPLOAD.length);
@@ -284,13 +340,12 @@
       }
       
       //function e_rng exclusive fuse with Arr above
-      //function clearRepeats
     }
     
     {
       let remaining, // Time left to count down.
           isPaused = true,
-          currentBlock, // ...
+          currentBlock = 0, // ...
           goal, // ...
           i; // Holds the async timer's lambda.
           
@@ -304,59 +359,68 @@
       };
       
       function startTimer() {
-        print('start');
-        print(remaining);
         $('start/stop').innerHTML = 'stop';
         isPaused = false;
         // Start counting down.
         count();
-        print(remaining);
       }
       
       function stopTimer() {
-        print('stop');
-        print(remaining);
         $('start/stop').innerHTML = 'start';
         isPaused = true;
         // Save the current time left.
         remaining = stringToTime($('tool-timer').innerHTML);
         // Stop counting.
         clearInterval(i);
-        print(remaining);
+      }
+      
+      function foo(currentBlockIndex) { //well shit
+        let blockMaybe = CONFIG[currentBlockIndex];
+        if (blockMaybe.constructor === Array) {
+          return blockMaybe;
+        }
+        else {
+          return CONFIG;
+        }
       }
       
       function resetTimer() {
         stopTimer(); //bubblegum
-        gotoBlock(currentBlock, 'same', true);
-        updateTimeDisplay(currentBlock, timeToString);
+        gotoBlock(foo(currentBlock), 'same', true);
+        updateTimeDisplay(foo(currentBlock), timeToString);
       }
       
       function updateTimeDisplay(obj, fn) {
         $('tool-timer').innerHTML = fn(obj);
+        $('rest-timer').innerHTML = fn(obj); //bubblegum
       }
-      
+
       function count() { //pass the block to count
+        // Stop previous countdown.
+        clearInterval(i);
         goal = getGoal(remaining || getNextBlock());
         i = setInterval(function() {
           let delta = goal - Date.now(),
               display = milliToTime(delta),
               arr = stringToTime(display);
           
-          updateTimeDisplay(delta, milliToTime); //christ
+          updateTimeDisplay(delta, milliToTime);
           remaining = arr;
           // When the timer reaches zero...
           if (delta <= 500) {
-            gotoBlock(getNextBlock(), 'placeholder');
+            gotoBlock(getNextBlock(), currentBlock);
           }
         }, 225);
       }
       
+      // It doesn't really need to take args
       function gotoBlock (block, from, suppressNewDisplay) {
         // brings a timer to a block
-        // stop old countdown
-        clearInterval(i);
         if (block.constructor === Array) { // is a time block
-          if (block.length === 3) { // standard time block placeholder
+          if (block.length === 3) { // standard time block
+            //if (from === 'same' || from.length === 3) {
+            //  print(11);
+            //}
             // Display a new image.
             if (!suppressNewDisplay) {
               newImage();
@@ -364,25 +428,31 @@
             // Reset the timer.
             remaining = block;
             if (from === 'same' || from === 'rest') {
-            } // stopTimer()
+              print(11);
+              d_displayBox('tool');
+              stopTimer();
+            }
             else {
               startTimer();
             }
           }
-          else { // rest block | shouldn't have option to pause
+          else {
             // Rest box.
             print('rest');
+            d_displayBox('rest');
             // Reset the timer.
             remaining = block.slice(1);
             startTimer();
           }
         }
-        else { // strange block
+        else {
           // finish box
           print('finish');
+          currentBlock = 0;
+          d_clearRepeats();
+          d_clearHistory();
+          d_displayBox('finish');
         }
-        
-        currentBlock = block;
       }
       
       function getNextBlock () {
@@ -391,7 +461,8 @@
           return CONFIG;
         }
         else { // class type
-          return CONFIG.shift();
+          currentBlock += 1;
+          return CONFIG[currentBlock];
         }
       }
       
@@ -431,19 +502,47 @@
       
     $('start/stop').onclick = d_toggleTimer;
     
+    $('rest-skip').onclick = ()=>{
+      gotoBlock(getNextBlock(), 'rest');
+    };
+    
+    
+    $('finish-home').onclick = ()=>{
+      d_displayBox('home');
+    }
+    
+    function d_addThumbnail(path) {
+      let li = document.createElement('li'),
+          a = document.createElement('a'),
+          img = document.createElement('img');
+      // Styling
+      img.className = 'thumbnail';
+      // Link-click-display
+      a.setAttribute('target', '_blank');
+      a.setAttribute('href', path); // this lags a bit, why?
+      // Display
+      img.setAttribute('src', path);
+      a.appendChild(img);
+      li.appendChild(a);
+      $('thumbnails').appendChild(li);
+    }
+    
+    //
     function a_display(i) {
       // Draw an image in tool mode, and archive it.
       display(i);
       archive(i);
     }
     
-    function display(i) {
+    function display(i) { // change name to read image or something
       // Draw an image in tool mode (mode check?)
       let reader = new FileReader();
       
       // Update display with the new image.
       reader.onload = (e)=>{
-        $('tool-display').src = e.target.result;
+        let path = e.target.result;
+        $('tool-display').src = path; // display fun
+        d_addThumbnail(path);
       };
       
       reader.readAsDataURL(UPLOAD[i]);
@@ -463,10 +562,6 @@
     function print(x) {
       console.log(x);
     }
-    /*
-    function $(id) {
-      return document.getElementById(id);
-    }*/
     
     function $(str) {
       let firstChar = str[0];
@@ -582,14 +677,10 @@
     init();
     
     // 用 (bot
-    // pretty | simple timer empty box ghosts
-    // noise background | https://www.cssscript.com/create-noise-background-javascript-canvas/
-    // host on pages +  github acc?
-    // functional rework
+    // functional refactor | u_ for ui updates, d_ for state updates | css js- and is-, possible to do boxes with only css?sc
     
     // image tags + editor | reader.readAsText(obj);
     // custom timer formulas
-    // flip image by moving mouse over
     </script>
   </body>
 </html>
