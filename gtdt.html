@@ -2,25 +2,94 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-    <title>draw tool</title>
+    <title>gtdt</title>
   </head>
   <body>
   <style>
     body {
-      background-color: rgb(40, 40, 40);
+      visibility: hidden;
+      color: white;
+      background-color: rgb(20, 20, 20);
     }
-    .hidden-overlap {
-      width: 300px;
+    .visible {
+      visibility: visible;
+    }
+    .hidden {
+      visibility: hidden;
+    .abs {
       position: absolute;
-      margin-left: auto;
-      margin-right: auto;
-      left: 0;
-      right: 0;
+    }
+    }
+    #title {
+      font-size: xx-large;
+      margin-left: 3vw;
     }
     #box-home {
-      visibility: visible;
-      background-color: white;
+      width: 32vw;
+      margin: 10px 2vw; 
+      padding: 10px 10px 10px 10px;
+      
+      border: dotted 1px white;
+      
+      font-size: large;
     }
+    #box-home input[type=text] {
+      padding: 5px;
+      border: solid 1px white;
+      
+      color: white;
+      background-color: rgb(40, 40, 40);
+      
+      font-size: x-large;
+      font-family: monospace;
+    }
+    #select-session-type {/* rename this to session-static config or something*/
+      margin: 5px 0px 15px 5px;
+    }
+    #select-session-type input[type=radio] {
+      display: none;
+    }
+    #select-session-type label {
+      color: lightblue;
+      
+      padding: 4px;
+      cursor: pointer;
+    }
+    #select-session-type input[type=radio]:checked+label {
+      color: white;
+      background-color: rgb(40, 40, 40);
+      
+      border: solid 1px white;
+    }
+    #session-class-config-container {
+      position: relative;
+    }
+    #session-class-config {
+      position: absolute;
+      margin-top: -35px;
+      
+      /*
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      text-indent: 1px;
+      text-overflow: '';*/
+      
+      color: white;
+      background-color: rgb(40, 40, 40);
+      border: 1px solid white;
+    }
+    #select-session-descriptions {
+      padding: 10px 0px 30px 0px;
+      }
+    #select-session-descriptions text {
+      position: absolute;
+      font-size: smaller;
+      word-wrap: normal;
+    }
+    #upload {
+      color: red;
+    }
+    /* */
     #box-tool {
       visibility: hidden;
       background-color: blue;
@@ -44,13 +113,8 @@
     #simple-config {
       visibility: visible;
     }
-    #simple-config input {
+    #simple-config input {/*obsolete?*/
       font-family: monospace;
-      /*
-      color: DimGray;
-      background-color: white;
-      border: none;
-      */
     }
     #class-config {
       visibility: hidden;
@@ -72,38 +136,34 @@
     .thumbnail {
       height: 20vh;
       margin: 5px;
-      border: 1px solid #ddd; /* Gray border */
-      border-radius: 2px;  /* Rounded border */
-      padding: 5px; /* Some padding */
+      border: 1px solid #ddd;
+      border-radius: 2px;
+      padding: 5px;
     }
     .thumbnail:hover {
     box-shadow: 0 0 2px 1px rgba(0, 140, 186, 0.5);
     }
     </style>
-      <div id="box-home" class="hidden-overlap">
-        session:
+      <div id="title" class="visible">gtdt</div>
+      <div id="box-home" class="visible">
         <form>
-          timer:<br>
-          <input id="session-simple" type="radio" name="session"
-            value="simple" checked>simple<br>
-          <input id="session-class" type="radio" name="session"
-            value="class">class<br>
-          <br>
-            
-          <div id="home-timer-config">
-            <div id="simple-config" class="hidden-overlap">
-              <input id="timer-hr" type="text"
-                size="3" maxlength="3" value="000">
-              :
-              <input id="timer-min" type="text"
-                size="2" maxlength="2" value="10">
-              :
-              <input id="timer-sec" type="text"
-                size="2" maxlength="2" value="00">
+        
+        <div id="select-session-type">
+          <input id="session-simple" type="radio" name="radio" value="simple">
+          <label for="session-simple">Static</label>
+          <input id="session-class" type="radio" name="radio" value="class">
+          <label for="session-class">Class Preset</label>
+        </div>
+          
+          <div id="session-config" class="abs">
+            <div id="session-simple-config" class="visible">
+              <input id="timer-hr" type="text" size="2" maxlength="2"> :
+              <input id="timer-min" type="text" size="2" maxlength="2"> :
+              <input id="timer-sec" type="text" size="2" maxlength="2">
             </div>
-            
-            <div id="class-config" class="hidden-overlap">
-              <select id="class-format">
+          
+            <div id="session-class-config-container">
+              <select id="session-class-config">
                 <option value="30minLoA">30 min. (Line of Action)</option>
                 <option value="1hrLoA">1 hour (Line of Action)</option>
                 <option value="2hrLoA">2 hour (Line of Action)</option>
@@ -112,15 +172,26 @@
               </select>
             </div>
           </div>
-          img:
-          <form>
-            <input id="upload" type="file" webkitdirectory directory multiple>
-          </form>
+
+          <div id="select-session-descriptions" class="hidden">
+            <text id="session-simple-description" class="visible">
+              Each image is displayed for the same amount of time.</text>
+            <text id="session-class-description">
+              The time each image is displayed gradually increases.</text>
+          </div>
+
+          <!-- some sort of division -->
+
+          <input id="upload" type="file" webkitdirectory directory multiple>
+          
           <br>
-          <button id="session-start" type="button" disabled>start</button>
+          <button id="session-start" type="button" disabled>Start Session</button>
         </form>
+        
+        <img id="display-home"></img>
       </div>
-      <div id="box-tool" class="hidden-overlap">
+      
+      <div id="box-tool">
         <button id="prev" type="button" disabled><</button>
         <button id="reset" type="button">reset</button>
         <button id="start/stop" type="button">start</button>
@@ -130,13 +201,13 @@
         <br>
         <img id="tool-display" class="horizontally-centered" src="">
       </div>
-      <div id="box-rest" class="hidden-overlap">
+      <div id="box-rest">
         <text id="rest-message" class="horizontally-centered">Rest for a bit.</text>
         <img id="rest-display" class="horizontally-centered" src="">
         <text id="rest-timer"></text>
         <button id="rest-skip" type="button">Skip...</button>
       </div>
-      <div id="box-finish" class="hidden-overlap">
+      <div id="box-finish">
         <text id="finish-message">You're done! Good job</text>
         <button id="finish-home" type="button">Home</button>
         <button id="download" type="button">Download History</button>
@@ -153,12 +224,12 @@
     <script type="text/javascript">
     "use strict;"
     // (here
+    // pretty the rest of home-box
+    // startup image + message |
     // side timer box layout + circular |
-    // noise background https://www.cssscript.com/create-noise-background-javascript-canvas/ |
-    // startup/rest images | css
+    // rest image |
+    // color: https://www.webdesignerdepot.com/2009/12/how-to-get-a-professional-look-with-color/
     // host on pages +  github acc?
-    // flip image by moving mouse over
-    // wait for image load before start timer | pretty
     let PRESET = {'30minLoA': [[0, 0, 30], [0, 0, 30], [0, 0, 30], [0, 0, 30],
                                 [0, 0, 30], [0, 0, 30], [0, 0, 30], [0, 0, 30],
                                 [0, 0, 30], [0, 0, 30], [0, 1, 0], [0, 1, 0],
@@ -206,15 +277,22 @@
     }
     
     $('session-simple').onclick = ()=>{
-        SESSION_TYPE = 'simple';
-      setVisible('simple-config', true);
-      setVisible('class-config', false);
+      // will want a fun for this when you add new modes
+      SESSION_TYPE = 'simple';
+      setVisible('session-simple-config', true);
+      setVisible('session-simple-description', true);
+      
+      setVisible('session-class-config', false);
+      setVisible('session-class-description', false);
     };
     
     $('session-class').onclick = ()=>{
-        SESSION_TYPE = 'class';
-      setVisible('simple-config', false);
-      setVisible('class-config', true);
+      SESSION_TYPE = 'class';
+      setVisible('session-class-config', true);
+      setVisible('session-class-description', true);
+      
+      setVisible('session-simple-config', false);
+      setVisible('session-simple-description', false);
     };
     
     $('upload').onchange = ()=>{
@@ -550,9 +628,9 @@
     
     function init() {
       // Runs on init.
-      $('timer-hr').value = 0;
-      $('timer-min').value = 10;
-      $('timer-sec').value = 0;
+      $('timer-hr').value = '00';
+      $('timer-min').value = '10';
+      $('timer-sec').value = '00';
       $('session-simple').click();
       $('upload').onchange(); // keep old dir after reload
       $disable('prev', true); // if they reload and start again
@@ -677,10 +755,11 @@
     init();
     
     // 用 (bot
-    // functional refactor | u_ for ui updates, d_ for state updates | css js- and is-, possible to do boxes with only css?sc
-    
-    // image tags + editor | reader.readAsText(obj);
-    // custom timer formulas
+    // wait for image load before start timer
+    // IMAGE TAGS IMAGE TAGS + editor w/ tag template support
+    // cognitive/interval drawing mode
+    // custom timer formulas/classes
+    // please refactor... (do the boxes need js?)
     </script>
   </body>
 </html>
