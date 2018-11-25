@@ -66,7 +66,7 @@
     }
     #session-class-config {
       position: absolute;
-      margin-top: -35px;
+      margin-top: -30px;
       
       /*
       -webkit-appearance: none;
@@ -86,8 +86,45 @@
       font-size: smaller;
       word-wrap: normal;
     }
-    #upload {
-      color: red;
+    /*#upload {
+      position: absolute;
+      left: -999999rem;
+    }
+    .custom-file-upload {
+      color: white;
+      background-color: rgb(40, 40, 40);
+      
+      border: 1px solid white;
+      padding: 3px 6px;
+      
+      font-size: smaller;
+      
+      cursor: pointer;
+    }*/
+    #session-start {
+      font-family: times-new-roman;
+    }
+    #session-start:disabled {
+      color: lightblue;
+      background-color: rgb(20, 20, 20);
+      
+      border: none;
+    }
+    #session-start:enabled {
+    /* Probably make a class for all the stuff that looks like this. */
+      color: white;
+      background-color: rgb(40, 40, 40);
+      
+      border: 1px solid white;
+    }
+    #splash {
+      margin: -45vh 15vw;
+    }
+    #splash img {
+      max-width: 30vw;
+      max-height: 100vh;
+    }
+    #splash text {
     }
     /* */
     #box-tool {
@@ -180,15 +217,28 @@
               The time each image is displayed gradually increases.</text>
           </div>
 
-          <!-- some sort of division -->
+          <!-- some sort of division here -->
+          <br>
 
+
+          <label id="label-for-upload" for="upload" class="custom-file-upload">
+            Browse...
+          </label>
           <input id="upload" type="file" webkitdirectory directory multiple>
+          <text></text>
           
+          <!-- tags will go here go here -->
+          
+          <!-- another division here -->
+          
+          <br>
           <br>
           <button id="session-start" type="button" disabled>Start Session</button>
         </form>
-        
-        <img id="display-home"></img>
+      </div>
+      <div id="splash" class="visible" align="right">
+        <img src="">
+        <text></text>
       </div>
       
       <div id="box-tool">
@@ -214,22 +264,13 @@
         <ul id="thumbnails"></ul>
       </div>
     
-    <!--
-    <ul id="tags"></ul>
-    <input id="select-tags-input" list="select-tags">
-    <datalist id="select-tags">
-    </datalist>
-    -->
-    
     <script type="text/javascript">
     "use strict;"
-    // (here
-    // pretty the rest of home-box
-    // startup image + message |
+    // (here, 1 day
     // side timer box layout + circular |
-    // rest image |
+    // make sure summary page looks ok
     // color: https://www.webdesignerdepot.com/2009/12/how-to-get-a-professional-look-with-color/
-    // host on pages +  github acc?
+    // host on pages
     let PRESET = {'30minLoA': [[0, 0, 30], [0, 0, 30], [0, 0, 30], [0, 0, 30],
                                 [0, 0, 30], [0, 0, 30], [0, 0, 30], [0, 0, 30],
                                 [0, 0, 30], [0, 0, 30], [0, 1, 0], [0, 1, 0],
@@ -269,7 +310,7 @@
                    },
         SESSION_TYPE = 'simple',
         CONFIG = [],
-        UPLOAD = []; // Images uploaded by user.
+        UPLOAD = [];
         
     // Home ui
     function setVisible(id, value) {
@@ -295,8 +336,8 @@
       setVisible('session-simple-description', false);
     };
     
-    $('upload').onchange = ()=>{
-        UPLOAD = Array.from($('upload').files);
+    $('upload').onchange = (e)=>{
+      UPLOAD = Array.from($('upload').files);
       // There are images to display, user can move on now.
       if (UPLOAD.length !== 0) {
         $disable('session-start', false);
@@ -336,17 +377,15 @@
         CONFIG[2] = Number($('timer-sec').value);
       }
       else {
-        CONFIG = PRESET[$('class-format').value];
+        CONFIG = PRESET[$('session-class-config').value];
       }
       
       print('Config: ' + CONFIG);
       // Switch from the home box.
-      //d_displayTool();
       d_displayBox('tool');
       
       // Display an image to start.
       gotoBlock(getNextBlock());
-      //a_display(rng(0, UPLOAD.length));
     };
     
     // ui
@@ -606,21 +645,24 @@
     }
     
     //
-    function a_display(i) {
+    function a_display(i, canvas) {
       // Draw an image in tool mode, and archive it.
-      display(i);
+      display(i, canvas);
       archive(i);
     }
     
-    function display(i) { // change name to read image or something
+    function display(i, canvas) { // change name to read image or something
       // Draw an image in tool mode (mode check?)
       let reader = new FileReader();
+      if (canvas === undefined) {
+        canvas = 'tool-display';
+      }
       
       // Update display with the new image.
       reader.onload = (e)=>{
         let path = e.target.result;
-        $('tool-display').src = path; // display fun
-        d_addThumbnail(path);
+        $(canvas).src = path; // display fun
+        d_addThumbnail(path); // make a broadcasting sys when you refactor
       };
       
       reader.readAsDataURL(UPLOAD[i]);
@@ -628,11 +670,13 @@
     
     function init() {
       // Runs on init.
+      $('session-simple').click();
       $('timer-hr').value = '00';
       $('timer-min').value = '10';
       $('timer-sec').value = '00';
-      $('session-simple').click();
+      
       $('upload').onchange(); // keep old dir after reload
+      
       $disable('prev', true); // if they reload and start again
       print(0);
     }
@@ -756,10 +800,14 @@
     
     // 用 (bot
     // wait for image load before start timer
+    // store upload.onchange.e.target.files.relativePath I had it all along
+    // upload display dir name and file count
     // IMAGE TAGS IMAGE TAGS + editor w/ tag template support
-    // cognitive/interval drawing mode
+    // cognitive/interval drawing mode, timer only, no timer
+    // settings home and rest image paths
+    // links
+    // please refactor... (broadcast, store stuff like session-class-config)
     // custom timer formulas/classes
-    // please refactor... (do the boxes need js?)
     </script>
   </body>
 </html>
