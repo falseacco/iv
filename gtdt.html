@@ -108,6 +108,10 @@
       
       cursor: pointer;
     }
+    #upload-descr {
+      padding-left: 10px;
+      font-size: smaller;
+    }
     #session-start {
       font-family: times-new-roman;
     }
@@ -253,9 +257,9 @@
     <script type="text/javascript">
     "use strict;"
     // (here
-    // fix file upload button so it has a description again |
-	  // circular timer pretty (why isn't it a fucking circle) |
+    // display
     // make sure summary page looks ok |
+	  // circular timer pretty (why isn't it a fucking circle) |
     // color: https://www.webdesignerdepot.com/2009/12/how-to-get-a-professional-look-with-color/
     // host on pages
     let PRESET = {'30minLoA': [[0, 0, 30], [0, 0, 30], [0, 0, 30], [0, 0, 30],
@@ -329,6 +333,8 @@
       if (UPLOAD.length !== 0) {
         $disable('session-start', false);
       }
+      // Visual feedback.
+      $('upload-descr').innerText = UPLOAD.length + ' files selected.';
     };
     
 	{
