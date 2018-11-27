@@ -16,18 +16,37 @@
     }
     .hidden {
       visibility: hidden;
+	}
     .abs {
       position: absolute;
-    }
     }
     #title {
       font-size: xx-large;
       margin-left: 3vw;
     }
+	.sidebar-box {
+		/* Positioning */
+		position: absolute;
+		top: 45px;
+		left: 10px;
+		
+		/* Appearance */
+		width: 32vw;
+		margin: 10px 2vw;
+		padding: 10px;
+		
+		border: dotted 1px white;
+		
+		font-size: large;
+	}
     #box-home {
+			position: absolute;
+			top: 45px;
+			left: 10px;
+	
       width: 32vw;
       margin: 10px 2vw; 
-      padding: 10px 10px 10px 10px;
+      padding: 10px;
       
       border: dotted 1px white;
       
@@ -79,12 +98,11 @@
       border: 1px solid white;
     }
     #select-session-descriptions {
-      padding: 10px 0px 30px 0px;
+      padding: 50px 0px 30px 0px;
       }
     #select-session-descriptions text {
       position: absolute;
       font-size: smaller;
-      word-wrap: normal;
     }
     /*#upload {
       position: absolute;
@@ -127,9 +145,15 @@
     #splash text {
     }
     /* */
-    #box-tool {
-      visibility: hidden;
-      background-color: blue;
+    #box-tool { /* Shared w/ box-home, class*/
+	  width: 32vw;
+      margin: 70px 2vw; 
+      padding: 10px 10px 10px 10px;
+      
+      border: dotted 1px white;
+      
+      font-size: large;
+	  background-color: blue;
     }
     #box-rest {
       visibility: hidden;
@@ -249,8 +273,9 @@
         <button id="next" type="button">></button>
         <button id="end-session" type="button">End session</button>
         <br>
-        <img id="tool-display" class="horizontally-centered" src="">
       </div>
+	  <img id="tool-display" class="horizontally-centered" src="">
+	  
       <div id="box-rest">
         <text id="rest-message" class="horizontally-centered">Rest for a bit.</text>
         <img id="rest-display" class="horizontally-centered" src="">
@@ -267,8 +292,11 @@
     <script type="text/javascript">
     "use strict;"
     // (here, 1 day
+	// change boxes to abs pos so they're always in the same place
+	// box-display
     // side timer box layout + circular |
-    // make sure summary page looks ok
+    // make sure summary page looks ok |
+	// fix file upload button
     // color: https://www.webdesignerdepot.com/2009/12/how-to-get-a-professional-look-with-color/
     // host on pages
     let PRESET = {'30minLoA': [[0, 0, 30], [0, 0, 30], [0, 0, 30], [0, 0, 30],
@@ -344,16 +372,60 @@
       }
     };
     
-    {
-      let boxes = ['home', 'tool', 'rest', 'finish'];
-      function d_displayBox(box) {
-        boxes.forEach((str)=>{
-          setVisible('box-' + str, false);
-        });
-        
-        setVisible('box-' + box, true);
-      }
-    }
+	{
+		let boxes = [
+			'home',
+			'tool',
+			'rest',
+			'finish'
+		],
+			boxElementState = {
+			'home': {
+				'session-simple-config': 'visible',
+				'session-class-config': 'hidden',
+				'session-simple-description': 'visible',
+				'session-class-description': 'hidden'
+			},
+			'tool': {},
+			'rest': {},
+			'finish': {}
+		};
+		
+		function displayBox(box) {
+			boxes.forEach((name)=>{
+				if (name !== box) {
+					setBoxVisible(name, false);
+				}
+			});
+			setBoxVisible(box, true);
+			print(boxElementState['home']);
+		}
+		
+		function setBoxVisible(box, state) {
+			setVisible('box-' + box, state);
+			
+			let elements = Object.keys(boxElementState[box]);
+			if (elements) {
+				// boxElState here
+				if (state === false) {
+					elements.forEach((id)=>{
+						boxElementState[box][id] = $(id).style.visibility;
+						setVisible(id, false);
+					});
+				}
+				else {
+					elements.forEach((id)=>{
+						if (boxElementState[box][id] === 'visible') {
+							setVisible(id, true);
+						}
+						else {
+							setVisible(id, false);
+						}
+					});
+				}
+			}
+		}
+	}
     
     $('session-start').onclick = ()=>{
       {//clear thumbnails
@@ -382,7 +454,7 @@
       
       print('Config: ' + CONFIG);
       // Switch from the home box.
-      d_displayBox('tool');
+      displayBox('tool');
       
       // Display an image to start.
       gotoBlock(getNextBlock());
@@ -546,7 +618,7 @@
             remaining = block;
             if (from === 'same' || from === 'rest') {
               print(11);
-              d_displayBox('tool');
+              displayBox('tool');
               stopTimer();
             }
             else {
@@ -556,7 +628,7 @@
           else {
             // Rest box.
             print('rest');
-            d_displayBox('rest');
+            displayBox('rest');
             // Reset the timer.
             remaining = block.slice(1);
             startTimer();
@@ -568,7 +640,7 @@
           currentBlock = 0;
           d_clearRepeats();
           d_clearHistory();
-          d_displayBox('finish');
+          displayBox('finish');
         }
       }
       
@@ -625,7 +697,7 @@
     
     
     $('finish-home').onclick = ()=>{
-      d_displayBox('home');
+      displayBox('home');
     }
     
     function d_addThumbnail(path) {
