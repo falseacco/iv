@@ -16,7 +16,7 @@
     }
     .hidden {
       visibility: hidden;
-	}
+	  }
     .abs {
       position: absolute;
     }
@@ -40,17 +40,6 @@
 		font-size: large;
 	}
     #box-home {
-			position: absolute;
-			top: 45px;
-			left: 10px;
-	
-      width: 32vw;
-      margin: 10px 2vw; 
-      padding: 10px;
-      
-      border: dotted 1px white;
-      
-      font-size: large;
     }
     #box-home input[type=text] {
       padding: 5px;
@@ -104,7 +93,7 @@
       position: absolute;
       font-size: smaller;
     }
-    /*#upload {
+    #upload {
       position: absolute;
       left: -999999rem;
     }
@@ -118,7 +107,7 @@
       font-size: smaller;
       
       cursor: pointer;
-    }*/
+    }
     #session-start {
       font-family: times-new-roman;
     }
@@ -135,58 +124,18 @@
       
       border: 1px solid white;
     }
-    #splash {
-      margin: -45vh 15vw;
+    
+    #box-tool {
+      height: 20vw;
     }
-    #splash img {
-      max-width: 30vw;
-      max-height: 100vh;
-    }
-    #splash text {
-    }
-    /* */
-    #box-tool { /* Shared w/ box-home, class*/
-	  width: 32vw;
-      margin: 70px 2vw; 
-      padding: 10px 10px 10px 10px;
-      
-      border: dotted 1px white;
-      
-      font-size: large;
-	  background-color: blue;
-    }
+    
     #box-rest {
-      visibility: hidden;
-      background-color: green;
     }
+    
     #box-finish {
-      visibility: hidden;
-      background-color: orange;
     }
     #interval {
       color: DimGray;
-    }
-    #home-timer-config {
-      overflow-y: auto;
-      height: 50px;
-      background: gray;
-    }
-    #simple-config {
-      visibility: visible;
-    }
-    #simple-config input {/*obsolete?*/
-      font-family: monospace;
-    }
-    #class-config {
-      visibility: hidden;
-    }
-    .horizontally-centered {
-      position: fixed;
-      left: 50%;
-      transform: translate(-50%, 0%);
-    }
-    #tool-display {
-      max-height: 90vh;
     }
     #thumbnails {
       list-style-type: none;
@@ -204,9 +153,22 @@
     .thumbnail:hover {
     box-shadow: 0 0 2px 1px rgba(0, 140, 186, 0.5);
     }
+    #tool-timer {
+      position: absolute;
+      left: 5px;
+    }
+    #timer-circle {
+      width: 20vw;
+      height: 20vw;
+      
+      z-index: -99999;
+      background: transparent;
+      
+      border: solid 1px red;
+    }
     </style>
       <div id="title" class="visible">gtdt</div>
-      <div id="box-home" class="visible">
+      <div id="box-home" class="visible sidebar-box">
         <form>
         
         <div id="select-session-type">
@@ -249,7 +211,7 @@
             Browse...
           </label>
           <input id="upload" type="file" webkitdirectory directory multiple>
-          <text></text>
+          <text id="upload-descr"></text>
           
           <!-- tags will go here go here -->
           
@@ -260,43 +222,40 @@
           <button id="session-start" type="button" disabled>Start Session</button>
         </form>
       </div>
-      <div id="splash" class="visible" align="right">
-        <img src="">
-        <text></text>
-      </div>
       
-      <div id="box-tool">
-        <button id="prev" type="button" disabled><</button>
-        <button id="reset" type="button">reset</button>
+      <div id="box-tool" class="sidebar-box">
+        <canvas id="timer-circle"></canvas>
+        <text id="tool-timer"></text>
         <button id="start/stop" type="button">start</button>
-        <text id="tool-timer">[paused]</text>
-        <button id="next" type="button">></button>
+        <button id="reset" type="button">reset</button>
+        <!-- taglist here -->
+        <button id="prev" type="button" disabled>prev</button>
+        <button id="next" type="button">next</button>
         <button id="end-session" type="button">End session</button>
-        <br>
       </div>
-	  <img id="tool-display" class="horizontally-centered" src="">
 	  
-      <div id="box-rest">
-        <text id="rest-message" class="horizontally-centered">Rest for a bit.</text>
-        <img id="rest-display" class="horizontally-centered" src="">
-        <text id="rest-timer"></text>
-        <button id="rest-skip" type="button">Skip...</button>
-      </div>
-      <div id="box-finish">
-        <text id="finish-message">You're done! Good job</text>
-        <button id="finish-home" type="button">Home</button>
-        <button id="download" type="button">Download History</button>
-        <ul id="thumbnails"></ul>
-      </div>
+    <div id="box-rest" class="sidebar-box">
+      <text id="rest-message" class="horizontally-centered">Rest for a bit.</text>
+      <img id="rest-display" class="horizontally-centered" src="">
+      <text id="rest-timer"></text>
+      <button id="rest-skip" type="button">Skip...</button>
+    </div>
+      
+    <img id="display"></img>
+      
+    <div id="box-finish">
+      <text id="finish-message">You're done! Good job</text>
+      <button id="finish-home" type="button">Home</button>
+      <button id="download" type="button">Download History</button>
+      <ul id="thumbnails"></ul>
+    </div>
     
     <script type="text/javascript">
     "use strict;"
-    // (here, 1 day
-	// change boxes to abs pos so they're always in the same place
-	// box-display
-    // side timer box layout + circular |
+    // (here
+    // fix file upload button so it has a description again |
+	  // circular timer pretty (why isn't it a fucking circle) |
     // make sure summary page looks ok |
-	// fix file upload button
     // color: https://www.webdesignerdepot.com/2009/12/how-to-get-a-professional-look-with-color/
     // host on pages
     let PRESET = {'30minLoA': [[0, 0, 30], [0, 0, 30], [0, 0, 30], [0, 0, 30],
@@ -391,14 +350,12 @@
 			'finish': {}
 		};
 		
-		function displayBox(box) {
-			boxes.forEach((name)=>{
-				if (name !== box) {
-					setBoxVisible(name, false);
-				}
-			});
-			setBoxVisible(box, true);
-			print(boxElementState['home']);
+		function hideBox(box) {
+		  setBoxVisible(box, false);
+		}
+		
+		function showBox(box) {
+		  setBoxVisible(box, true);
 		}
 		
 		function setBoxVisible(box, state) {
@@ -454,7 +411,8 @@
       
       print('Config: ' + CONFIG);
       // Switch from the home box.
-      displayBox('tool');
+      hideBox('home');
+      showBox('tool');
       
       // Display an image to start.
       gotoBlock(getNextBlock());
@@ -476,7 +434,7 @@
         }
         else {
           pointer -= 1;
-          display(history[pointer]);
+          //display(history[pointer], 'display');
         }
         
         // After displaying a new image, there will always be at least one previous.
@@ -485,7 +443,7 @@
       
       $('prev').onclick = ()=>{
         pointer += 1;
-        display(history[pointer]);
+        //display(history[pointer], 'display');
         
         // Can't go back further than the first image.
         if ((pointer + 1) >= history.length) {
@@ -525,7 +483,7 @@
       }
       
       function newImage() {
-        a_display(rng_excludeSingle(history[0], 0, UPLOAD.length));
+        //a_display(rng_excludeSingle(history[0], 0, UPLOAD.length), 'display');
       }
       
       //function e_rng exclusive fuse with Arr above
@@ -548,14 +506,14 @@
       };
       
       function startTimer() {
-        $('start/stop').innerHTML = 'stop';
+        $('start/stop').innerHTML = 'pause';
         isPaused = false;
         // Start counting down.
         count();
       }
       
       function stopTimer() {
-        $('start/stop').innerHTML = 'start';
+        $('start/stop').innerHTML = 'resume';
         isPaused = true;
         // Save the current time left.
         remaining = stringToTime($('tool-timer').innerHTML);
@@ -583,6 +541,33 @@
         $('tool-timer').innerHTML = fn(obj);
         $('rest-timer').innerHTML = fn(obj); //bubblegum
       }
+      
+      let c = $('timer-circle'),
+          ctx = c.getContext('2d');
+      ctx.strokeStyle = 'red';
+      
+      function drawCircle(delta) {// FUCK FUCK FUCK FUCK FUCK
+        // bandaid, broadcasting when
+        ctx.clearRect(0, 0, c.width, c.height);
+        
+        let arr;
+        if (Array.isArray(CONFIG[currentBlock])) {
+          arr = CONFIG[currentBlock];
+        }
+        else {
+          arr = CONFIG;
+        }
+        let total = hourToMilli(arr[0]) + minToMilli(arr[1]) + secToMilli(arr[2]),
+            wedge = (2 - (2 * (delta / total))) - 0.5;
+        ctx.beginPath();
+        ctx.arc(100,
+                100,
+                50,
+                1.5 * Math.PI,
+                wedge * Math.PI,
+                true); //-0.5 gave full circle?
+        ctx.stroke()
+      }
 
       function count() { //pass the block to count
         // Stop previous countdown.
@@ -594,6 +579,7 @@
               arr = stringToTime(display);
           
           updateTimeDisplay(delta, milliToTime);
+          drawCircle(delta);
           remaining = arr;
           // When the timer reaches zero...
           if (delta <= 500) {
@@ -617,8 +603,8 @@
             // Reset the timer.
             remaining = block;
             if (from === 'same' || from === 'rest') {
-              print(11);
-              displayBox('tool');
+              hideBox('rest'); // separate rest case
+              showBox('tool');
               stopTimer();
             }
             else {
@@ -628,7 +614,8 @@
           else {
             // Rest box.
             print('rest');
-            displayBox('rest');
+            hideBox('tool');
+            showBox('rest');
             // Reset the timer.
             remaining = block.slice(1);
             startTimer();
@@ -640,7 +627,9 @@
           currentBlock = 0;
           d_clearRepeats();
           d_clearHistory();
-          displayBox('finish');
+          // What if it ends on rest?
+          hideBox('tool');
+          showBox('rest');
         }
       }
       
@@ -716,7 +705,7 @@
       $('thumbnails').appendChild(li);
     }
     
-    //
+    /*
     function a_display(i, canvas) {
       // Draw an image in tool mode, and archive it.
       display(i, canvas);
@@ -739,7 +728,7 @@
       
       reader.readAsDataURL(UPLOAD[i]);
     }
-    
+    */
     function init() {
       // Runs on init.
       $('session-simple').click();
