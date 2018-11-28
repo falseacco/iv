@@ -257,9 +257,9 @@
     <script type="text/javascript">
     "use strict;"
     // (here
-    // display
+		// circular timer pretty (why isn't it a fucking circle) |
     // make sure summary page looks ok |
-	  // circular timer pretty (why isn't it a fucking circle) |
+		// display |
     // color: https://www.webdesignerdepot.com/2009/12/how-to-get-a-professional-look-with-color/
     // host on pages
     let PRESET = {'30minLoA': [[0, 0, 30], [0, 0, 30], [0, 0, 30], [0, 0, 30],
@@ -443,7 +443,7 @@
         }
         else {
           pointer -= 1;
-          //display(history[pointer], 'display');
+          display(history[pointer], 'display');
         }
         
         // After displaying a new image, there will always be at least one previous.
@@ -452,7 +452,7 @@
       
       $('prev').onclick = ()=>{
         pointer += 1;
-        //display(history[pointer], 'display');
+        display(history[pointer], 'display');
         
         // Can't go back further than the first image.
         if ((pointer + 1) >= history.length) {
@@ -492,7 +492,7 @@
       }
       
       function newImage() {
-        //a_display(rng_excludeSingle(history[0], 0, UPLOAD.length), 'display');
+        a_display(rng_excludeSingle(history[0], 0, UPLOAD.length), 'display');
       }
       
       //function e_rng exclusive fuse with Arr above
@@ -714,7 +714,7 @@
       $('thumbnails').appendChild(li);
     }
     
-    /*
+    
     function a_display(i, canvas) {
       // Draw an image in tool mode, and archive it.
       display(i, canvas);
@@ -737,7 +737,7 @@
       
       reader.readAsDataURL(UPLOAD[i]);
     }
-    */
+    
     function init() {
       // Runs on init.
       $('session-simple').click();
@@ -871,7 +871,7 @@
     // 用 (bot
     // wait for image load before start timer
     // store upload.onchange.e.target.files.relativePath I had it all along
-    // upload display dir name and file count
+    // upload display dir name
     // IMAGE TAGS IMAGE TAGS + editor w/ tag template support
     // cognitive/interval drawing mode, timer only, no timer
     // settings home and rest image paths
