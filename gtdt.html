@@ -159,16 +159,42 @@
     }
     #tool-timer {
       position: absolute;
-      left: 5px;
+      top: 70px;
+      left: 90px;
+    }
+    #start-stop {
+      position: absolute;
+      top: 95px;
+      left: 65px;
+    }
+    #reset {
+      position: absolute;
+    }
+    #prev {
+      position: absolute;
+      top: 35px;
+    }
+    #next {
+      position: absolute;
+      top: 60px;
+    }
+    #end-session {
+      position: absolute;
+      top: 85px;
     }
     #timer-circle {
-      width: 20vw;
-      height: 20vw;
-      
       z-index: -99999;
-      background: transparent;
+    }
+    
+    #display {
+      /* Positioning */
+      position: absolute;
+      top: 1vh;
+      left: 50vw;
       
-      border: solid 1px red;
+      /* Appearance */
+      max-width: 50vw;
+      max-height: 98vh;
     }
     </style>
       <div id="title" class="visible">gtdt</div>
@@ -228,9 +254,9 @@
       </div>
       
       <div id="box-tool" class="sidebar-box">
-        <canvas id="timer-circle"></canvas>
+        <canvas id="timer-circle" width=200 height=200></canvas>
         <text id="tool-timer"></text>
-        <button id="start/stop" type="button">start</button>
+        <button id="start-stop" type="button">start</button>
         <button id="reset" type="button">reset</button>
         <!-- taglist here -->
         <button id="prev" type="button" disabled>prev</button>
@@ -245,7 +271,7 @@
       <button id="rest-skip" type="button">Skip...</button>
     </div>
       
-    <img id="display"></img>
+    <img id="display" class="visible"></img>
       
     <div id="box-finish">
       <text id="finish-message">You're done! Good job</text>
@@ -256,10 +282,10 @@
     
     <script type="text/javascript">
     "use strict;"
-    // (here
-		// circular timer pretty (why isn't it a fucking circle) |
-    // make sure summary page looks ok |
-		// display |
+    // (here <-- please stop adding new tasks
+		
+		// fix summary (end session doesn't go where it's supposed to) |
+		// rework rest so it looks like tool |
     // color: https://www.webdesignerdepot.com/2009/12/how-to-get-a-professional-look-with-color/
     // host on pages
     let PRESET = {'30minLoA': [[0, 0, 30], [0, 0, 30], [0, 0, 30], [0, 0, 30],
@@ -515,14 +541,14 @@
       };
       
       function startTimer() {
-        $('start/stop').innerHTML = 'pause';
+        $('start-stop').innerHTML = 'pause';
         isPaused = false;
         // Start counting down.
         count();
       }
       
       function stopTimer() {
-        $('start/stop').innerHTML = 'resume';
+        $('start-stop').innerHTML = 'resume';
         isPaused = true;
         // Save the current time left.
         remaining = stringToTime($('tool-timer').innerHTML);
@@ -553,7 +579,8 @@
       
       let c = $('timer-circle'),
           ctx = c.getContext('2d');
-      ctx.strokeStyle = 'red';
+      ctx.strokeStyle = 'white';
+      ctx.lineWidth = 30;
       
       function drawCircle(delta) {// FUCK FUCK FUCK FUCK FUCK
         // bandaid, broadcasting when
@@ -569,9 +596,9 @@
         let total = hourToMilli(arr[0]) + minToMilli(arr[1]) + secToMilli(arr[2]),
             wedge = (2 - (2 * (delta / total))) - 0.5;
         ctx.beginPath();
-        ctx.arc(100,
-                100,
-                50,
+        ctx.arc($('timer-circle').width / 2,
+                $('timer-circle').height / 2,
+                80,
                 1.5 * Math.PI,
                 wedge * Math.PI,
                 true); //-0.5 gave full circle?
@@ -687,7 +714,7 @@
         resetTimer();
       };
       
-    $('start/stop').onclick = d_toggleTimer;
+    $('start-stop').onclick = d_toggleTimer;
     
     $('rest-skip').onclick = ()=>{
       gotoBlock(getNextBlock(), 'rest');
@@ -725,7 +752,7 @@
       // Draw an image in tool mode (mode check?)
       let reader = new FileReader();
       if (canvas === undefined) {
-        canvas = 'tool-display';
+        canvas = 'display';
       }
       
       // Update display with the new image.
@@ -876,6 +903,7 @@
     // cognitive/interval drawing mode, timer only, no timer
     // settings home and rest image paths
     // links
+    // full screen display w/ draggable hidable transparent timer
     // please refactor... (broadcast, store stuff like session-class-config)
     // custom timer formulas/classes
     </script>
