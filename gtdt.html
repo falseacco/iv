@@ -332,9 +332,12 @@
       // There are images to display, user can move on now.
       if (UPLOAD.length !== 0) {
         $disable('session-start', false);
+				// Visual feedback.
+				$('upload-descr').innerText = UPLOAD.length + ' files selected.';
       }
-      // Visual feedback.
-      $('upload-descr').innerText = UPLOAD.length + ' files selected.';
+			else {
+				$('upload-descr').innerText = 'No files selected.';
+			}
     };
     
 	{
