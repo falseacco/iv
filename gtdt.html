@@ -253,23 +253,22 @@
         </form>
       </div>
       
-      <div id="box-tool" class="sidebar-box">
+      <div id="timer" class="sidebar-box">
         <canvas id="timer-circle" width=200 height=200></canvas>
         <text id="tool-timer"></text>
-        <button id="start-stop" type="button">start</button>
-        <button id="reset" type="button">reset</button>
-        <!-- taglist here -->
-        <button id="prev" type="button" disabled>prev</button>
-        <button id="next" type="button">next</button>
+				<div id="box-tool">
+					<button id="start-stop" type="button">start</button>
+					<button id="reset" type="button">reset</button>
+					<!-- taglist here -->
+					<button id="prev" type="button" disabled>prev</button>
+					<button id="next" type="button">next</button>
+				</div>
+				<div id="box-rest" class="sidebar-box">
+					<text id="rest-message" class="horizontally-centered">Rest for a bit.</text>
+					<button id="rest-skip" type="button">Skip...</button>
+				</div>
         <button id="end-session" type="button">End session</button>
       </div>
-	  
-    <div id="box-rest" class="sidebar-box">
-      <text id="rest-message" class="horizontally-centered">Rest for a bit.</text>
-      <img id="rest-display" class="horizontally-centered" src="">
-      <text id="rest-timer"></text>
-      <button id="rest-skip" type="button">Skip...</button>
-    </div>
       
     <img id="display" class="visible"></img>
       
@@ -282,11 +281,7 @@
     
     <script type="text/javascript">
     "use strict;"
-    // (here <-- please stop adding new tasks
-		
-		// fix summary (end session doesn't go where it's supposed to) |
-		// rework rest so it looks like tool |
-    // color: https://www.webdesignerdepot.com/2009/12/how-to-get-a-professional-look-with-color/
+    // (here
     // host on pages
     let PRESET = {'30minLoA': [[0, 0, 30], [0, 0, 30], [0, 0, 30], [0, 0, 30],
                                 [0, 0, 30], [0, 0, 30], [0, 0, 30], [0, 0, 30],
@@ -375,13 +370,22 @@
 		],
 			boxElementState = {
 			'home': {
+				'box-home': 'visible',
 				'session-simple-config': 'visible',
 				'session-class-config': 'hidden',
 				'session-simple-description': 'visible',
 				'session-class-description': 'hidden'
 			},
-			'tool': {},
-			'rest': {},
+			'tool': {
+				'timer-circle': 'visible',
+				'tool-timer': 'visible',
+				'box-tool': 'visible'
+			},
+			'rest': {
+				'timer-circle': 'visible',
+				'tool-timer': 'visible',
+				'box-rest': 'visible'
+			},
 			'finish': {}
 		};
 		
@@ -394,8 +398,6 @@
 		}
 		
 		function setBoxVisible(box, state) {
-			setVisible('box-' + box, state);
-			
 			let elements = Object.keys(boxElementState[box]);
 			if (elements) {
 				// boxElState here
@@ -574,7 +576,7 @@
       
       function updateTimeDisplay(obj, fn) {
         $('tool-timer').innerHTML = fn(obj);
-        $('rest-timer').innerHTML = fn(obj); //bubblegum
+        //$('rest-timer').innerHTML = fn(obj); //bubblegum
       }
       
       let c = $('timer-circle'),
@@ -907,11 +909,15 @@
     // wait for image load before start timer
     // store upload.onchange.e.target.files.relativePath I had it all along
     // upload display dir name
-    // IMAGE TAGS IMAGE TAGS + editor w/ tag template support
-    // cognitive/interval drawing mode, timer only, no timer
-    // settings home and rest image paths
+		// settings home and rest image paths
     // links
-    // full screen display w/ draggable hidable transparent timer
+		// cognitive/interval drawing mode (edit timer btn), timer only, no timer
+		// full screen display w/ draggable hidable transparent timer
+		// IMAGE TAGS IMAGE TAGS + editor w/ tag template support
+		// try to make it look good, again
+			// layout
+			// color: https://www.webstyleguide.com/wsg3/7-page-design/3-visual-design.html
+			// color2: https://www.webdesignerdepot.com/2009/12/how-to-get-a-professional-look-with-color/
     // please refactor... (broadcast, store stuff like session-class-config)
     // custom timer formulas/classes
     </script>
