@@ -190,7 +190,7 @@
       /* Positioning */
       position: absolute;
       top: 1vh;
-      left: 50vw;
+      left: 40vw;
       
       /* Appearance */
       max-width: 50vw;
@@ -627,6 +627,7 @@
       // It doesn't really need to take args
       function gotoBlock (block, from, suppressNewDisplay) {
         // brings a timer to a block
+				print(block);
         if (block.constructor === Array) { // is a time block
           if (block.length === 3) { // standard time block
             //if (from === 'same' || from.length === 3) {
@@ -665,7 +666,8 @@
           d_clearHistory();
           // What if it ends on rest?
           hideBox('tool');
-          showBox('rest');
+					hideBox('rest');
+          showBox('finish');
         }
       }
       
@@ -732,15 +734,21 @@
       // Styling
       img.className = 'thumbnail';
       // Link-click-display
-      a.setAttribute('target', '_blank');
-      a.setAttribute('href', path); // this lags a bit, why?
-      // Display
+      //a.setAttribute('target', '_blank');
+      //a.setAttribute('href', path); // this lags a bit sometimes, why?
+      a.addEventListener('click', ()=>{
+				displayThumb(path);
+			});
+			// Display
       img.setAttribute('src', path);
       a.appendChild(img);
       li.appendChild(a);
       $('thumbnails').appendChild(li);
     }
     
+		function displayThumb(path) {
+			$('display').src = path;
+		}
     
     function a_display(i, canvas) {
       // Draw an image in tool mode, and archive it.
