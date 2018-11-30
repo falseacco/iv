@@ -1,9 +1,927 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
   <head>
-    <!--<meta http-equiv="refresh" content="0; url=http://prlosh.github.io/gtdt.html" />-->
+    <meta charset="utf-8">
+    <title>gtdt</title>
   </head>
-	<body>
-		<p>hi</p>
-	</body>
+  <body>
+  <style>
+    body {
+      visibility: hidden;
+      color: white;
+      background-color: rgb(20, 20, 20);
+    }
+    .visible {
+      visibility: visible;
+    }
+    .hidden {
+      visibility: hidden;
+	  }
+    .abs {
+      position: absolute;
+    }
+    #title {
+      font-size: xx-large;
+      margin-left: 3vw;
+    }
+	.sidebar-box {
+		/* Positioning */
+		position: absolute;
+		top: 45px;
+		left: 10px;
+		
+		/* Appearance */
+		width: 32vw;
+		margin: 10px 2vw;
+		padding: 10px;
+		
+		border: dotted 1px white;
+		
+		font-size: large;
+	}
+    #box-home {
+    }
+    #box-home input[type=text] {
+      padding: 5px;
+      border: solid 1px white;
+      
+      color: white;
+      background-color: rgb(40, 40, 40);
+      
+      font-size: x-large;
+      font-family: monospace;
+    }
+    #select-session-type {/* rename this to session-static config or something*/
+      margin: 5px 0px 15px 5px;
+    }
+    #select-session-type input[type=radio] {
+      display: none;
+    }
+    #select-session-type label {
+      color: lightblue;
+      
+      padding: 4px;
+      cursor: pointer;
+    }
+    #select-session-type input[type=radio]:checked+label {
+      color: white;
+      background-color: rgb(40, 40, 40);
+      
+      border: solid 1px white;
+    }
+    #session-class-config-container {
+      position: relative;
+    }
+    #session-class-config {
+      position: absolute;
+      margin-top: -30px;
+      
+      /*
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      text-indent: 1px;
+      text-overflow: '';*/
+      
+      color: white;
+      background-color: rgb(40, 40, 40);
+      border: 1px solid white;
+    }
+    #select-session-descriptions {
+      padding: 50px 0px 30px 0px;
+      }
+    #select-session-descriptions text {
+      position: absolute;
+      font-size: smaller;
+    }
+    #upload {
+      position: absolute;
+      left: -999999rem;
+    }
+    .custom-file-upload {
+      color: white;
+      background-color: rgb(40, 40, 40);
+      
+      border: 1px solid white;
+      padding: 3px 6px;
+      
+      font-size: smaller;
+      
+      cursor: pointer;
+    }
+    #upload-descr {
+      padding-left: 10px;
+      font-size: smaller;
+    }
+    #session-start {
+      font-family: times-new-roman;
+    }
+    #session-start:disabled {
+      color: lightblue;
+      background-color: rgb(20, 20, 20);
+      
+      border: none;
+    }
+    #session-start:enabled {
+    /* Probably make a class for all the stuff that looks like this. */
+      color: white;
+      background-color: rgb(40, 40, 40);
+      
+      border: 1px solid white;
+    }
+    
+    #box-tool {
+      height: 20vw;
+    }
+    
+    #box-rest {
+    }
+    
+    #box-finish {
+    }
+    #interval {
+      color: DimGray;
+    }
+    #thumbnails {
+      list-style-type: none;
+    }
+    #thumbnails > li {
+      display: inline-block;
+    }
+    .thumbnail {
+      height: 20vh;
+      margin: 5px;
+      border: 1px solid #ddd;
+      border-radius: 2px;
+      padding: 5px;
+    }
+    .thumbnail:hover {
+    box-shadow: 0 0 2px 1px rgba(0, 140, 186, 0.5);
+    }
+    #tool-timer {
+      position: absolute;
+      top: 70px;
+      left: 90px;
+    }
+    #start-stop {
+      position: absolute;
+      top: 95px;
+      left: 65px;
+    }
+    #reset {
+      position: absolute;
+    }
+    #prev {
+      position: absolute;
+      top: 35px;
+    }
+    #next {
+      position: absolute;
+      top: 60px;
+    }
+    #end-session {
+      position: absolute;
+      top: 85px;
+    }
+    #timer-circle {
+      z-index: -99999;
+    }
+    
+    #display {
+      /* Positioning */
+      position: absolute;
+      top: 1vh;
+      left: 40vw;
+      
+      /* Appearance */
+      max-width: 50vw;
+      max-height: 98vh;
+    }
+    </style>
+      <div id="title" class="visible">gtdt</div>
+      <div id="box-home" class="visible sidebar-box">
+        <form>
+        
+        <div id="select-session-type">
+          <input id="session-simple" type="radio" name="radio" value="simple">
+          <label for="session-simple">Static</label>
+          <input id="session-class" type="radio" name="radio" value="class">
+          <label for="session-class">Class Preset</label>
+        </div>
+          
+          <div id="session-config" class="abs">
+            <div id="session-simple-config" class="visible">
+              <input id="timer-hr" type="text" size="2" maxlength="2"> :
+              <input id="timer-min" type="text" size="2" maxlength="2"> :
+              <input id="timer-sec" type="text" size="2" maxlength="2">
+            </div>
+          
+            <div id="session-class-config-container">
+              <select id="session-class-config">
+                <option value="30minLoA">30 min. (Line of Action)</option>
+                <option value="1hrLoA">1 hour (Line of Action)</option>
+                <option value="2hrLoA">2 hour (Line of Action)</option>
+                <option value="3hrLoA">3 hour (Line of Action)</option>
+                <option value="6hrLoA">6 hour (Line of Action)</option>
+              </select>
+            </div>
+          </div>
+
+          <div id="select-session-descriptions" class="hidden">
+            <text id="session-simple-description" class="visible">
+              Each image is displayed for the same amount of time.</text>
+            <text id="session-class-description">
+              The time each image is displayed gradually increases.</text>
+          </div>
+
+          <!-- some sort of division here -->
+          <br>
+
+
+          <label id="label-for-upload" for="upload" class="custom-file-upload">
+            Browse...
+          </label>
+          <input id="upload" type="file" webkitdirectory directory multiple>
+          <text id="upload-descr"></text>
+          
+          <!-- tags will go here go here -->
+          
+          <!-- another division here -->
+          
+          <br>
+          <br>
+          <button id="session-start" type="button" disabled>Start Session</button>
+        </form>
+      </div>
+      
+      <div id="timer" class="sidebar-box">
+        <canvas id="timer-circle" width=200 height=200></canvas>
+        <text id="tool-timer"></text>
+				<div id="box-tool">
+					<button id="start-stop" type="button">start</button>
+					<button id="reset" type="button">reset</button>
+					<!-- taglist here -->
+					<button id="prev" type="button" disabled>prev</button>
+					<button id="next" type="button">next</button>
+				</div>
+				<div id="box-rest" class="sidebar-box">
+					<text id="rest-message" class="horizontally-centered">Rest for a bit.</text>
+					<button id="rest-skip" type="button">Skip...</button>
+				</div>
+        <button id="end-session" type="button">End session</button>
+      </div>
+      
+    <img id="display" class="visible"></img>
+      
+    <div id="box-finish">
+      <text id="finish-message">You're done! Good job</text>
+      <button id="finish-home" type="button">Home</button>
+      <button id="download" type="button">Download History</button>
+      <ul id="thumbnails"></ul>
+    </div>
+    
+    <script type="text/javascript">
+    "use strict;"
+    // (here
+    // pages \\
+		// wait for image load before start timer |
+    // store upload.onchange.e.target.files.relativePath I had it all along |
+    // upload display dir name |
+		// display and thumbnails display image name |
+		// settings home and rest image paths |
+    // links btn only |
+    let PRESET = {'30minLoA': [[0, 0, 30], [0, 0, 30], [0, 0, 30], [0, 0, 30],
+                                [0, 0, 30], [0, 0, 30], [0, 0, 30], [0, 0, 30],
+                                [0, 0, 30], [0, 0, 30], [0, 1, 0], [0, 1, 0],
+                                [0, 1, 0], [0, 1, 0], [0, 1, 0], [0, 5, 0],
+                                [0, 5, 0], [0, 10, 0], 'finish'],
+                   '1hrLoA': [[0, 0, 30], [0, 0, 30], [0, 0, 30], [0, 0, 30],
+                                [0, 0, 30], [0, 0, 30], [0, 0, 30], [0, 0, 30],
+                                [0, 0, 30], [0, 0, 30], [0, 1, 0], [0, 1, 0],
+                                [0, 1, 0], [0, 1, 0], [0, 1, 0], [0, 5, 0],
+                                [0, 5, 0], [0, 10, 0], ['rest', 0, 5, 0],
+                              [0, 25, 0], 'finish'],
+                   '2hrLoA': [[0, 0, 30], [0, 0, 30], [0, 0, 30], [0, 0, 30],
+                              [0, 0, 30], [0, 0, 30], [0, 1, 0], [0, 1, 0],
+                              [0, 1, 0], [0, 5, 0], [0, 5, 0], [0, 10, 0],
+                              [0, 10, 0], [0, 20, 0], ['rest', 0, 14, 0],
+                              [0, 50, 0], 'finish'],
+                   '3hrLoA': [[0, 0, 30], [0, 0, 30], [0, 0, 30], [0, 0, 30],
+                              [0, 0, 30], [0, 0, 30], [0, 0, 30], [0, 0, 30],
+                              [0, 0, 30], [0, 0, 30], [0, 1, 0], [0, 1, 0],
+                              [0, 1, 0], [0, 1, 0], [0, 1, 0], [0, 5, 0],
+                              [0, 5, 0], [0, 10, 0], [0, 20, 0],
+                              ['rest', 0, 10, 0], [0, 30, 0], [0, 30, 0],
+                              ['rest', 0, 10, 0], [0, 50, 0], 'finish'],
+                   '6hrLoA': [[0, 0, 30], [0, 0, 30], [0, 0, 30], [0, 0, 30],
+                              [0, 0, 30], [0, 0, 30], [0, 0, 30], [0, 0, 30],
+                              [0, 0, 30], [0, 0, 30], [0, 1, 0], [0, 1, 0],
+                              [0, 1, 0], [0, 1, 0], [0, 1, 0], [0, 5, 0],
+                              [0, 5, 0], [0, 10, 0], [0, 20, 0],
+                              ['rest', 0, 10, 0], [0, 30, 0], [0, 30, 0],
+                              ['rest', 0, 10, 0], [0, 50, 0],
+                              ['rest', 0, 45, 0], [0, 0, 30], [0, 0, 30],
+                              [0, 0, 30], [0, 0, 30], [0, 0, 30], [0, 0, 30],
+                              [0, 1, 0], [0, 1, 0], [0, 1, 0], [0, 1, 0],
+                              [0, 5, 0], [0, 5, 0], [0, 5, 0], [0, 10, 0],
+                              [0, 45, 0], ['rest', 0, 10, 0], [1, 50, 0],
+                              'finish']
+                   },
+        SESSION_TYPE = 'simple',
+        CONFIG = [],
+        UPLOAD = [];
+        
+    // Home ui
+    function setVisible(id, value) {
+      $(id).style.visibility = value ? 'visible' : 'hidden';
+    }
+    
+    $('session-simple').onclick = ()=>{
+      // will want a fun for this when you add new modes
+      SESSION_TYPE = 'simple';
+      setVisible('session-simple-config', true);
+      setVisible('session-simple-description', true);
+      
+      setVisible('session-class-config', false);
+      setVisible('session-class-description', false);
+    };
+    
+    $('session-class').onclick = ()=>{
+      SESSION_TYPE = 'class';
+      setVisible('session-class-config', true);
+      setVisible('session-class-description', true);
+      
+      setVisible('session-simple-config', false);
+      setVisible('session-simple-description', false);
+    };
+    
+    $('upload').onchange = (e)=>{
+      UPLOAD = Array.from($('upload').files);
+      // There are images to display, user can move on now.
+      if (UPLOAD.length !== 0) {
+        $disable('session-start', false);
+				// Visual feedback.
+				$('upload-descr').innerText = UPLOAD.length + ' files selected.';
+      }
+			else {
+				$('upload-descr').innerText = 'No files selected.';
+			}
+    };
+    
+	{
+		let boxes = [
+			'home',
+			'tool',
+			'rest',
+			'finish'
+		],
+			boxElementState = {
+			'home': {
+				'box-home': 'visible',
+				'session-simple-config': 'visible',
+				'session-class-config': 'hidden',
+				'session-simple-description': 'visible',
+				'session-class-description': 'hidden'
+			},
+			'tool': {
+				'timer-circle': 'visible',
+				'tool-timer': 'visible',
+				'box-tool': 'visible'
+			},
+			'rest': {
+				'timer-circle': 'visible',
+				'tool-timer': 'visible',
+				'box-rest': 'visible'
+			},
+			'finish': {}
+		};
+		
+		function hideBox(box) {
+		  setBoxVisible(box, false);
+		}
+		
+		function showBox(box) {
+		  setBoxVisible(box, true);
+		}
+		
+		function setBoxVisible(box, state) {
+			let elements = Object.keys(boxElementState[box]);
+			if (elements) {
+				// boxElState here
+				if (state === false) {
+					elements.forEach((id)=>{
+						boxElementState[box][id] = $(id).style.visibility;
+						setVisible(id, false);
+					});
+				}
+				else {
+					elements.forEach((id)=>{
+						if (boxElementState[box][id] === 'visible') {
+							setVisible(id, true);
+						}
+						else {
+							setVisible(id, false);
+						}
+					});
+				}
+			}
+		}
+	}
+    
+    $('session-start').onclick = ()=>{
+      {//clear thumbnails
+        let ul = $('thumbnails');
+        while(ul.firstChild) {
+          ul.removeChild(ul.firstChild);
+        }
+      }
+      // Set vars and print for debug.
+      if ($('session-simple').checked) {
+        SESSION_TYPE = 'simple';
+      }
+      else {
+        SESSION_TYPE = 'class';
+      }
+      print('Session: ' + SESSION_TYPE);
+      
+      if (SESSION_TYPE === 'simple') {
+        CONFIG[0] = Number($('timer-hr').value);
+        CONFIG[1] = Number($('timer-min').value);
+        CONFIG[2] = Number($('timer-sec').value);
+      }
+      else {
+        CONFIG = PRESET[$('session-class-config').value];
+      }
+      
+      print('Config: ' + CONFIG);
+      // Switch from the home box.
+      hideBox('home');
+      showBox('tool');
+      
+      // Display an image to start.
+      gotoBlock(getNextBlock());
+    };
+    
+    // ui
+    $('end-session').onclick = ()=>{
+      gotoBlock('finish');
+    };
+    {
+      let repeats = [], // Record of previously displayed images, resets.
+          history = [], // Same as above, does not reset.
+          pointer = 0; // Current location in history, 0 is most recent.
+
+      $('next').onclick = ()=>{
+        if (pointer === 0) {
+          //display new
+          gotoBlock(getNextBlock(), 'placeholder');
+        }
+        else {
+          pointer -= 1;
+          display(history[pointer], 'display');
+        }
+        
+        // After displaying a new image, there will always be at least one previous.
+        $disable('prev', false);
+      };
+      
+      $('prev').onclick = ()=>{
+        pointer += 1;
+        display(history[pointer], 'display');
+        
+        // Can't go back further than the first image.
+        if ((pointer + 1) >= history.length) {
+          $disable('prev', true);
+        }
+      };
+      
+      function archive(i) {
+        addToRepeats(i);
+        addToHistory(i);
+      }
+      
+      function addToRepeats(i) {
+        repeats.unshift(i);
+      }
+      
+      function addToHistory(i) {
+        history.unshift(i);
+      }
+      
+      function d_clearRepeats() {
+        repeats.length = 0;
+      }
+      
+      function d_clearHistory() {
+        history.length = 0;
+      }
+      
+      function rng_excludeSingle(exclude, min, range) {
+        while (true) {
+          let i = rng(min, UPLOAD.length);
+          
+          if (i !== exclude) {
+            return i;
+          }
+        }
+      }
+      
+      function newImage() {
+        a_display(rng_excludeSingle(history[0], 0, UPLOAD.length), 'display');
+      }
+      
+      //function e_rng exclusive fuse with Arr above
+    }
+    
+    {
+      let remaining, // Time left to count down.
+          isPaused = true,
+          currentBlock = 0, // ...
+          goal, // ...
+          i; // Holds the async timer's lambda.
+          
+      function d_toggleTimer() {
+        if(isPaused) {
+          startTimer();
+        }
+        else {
+          stopTimer();
+        }
+      };
+      
+      function startTimer() {
+        $('start-stop').innerHTML = 'pause';
+        isPaused = false;
+        // Start counting down.
+        count();
+      }
+      
+      function stopTimer() {
+        $('start-stop').innerHTML = 'resume';
+        isPaused = true;
+        // Save the current time left.
+        remaining = stringToTime($('tool-timer').innerHTML);
+        // Stop counting.
+        clearInterval(i);
+      }
+      
+      function foo(currentBlockIndex) { //well shit
+        let blockMaybe = CONFIG[currentBlockIndex];
+        if (blockMaybe.constructor === Array) {
+          return blockMaybe;
+        }
+        else {
+          return CONFIG;
+        }
+      }
+      
+      function resetTimer() {
+        stopTimer(); //bubblegum
+        gotoBlock(foo(currentBlock), 'same', true);
+        updateTimeDisplay(foo(currentBlock), timeToString);
+      }
+      
+      function updateTimeDisplay(obj, fn) {
+        $('tool-timer').innerHTML = fn(obj);
+        //$('rest-timer').innerHTML = fn(obj); //bubblegum
+      }
+      
+      let c = $('timer-circle'),
+          ctx = c.getContext('2d');
+      ctx.strokeStyle = 'white';
+      ctx.lineWidth = 30;
+      
+      function drawCircle(delta) {// FUCK FUCK FUCK FUCK FUCK
+        // bandaid, broadcasting when
+        ctx.clearRect(0, 0, c.width, c.height);
+        
+        let arr;
+        if (Array.isArray(CONFIG[currentBlock])) {
+          arr = CONFIG[currentBlock];
+        }
+        else {
+          arr = CONFIG;
+        }
+        let total = hourToMilli(arr[0]) + minToMilli(arr[1]) + secToMilli(arr[2]),
+            wedge = (2 - (2 * (delta / total))) - 0.5;
+        ctx.beginPath();
+        ctx.arc($('timer-circle').width / 2,
+                $('timer-circle').height / 2,
+                80,
+                1.5 * Math.PI,
+                wedge * Math.PI,
+                true); //-0.5 gave full circle?
+        ctx.stroke()
+      }
+
+      function count() { //pass the block to count
+        // Stop previous countdown.
+        clearInterval(i);
+        goal = getGoal(remaining || getNextBlock());
+        i = setInterval(function() {
+          let delta = goal - Date.now(),
+              display = milliToTime(delta),
+              arr = stringToTime(display);
+          
+          updateTimeDisplay(delta, milliToTime);
+          drawCircle(delta);
+          remaining = arr;
+          // When the timer reaches zero...
+          if (delta <= 500) {
+            gotoBlock(getNextBlock(), currentBlock);
+          }
+        }, 225);
+      }
+      
+      // It doesn't really need to take args
+      function gotoBlock (block, from, suppressNewDisplay) {
+        // brings a timer to a block
+				print(block);
+        if (block.constructor === Array) { // is a time block
+          if (block.length === 3) { // standard time block
+            //if (from === 'same' || from.length === 3) {
+            //  print(11);
+            //}
+            // Display a new image.
+            if (!suppressNewDisplay) {
+              newImage();
+            }
+            // Reset the timer.
+            remaining = block;
+            if (from === 'same' || from === 'rest') {
+              hideBox('rest'); // separate rest case
+              showBox('tool');
+              stopTimer();
+            }
+            else {
+              startTimer();
+            }
+          }
+          else {
+            // Rest box.
+            print('rest');
+            hideBox('tool');
+            showBox('rest');
+            // Reset the timer.
+            remaining = block.slice(1);
+            startTimer();
+          }
+        }
+        else {
+          // finish box
+          print('finish');
+          currentBlock = 0;
+          d_clearRepeats();
+          d_clearHistory();
+          // What if it ends on rest?
+          hideBox('tool');
+					hideBox('rest');
+          showBox('finish');
+        }
+      }
+      
+      function getNextBlock () {
+        // get the next block of time | pop off
+        if (SESSION_TYPE === 'simple') {
+          return CONFIG;
+        }
+        else { // class type
+          currentBlock += 1;
+          return CONFIG[currentBlock];
+        }
+      }
+      
+      function set(arr) {
+        // uuhh wait rename this | it's more like find next time block?
+        if (!arr) {
+          remaining = CONFIG; // will have to accomodate 2d arrays
+        }
+        else { // remaining has been set to something
+          print('not');
+          remaining = arr;
+        }
+        
+        goal = getGoal(remaining);
+      }
+      
+      function getGoal(arr) {
+        // time to count from now milli
+        let sum = Date.now();
+        if(arr.length === 3) { // could prevent this by listing seconds first or just reversing the arr you idiot
+          return sum +
+                (hourToMilli(arr[0]) || 0) +
+                (minToMilli(arr[1]) || 0) +
+                (secToMilli(arr[2] + 1) || 0);
+        }
+        else {
+          return sum + 
+                (minToMilli(arr[0]) || 0) +
+                (secToMilli(arr[1]) || 0);
+        }
+      }
+    }
+    
+    $('reset').onclick = ()=>{
+        resetTimer();
+      };
+      
+    $('start-stop').onclick = d_toggleTimer;
+    
+    $('rest-skip').onclick = ()=>{
+      gotoBlock(getNextBlock(), 'rest');
+    };
+    
+    
+    $('finish-home').onclick = ()=>{
+      displayBox('home');
+    }
+    
+    function d_addThumbnail(path) {
+      let li = document.createElement('li'),
+          a = document.createElement('a'),
+          img = document.createElement('img');
+      // Styling
+      img.className = 'thumbnail';
+      // Link-click-display
+      //a.setAttribute('target', '_blank');
+      //a.setAttribute('href', path); // this lags a bit sometimes, why?
+      a.addEventListener('click', ()=>{
+				displayThumb(path);
+			});
+			// Display
+      img.setAttribute('src', path);
+      a.appendChild(img);
+      li.appendChild(a);
+      $('thumbnails').appendChild(li);
+    }
+    
+		function displayThumb(path) {
+			$('display').src = path;
+		}
+    
+    function a_display(i, canvas) {
+      // Draw an image in tool mode, and archive it.
+      display(i, canvas);
+      archive(i);
+    }
+    
+    function display(i, canvas) { // change name to read image or something
+      // Draw an image in tool mode (mode check?)
+      let reader = new FileReader();
+      if (canvas === undefined) {
+        canvas = 'display';
+      }
+      
+      // Update display with the new image.
+      reader.onload = (e)=>{
+        let path = e.target.result;
+        $(canvas).src = path; // display fun
+        d_addThumbnail(path); // make a broadcasting sys when you refactor
+      };
+      
+      reader.readAsDataURL(UPLOAD[i]);
+    }
+    
+    function init() {
+      // Runs on init.
+      $('session-simple').click();
+      $('timer-hr').value = '00';
+      $('timer-min').value = '10';
+      $('timer-sec').value = '00';
+      
+      $('upload').onchange(); // keep old dir after reload
+      
+      $disable('prev', true); // if they reload and start again
+      print(0);
+    }
+    
+    function print(x) {
+      console.log(x);
+    }
+    
+    function $(str) {
+      let firstChar = str[0];
+      
+      if (firstChar === '.') {
+        return document.getElementsByClassName(str.slice(1));
+      }
+      else {
+        return document.getElementById(str);
+      }
+    }
+    
+    function $disable(str, state) {
+      $(str).disabled = state;
+    }
+    
+    function rng(min, range) {
+      // Don't use a negative range.
+      return Math.floor((Math.random() * range) + min);
+    }
+    
+    // Timer utils, move, shouldn't need more than one toTime fun
+    function stringToTime(str) {
+      return str.split(':').map(Number);
+    }
+      
+    function timeToString(arr) {
+      if (arr[0] === 0) {
+        return arr[1] + ':' + padNum(arr[2]);
+      }
+      else {
+        return arr[0] + ':' + padNum(arr[1]) + ':' + padNum(arr[2]);
+      }
+    }
+    
+    function milliToTime(n) {//messy
+      let rawSeconds = Math.floor(n / 1000),
+        hours = Math.floor(rawSeconds / 3600),
+        minutes = Math.floor((rawSeconds - (hours * 3600)) / 60),
+        seconds = rawSeconds - (hours * 3600) - (minutes * 60);
+        
+      if (hours === 0) {
+        return minutes + ':' + padNum(seconds);
+      }
+      else {
+        return hours + ':' + padNum(minutes) + ':' + padNum(seconds);
+      }
+    }
+    
+    function padNum(n) {
+      if (n < 10) {
+        return '0' + n;
+      }
+      else {
+        return n;
+      }
+    }
+    
+    function secToMilli(n) {
+      return n * 1000;
+    }
+    
+    function minToMilli(n) {
+      return secToMilli(n * 60);
+    }
+    
+    function hourToMilli(n) {
+      return minToMilli(n * 60);
+    }
+    
+    /*
+    function filter() {
+      //...
+      selectFrom = library.slice();
+      if (selectedTags.length > 0) {
+        //...
+        let offset = 0;
+        for (let i = 0; i < library.length; i += 1) {
+          let obj = library[i],
+            objTags = obj[1];
+          for (let q = 0; q < selectedTags.length; q += 1) {
+            let currTag = selectedTags[q];
+            if (objTags.indexOf(currTag) === -1) {
+              selectFrom.splice(i - offset, 1);
+              offset += 1;
+            }
+          }
+        }
+      }
+      broadcast('filter');
+    
+    }
+    
+    // crappy workaround that doesn't even work, spend more time on this later
+    $('select-tags-input').oninput = (e) => {
+      if ($('select-tags-input').value.slice(-1) === ' ') {
+        $('select-tags').innerHTML = '';
+        for (let i = 0; i < tags.length; i += 1) {
+          let tag = tags[i];
+          $('select-tags').innerHTML += '<option value="' + $('select-tags-input').value + tag + ' ">';
+        }
+        tags = $('select-tags-input').value.split(' ');
+        filter();
+      }
+    }
+    
+    // onclick link update state put everything in the right place - css
+    $('tags').onclick = (e) => {
+      print(e.explicitOriginalTarget.textContent);
+    }
+    */
+    
+    init();
+    
+    // 用 (bot
+		// cognitive/interval drawing mode (edit timer btn), timer only, no timer
+		// full screen display w/ draggable hidable transparent timer
+		// IMAGE TAGS IMAGE TAGS + editor w/ tag template support
+		// try to make it look good, again
+			// layout
+			// color: https://www.webstyleguide.com/wsg3/7-page-design/3-visual-design.html
+			// color2: https://www.webdesignerdepot.com/2009/12/how-to-get-a-professional-look-with-color/
+		// fill out links section
+    // please refactor... (broadcast, store stuff like session-class-config)
+    // custom timer formulas/classes
+    </script>
+  </body>
 </html>
