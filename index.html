@@ -6,24 +6,14 @@
   </head>
   <body>
 		<style>
-			#title {
-				z-index: -2;
-				color: lightsteelblue;
-			}
-			
 			#box {
 				border: 1px solid lightgray;
 				display: inline-block;
-				padding: 20px 5px 5px 5px;
-			}
-			
-			#upload {
-				max-width: 205px;
+				padding: 20px 0px 5px 5px;
+				margin-top: 60px;
 			}
 			
 			#display {
-				/* Don't cover up anything else. */
-				z-index: -1;
 				/* Take up the whole page. */
 				position: absolute;
 				top: 0;
@@ -31,18 +21,22 @@
 				height: 100%;
 				width: 100%;
 				background-size: auto 100%;
+				/* Don't cover up anything else. */
+				z-index: -1;
 				/* Center the background image. */
 				background-position: center;
 				/* Don't use the image as a tile. */
 				background-repeat: no-repeat;
 			}
 		</style>
-		<h1 id="title">iv</h1>
 		
 		<div id="box">
 		  <input id="upload" type="file" webkitdirectory directory multiple><br>
+		  <br>
 			<a id="previous" href="#/">previous</a>
 			<a id="next" href="#/">next</a>
+			<text id="filename"></text><br>
+			<input id="file-order-chooser" type="checkbox">Display in file order
 		</div>
 			
 		<div id="display"></div>
@@ -79,17 +73,25 @@
 			}
 			
 			{
-				let upload = [],
-						currentIndex;
+				let upload = [],  //
+				    history = [], //
+						pointer = 0;  //
+			
+			  function d_archive(n) {
+			    return history.unshift(n);
+			  }
+			  
+			  function fetchHistory(pointer) {
+			    return upload[history[pointer]];
+			  }
 			
 				function randomIndex() {
 					return random(0, upload.length);
 				}
 				
 				function d_displayRandom() {
-					let i = randomIndex();
+				  let i = randomIndex();
 					d_display(upload[i]);
-					currentIndex = i;
 					return i;
 				}
 			
@@ -98,23 +100,39 @@
 					upload = Array.from($('upload').files);
 					
 					if (upload.length !== 0) {
-						d_displayRandom();
+						d_archive(d_displayRandom());
 					};
 				}
 				
 				$('previous').onclick = ()=>{
-					print(0);
+				  if (pointer >= 0 && pointer < (history.length - 1)) {
+				    pointer += 1;
+				    d_display(fetchHistory(pointer));
+				  }
 				}
 				
-				$('next').onclick = ()=>{ // currentIndex should be rel. to history
-					d_displayRandom();
-					print(1);
+				$('next').onclick = ()=>{
+				  if (pointer !== 0) {
+				    // Display the next image in historical order.
+				    pointer -= 1;
+				    d_display(fetchHistory(pointer));
+				  }
+				  else {
+				    // Just display a random image.
+				    d_archive(d_displayRandom());
+				  }
 				}
 			}
 			
+			// Run the following on startup:
+			print(0);
+			
+			// End
+			
 			// TODO
-			// previous/next[random check]
+			// display file order wasn't stupid after all, remember to use upload[]
 			// draggable box
+			// arrow keys and fullscreen
 			// add timer back in
 		</script>
   </body>
