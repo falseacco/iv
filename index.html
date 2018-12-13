@@ -6,11 +6,15 @@
   </head>
   <body>
 		<style>
+		  #title {
+		    z-index: -2;
+		    margin: 40px 0 0 0;
+		    color: rgb(100, 100, 100);
+		  }
 			#box {
 				border: 1px solid lightgray;
 				display: inline-block;
 				padding: 20px 0px 5px 5px;
-				margin-top: 60px;
 			}
 			
 			#display {
@@ -21,8 +25,9 @@
 				height: 100%;
 				width: 100%;
 				background-size: auto 100%;
-				/* Don't cover up anything else. */
+				/* Don't cover up anything else, except the title sometimes. */
 				z-index: -1;
+				background-color: transparent;
 				/* Center the background image. */
 				background-position: center;
 				/* Don't use the image as a tile. */
@@ -30,21 +35,34 @@
 			}
 		</style>
 		
+		<a href="https://www.github.com/ooorel/iv">
+		  <h1 id="title">iv</h1>
+		</a><br>
+		
 		<div id="box">
 		  <input id="upload" type="file" webkitdirectory directory multiple><br>
 		  <br>
-			<a id="previous" href="#/">previous</a>
+			<a id="previous" href="#/" inactive>previous</a>
 			<a id="next" href="#/">next</a>
 			<text id="filename"></text><br>
-			<input id="file-order-chooser" type="checkbox">Display in file order
 		</div>
 			
 		<div id="display"></div>
 			
 		<script type="text/javascript">
 			"use strict;"
-			function print(x) {
-				console.log(x);
+			{
+			  let testing = true;
+			  
+			  function print(x) {
+			    if (testing) {
+			      console.log(x);
+			    }
+			  }
+			  
+			  function printTest(bool) {
+			    testing = bool;
+			  }
 			}
 		
 			function $(id) {
@@ -77,8 +95,9 @@
 				    history = [], //
 						pointer = 0;  //
 			
-			  function d_archive(n) {
-			    return history.unshift(n);
+			  function d_archive(i) {
+			    history.unshift(i);
+			    return i;
 			  }
 			  
 			  function fetchHistory(pointer) {
@@ -94,45 +113,82 @@
 					d_display(upload[i]);
 					return i;
 				}
+				
+				function d_displayFilename(img) {
+				  $('filename').innerHTML = img.name;
+				}
 			
 				// When a folder is uploaded, display something to start.
 				$('upload').onchange = (e)=>{
 					upload = Array.from($('upload').files);
 					
 					if (upload.length !== 0) {
-						d_archive(d_displayRandom());
+					  let img = upload[0];
+						d_display(img);
+						d_displayFilename(img);
+						d_archive(0);
 					};
+					print('upload.onchange()');
+					print(upload);
+				}
+				
+				$('next').onclick = ()=>{
+				  if (upload.length !== 0) { // Don't want to try to display nothing.
+				    if (pointer !== 0) {
+				      // Display the next image in historical order.
+				      pointer -= 1;
+				      let img = fetchHistory(pointer);
+				      d_display(img);
+				      d_displayFilename(img);
+				      print('next.onclick() historical');
+				    }
+				    else {
+				      // Just display a random image.
+				      let i = d_archive(d_displayRandom());
+				      d_displayFilename(upload[i]);
+				      print('next.onclick() random');
+				    }
+				  }
+				  print('next.onclick() inactive');
 				}
 				
 				$('previous').onclick = ()=>{
 				  if (pointer >= 0 && pointer < (history.length - 1)) {
 				    pointer += 1;
-				    d_display(fetchHistory(pointer));
+				    let img = fetchHistory(pointer);
+				    d_display(img);
+				    d_displayFilename(img);
+				    print('previous.onclick() active');
 				  }
-				}
-				
-				$('next').onclick = ()=>{
-				  if (pointer !== 0) {
-				    // Display the next image in historical order.
-				    pointer -= 1;
-				    d_display(fetchHistory(pointer));
-				  }
-				  else {
-				    // Just display a random image.
-				    d_archive(d_displayRandom());
-				  }
+				  print('previous.onclick() inactive');
 				}
 			}
 			
-			// Run the following on startup:
-			print(0);
+			// Keyboard shortcuts.
+			let KEY_NEXT = 'ArrowRight',
+			    KEY_PREV = 'ArrowLeft';
+			    
+			document.onkeydown = (e)=>{
+			  e = e || window.event;
+			  if (e.key === KEY_NEXT) {
+			    $('next').click();
+			  }
+			  else if (e.key == KEY_PREV) {
+			    $('previous').click();
+			  }
+			};
 			
-			// End
+			// -------- Run the following on <startup>: ------------
+			print('hi');
+			printTest(false);
+			
+			// In case they're reloading the page.
+			$('upload').onchange();
+			
+			// ---------------------- End --------------------------
 			
 			// TODO
-			// display file order wasn't stupid after all, remember to use upload[]
-			// draggable box
-			// arrow keys and fullscreen
+			// fullscreen | https://www.w3schools.com/howto/howto_js_fullscreen.asp
 			// add timer back in
 		</script>
   </body>
