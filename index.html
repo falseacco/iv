@@ -6,48 +6,140 @@
   </head>
   <body>
 		<style>
-		  #title {
-		    z-index: -2;
-		    margin: 40px 0 0 0;
-		    color: rgb(100, 100, 100);
-		  }
-			#box {
-				border: 1px solid lightgray;
+			a:visited {
+				color: #0000EE;
+			}
+			
+			a:active {
+				color: #551A8B;
+			}
+		
+			.monospace {
+				font-family: monospace;
+			}
+			
+			.indent1 {
+				margin-left: 10px;
+			}
+			
+			.indent2 {
+				margin-left: 20px;
+			}
+			
+			[draggable=true] {
+				cursor: move;
+			}
+		
+			#bg { /* Workaround to prevent fullscreen from changing page color. */
+				/* Color. */
+				background-color: white;
+				/* All the way in the back. */
+				position: absolute;
+				z-index: -9001;
+				/* Take up the whole page. */
+				top: 0;
+				left: 0;
+				height: 100%;
+				width: 100%;
+			}
+		  
+			.nocancel { /* Workaround to allow text inputs within draggable divs to be selected. */
+			}
+			
+			#title {
+				/* Appearance */
+		    color: rgb(50, 50, 50);
+				/* Keep it from having infinite width. */
 				display: inline-block;
-				padding: 20px 0px 5px 5px;
+			}
+			#title h1 {
+				/* This can't move, so it should be covered by the image if necessary.
+				If the main link had this it wouldn't be clickable. */
+				position: relative;
+		    z-index: -2;
+				/* Positioning */
+				margin: 40px 0 20px 0;
+		  }
+			#title:active {
+				color: #551A8B;
+			}
+			
+			.box {
+				position: absolute; /* Draggy. */
+				/* Appearance */
+				border: 1px solid lightgray;
+				display: inline-block
+				padding: 0 5px 5px 5px;
+			}
+			#ghost {
+				display: none;
+			}
+			
+			.smaller {
+				font-size: small;
+			}
+			
+			#timer-display {
+				/* Make it stand out a bit. */
+				margin-left: 70px;
+				background-color: white;
+				font-weight: bold;
+				font-size: 24px;
+				font-family: monospace;
 			}
 			
 			#display {
-				/* Take up the whole page. */
+				/* Don't cover up anything else, except the title sometimes. */
 				position: absolute;
+				z-index: -1;
+				background-color: transparent;
+				/* Take up the whole page. */
 				top: 0;
 				left: 0;
 				height: 100%;
 				width: 100%;
 				background-size: auto 100%;
-				/* Don't cover up anything else, except the title sometimes. */
-				z-index: -1;
-				background-color: transparent;
 				/* Center the background image. */
 				background-position: center;
 				/* Don't use the image as a tile. */
 				background-repeat: no-repeat;
 			}
 		</style>
+		<div id="bg"></div>
 		
-		<a href="https://www.github.com/ooorel/iv">
-		  <h1 id="title">iv</h1>
+		<a id="title" class="indent2" href="https://www.github.com/ooorel/iv" target="_blank" rel="noopener noreferrer">
+		  <h1>iv</h1>
 		</a><br>
 		
-		<div id="box">
-		  <input id="upload" type="file" webkitdirectory directory multiple><br>
-		  <br>
-			<a id="previous" href="#/" inactive>previous</a>
-			<a id="next" href="#/">next</a>
+		<div id="box" class="box" draggable="true">
+			<a id="hide" class="smaller" href="#/">[hide]</a><br>
+			<span id="hide-section-top">
+			<br>
+				<input id="upload" type="file" webkitdirectory directory multiple><br>
+				<a id="fullscreen" href="#/">toggle fullscreen</a><br>
+				<br>
+			</span>
 			<text id="filename"></text><br>
+			<br>
+			<a id="previous" href="#/" inactive>previous</a>
+			<a id="next" href="#/">next</a><br>
+			<input id="toggle-timer" type="checkbox">timer
+			<text id="timer-display">10:00</text><br>
+			<span id="hide-section-timer">
+				<text id="timer-config">config[hide]:</text><br>
+				<text class="indent1">Timer length:</text><br>
+					<input id="timer-hr" type="text" class="nocancel indent2 monospace" size="2" maxlength="2"> :
+					<input id="timer-min" type="text" class="nocancel monospace" size="2" maxlength="2"> :
+					<input id="timer-sec" type="text" class="nocancel monospace" size="2" maxlength="2"><br>
+				<text class="indent1">When timer ends:</text><br>
+					<input type="checkbox" class="indent2">display new image<br>
+					<input type="checkbox" class="indent2">reset<br>
+			</span>
 		</div>
+		<div id="ghost" class="box"></div>
 			
 		<div id="display"></div>
+			
 			
 		<script type="text/javascript">
 			"use strict;"
@@ -59,25 +151,25 @@
 			      console.log(x);
 			    }
 			  }
+				
+				function s_print(x) { // strong print
+					console.log(x);
+				}
 			  
-			  function printTest(bool) {
-			    testing = bool;
+			  function printTest(t) {
+			    testing = t;
 			  }
 			}
-		
-			function $(id) {
-				return document.getElementById(id);
+			
+			function $(x) {
+				if (typeof x == 'string') {
+					return document.getElementById(x);
+				}
+				return x;
 			}
 			
 			function random(min, max) { // Don't use negative numbers.
 			  return Math.floor((Math.random() * max) + min);
-			}
-		
-			function d_setVisible(id, value) {
-				let x = $(id);
-			
-				x.style.visibility = value ? 'visible' : 'hidden';
-				return x.style.visibility;
 			}
 			
 			function d_display (img) {
@@ -90,6 +182,151 @@
 				};
 			}
 			
+			// Minimize the box.
+			$('hide').onclick = ()=>{
+				// Toggle content.
+				let visible = d_toggleDisplay('hide-section-top');
+				d_setVisible('hide-section-timer', visible);
+				// Update label.
+				if (visible) {
+					$('hide').innerHTML = '[hide]';
+				}
+				else {
+					$('hide').innerHTML = '[show]';
+				}
+			}
+			
+			function d_toggleDisplay(id) {
+				let mode = window.getComputedStyle($(id)).display;
+				if (mode === 'none') {
+					return d_setVisible(id, true);
+				}
+				else {
+					return d_setVisible(id, false);
+				}
+			}
+			
+			function d_setVisible(id, value) {
+				$(id).style.display = value ? 'block' : 'none';
+				return value;
+			}
+			
+			// Draggable divs | refactored copy-paste
+			d_draggable('box');
+			function d_draggable(id) {
+				let posx,
+						posy,
+						xOffset,
+						yOffset,
+						el = $(id),
+						ghost = $('ghost');
+						
+				el.addEventListener('mousedown', click);
+				
+				function click(e) {
+					e = e || window.event;
+					if (!e.explicitOriginalTarget.classList ||
+							e.explicitOriginalTarget.classList[0] !== 'nocancel') {
+						e.preventDefault();
+					}
+					if (e.target.id !== id) {
+						return false;
+					}
+					// Get initial mouse position.
+					posx = e.clientX;
+					posy = e.clientY;
+					// Get offset from top left corner.
+					let rect = el.getBoundingClientRect();
+					xOffset = posx - rect.x;
+					yOffset = posy - rect.y;
+					// Set ghost size.
+					ghost.style.paddingRight = rect.width + 'px';
+					ghost.style.height = rect.height + 'px';
+					// Show the ghost.
+					d_setVisible('ghost', true);
+					// And hide the box.
+					d_setVisible(id, false);
+					// Don't want to be running this code all the time.
+					document.onmouseup = close;
+					document.onmousemove = drag;
+					
+					print('clicked box');
+				}
+				
+				function drag(e) {
+					e = e || window.event;
+					e.preventDefault();
+					// Update mouse position.
+					posx = e.clientX;
+					posy = e.clientY;
+					// Move the ghost preview.
+					ghost.style.left = (posx - xOffset) + 'px';
+					ghost.style.top = (posy - yOffset) + 'px';
+					
+					print('dragging box');
+				}
+				
+				function close() {
+					// Hide the ghost.
+					d_setVisible('ghost', false);
+					// Show the box.
+					d_setVisible(id, true);
+					// Set the element's new position.
+					el.style.left = (posx - xOffset) + 'px';
+					el.style.top = (posy - yOffset) + 'px';
+					// Stop doing things when the mouse is released.
+					document.onmouseup = null;
+					document.onmousemove = null;
+					
+					print('let go of box');
+				}
+			}
+			
+			// Fullscreen | copy-paste
+			function requestFullscreen(el) {
+				if(el.requestFullscreen)
+					el.requestFullscreen();
+				else if(el.mozRequestFullScreen)
+					el.mozRequestFullScreen();
+				else if(el.webkitRequestFullscreen)
+					el.webkitRequestFullscreen();
+				else if(el.msRequestFullscreen)
+					el.msRequestFullscreen();
+			}
+			
+			function exitFullscreen() {
+				if(document.exitFullscreen)
+					document.exitFullscreen();
+				else if(document.mozCancelFullScreen)
+					document.mozCancelFullScreen();
+				else if(document.webkitExitFullscreen)
+					document.webkitExitFullscreen();
+				else if(document.msExitFullscreen)
+					document.msExitFullscreen();
+			}
+			
+			function isFullscreen() {
+				var full_screen_element = document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement || null;
+	
+				// If no element is in full-screen
+				if (full_screen_element === null) {
+					return false;
+				}
+				else {
+					return true;
+				}
+			}
+			
+			$('fullscreen').onclick = ()=>{ // Fullscreen has to be triggered by a click, idk
+				if (isFullscreen()) {
+					exitFullscreen();
+				}
+				else {
+					requestFullscreen(document.body);
+				}
+			}
+			
+			//
 			{
 				let upload = [],  //
 				    history = [], //
@@ -115,7 +352,7 @@
 				}
 				
 				function d_displayFilename(img) {
-				  $('filename').innerHTML = img.name;
+				  $('filename').innerHTML = img.webkitRelativePath;
 				}
 			
 				// When a folder is uploaded, display something to start.
@@ -149,7 +386,9 @@
 				      print('next.onclick() random');
 				    }
 				  }
-				  print('next.onclick() inactive');
+					else {
+						print('next.onclick() inactive');
+					}
 				}
 				
 				$('previous').onclick = ()=>{
@@ -160,36 +399,73 @@
 				    d_displayFilename(img);
 				    print('previous.onclick() active');
 				  }
-				  print('previous.onclick() inactive');
+					else {
+						print('previous.onclick() inactive');
+					}
 				}
 			}
 			
 			// Keyboard shortcuts.
-			let KEY_NEXT = 'ArrowRight',
-			    KEY_PREV = 'ArrowLeft';
-			    
-			document.onkeydown = (e)=>{
-			  e = e || window.event;
-			  if (e.key === KEY_NEXT) {
-			    $('next').click();
-			  }
-			  else if (e.key == KEY_PREV) {
-			    $('previous').click();
-			  }
-			};
+			{
+				let active = true;
+				    KEY_NEXT = 'ArrowRight',
+						KEY_PREV = 'ArrowLeft';
+						
+				document.onkeydown = (e)=>{
+					if (active) {
+						e = e || window.event;
+						if (e.key === KEY_NEXT) {
+							$('next').click();
+						}
+						else if (e.key === KEY_PREV) {
+							$('previous').click();
+						}
+					}
+					else {
+					}
+				};
+				
+				function useKeys (t) {
+					return active = t;
+				}
+				
+				function listKeys () {
+					s_print('next: ' + KEY_NEXT);
+					s_print('prev: ' + KEY_PREV);
+				}
+			}
+			
+			// Disable shortcuts when focus is inside a text input.
+			{
+				let inputs = ['timer-hr', 'timer-min', 'timer-sec'];
+				inputs.forEach((id)=>{
+					$(id).onfocus = ()=>{ // Why does addEventListener not work here?
+						useKeys(false);
+					}
+					$(id).onblur = ()=>{
+						useKeys(true);
+					}
+				});
+			}
 			
 			// -------- Run the following on <startup>: ------------
-			print('hi');
-			printTest(false);
+			print('hello friend');
+			printTest(true);
 			
 			// In case they're reloading the page.
 			$('upload').onchange();
 			
+			//
+			
 			// ---------------------- End --------------------------
 			
 			// TODO
-			// fullscreen | https://www.w3schools.com/howto/howto_js_fullscreen.asp
-			// add timer back in
+			// Responsive timer config fields
+				// Faded pause timer
+				// Change config to options, hide
+				// Print values
+			// Add timer back in
+			// ivconfig
 		</script>
   </body>
 </html>
