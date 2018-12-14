@@ -156,7 +156,7 @@
 			<a id="timer" class="gray-link" href="#/">10:00</a><br>
 			<span id="hide-section-timer">
 			<br >
-				<text>Timer Options</text>
+				<text>Options</text>
 				<a id="hide-options" class="smaller" href="#/">[show]</a>
 				<text>:</text>
 				<br>
@@ -166,9 +166,9 @@
 					  <input id="timer-min" type="text" class="nocancel monospace" placeholder="10" size="2" maxlength="2" autocomplete="off"> :
 					  <input id="timer-sec" type="text" class="nocancel monospace" placeholder="00" size="2" maxlength="2" autocomplete="off"><br>
 				  <text class="indent1">When timer ends:</text><br>
-					  <input type="checkbox" class="indent2" checked>display new image<br>
+				    <input type="checkbox" class="indent2" checked>display new image<br>
 					  <input type="checkbox" class="indent2" checked>reset &#8635;<br>
-					  <input type="checkbox" class="indent2">hide every other image<br>
+					<input type="checkbox" class="indent1">Hide every other image<br>
 				</span>
 			</span>
 		</div>
@@ -254,7 +254,12 @@
 				}
 			}
 			
-			// Timer options.
+			function d_setVisible(id, value) {
+				$(id).style.display = value ? 'block' : 'none';
+				return value;
+			}
+			
+			// Timer. here
 			{
 			  let active = false;
 			  
@@ -274,11 +279,46 @@
 			      $('reset').className = 'gray-link';
 			    }
 			  }
-			}
-			
-			function d_setVisible(id, value) {
-				$(id).style.display = value ? 'block' : 'none';
-				return value;
+			  
+			  // count
+			  
+			  // handle end of timer based on options
+			  // extend next as well, hide every other image
+			  
+			  // update timer's display
+			  
+			  // Convert a time array to a string for display, and vice versa.
+			  // arr to str
+			  // str to arr
+			  
+			  // Convert a time array to milliseconds and vice versa.
+			  function msToArr(ms) {
+			    let sec = Math.floor(ms / 1000),
+			        hr,
+			        min;
+			    hr = Math.floor(sec / 3600);
+			    sec -= hr * 3600;
+			    min = Math.floor(sec / 60);
+			    sec -= min * 60;
+			    return [hr, min, sec];
+			  }
+			  
+			  function arrToMs(arr) {
+			    return (arr[0] * 60 * 60 * 1000) +
+			           (arr[1] * 60 * 1000) +
+			           (arr[2] * 1000);
+			  }
+			  
+			  // Fetch data from the ui.
+			  function timerLength() {
+			    let hr = $('timer-hr').value || '00',
+			        min = $('timer-min').value || '10',
+			        sec = $('timer-sec').values || '00',
+			        length = [hr, min, sec];
+			    return length;
+			  }
+			  
+			  // checkboxes
 			}
 			
 			// Draggable divs | refactored copy-paste
@@ -522,16 +562,18 @@
 				});
 			}
 			
-			// -------- Run the following on <startup>: ------------
+			// -------- Run the following on <startup>: ------------------------
 			print('hello friend');
 			printTest(true);
 			
 			// In case they're reloading the page.
 			$('upload').onchange();
 			
-			//
+			// -----------------------------------------------------------------
 			
-			// ---------------------- End --------------------------
+			// This is the safest place to put any commands of your own.
+			
+			// ---------------------- End --------------------------------------
 			
 			// TODO
 			// Add timer back in
