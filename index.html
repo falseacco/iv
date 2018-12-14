@@ -166,9 +166,9 @@
 					  <input id="timer-min" type="text" class="nocancel monospace" placeholder="10" size="2" maxlength="2" autocomplete="off"> :
 					  <input id="timer-sec" type="text" class="nocancel monospace" placeholder="00" size="2" maxlength="2" autocomplete="off"><br>
 				  <text class="indent1">When timer ends:</text><br>
-				    <input type="checkbox" class="indent2" checked>display new image<br>
-					  <input type="checkbox" class="indent2" checked>reset &#8635;<br>
-					<input type="checkbox" class="indent1">Hide every other image<br>
+				    <input id="on-end-display-new" type="checkbox" class="indent2" checked>display new image<br>
+					  <input id="on-end-reset" type="checkbox" class="indent2" checked>reset &#8635;<br>
+					<input id="hide-every-other" type="checkbox" class="indent1">Hide every other image<br>
 				</span>
 			</span>
 		</div>
@@ -259,9 +259,10 @@
 				return value;
 			}
 			
-			// Timer. here
+			// Timer.
 			{
-			  let active = false;
+			  let active = false,
+			  i;
 			  
 			  $('timer').onclick = ()=>{
 			    if (!active) {
@@ -281,15 +282,58 @@
 			  }
 			  
 			  // count
+			  function d_count(goal) {
+			    // Stop previous countdown.
+			    clearInterval(i);
+			    // Set function to decrement.
+			    i = setInterval(()=>{
+			      let remaining = goal - Date.now(),
+			          arr = msToArr(remaining),
+			          str = arrToStr(arr);
+			      d_displayTimer(str);
+			      // When the timer reaches zero:
+			      if (remaining <= 500) {
+			        // Stop counting.
+			        clearInterval(i);
+			        // d_end() probably
+			        print('end timer');
+			      }
+			    }, 225);
+			  }
 			  
-			  // handle end of timer based on options
+			  function getGoal(arr) {
+			    return Date.now() + arrToMs(arr);
+			  }
+			  
+			  // here
+			  // handle end of timer based on options,
+			  // how am I going to feed d_count goals?
 			  // extend next as well, hide every other image
+			  function d_end() {
+			    //
+			  }
 			  
-			  // update timer's display
+			  // Update timer's display.
+			  function d_displayTimer(str) {
+			    $('timer').innerHTML = str;
+			  }
 			  
 			  // Convert a time array to a string for display, and vice versa.
-			  // arr to str
-			  // str to arr
+			  function strToArr(str) {
+			    let arr = str.split(':');
+			    if (arr.length < 3) {
+			      arr.unshift('00');
+			    }
+			    return arr;
+			  }
+			  
+			  function arrToStr(arr) {
+			    let str = arr[0] + ':' + arr[1] + ':' + arr[2];
+			    if (str.slice(0, 2) === '00') {
+			      str = str.slice(3);
+			    }
+			    return str;
+			  }
 			  
 			  // Convert a time array to milliseconds and vice versa.
 			  function msToArr(ms) {
@@ -300,7 +344,16 @@
 			    sec -= hr * 3600;
 			    min = Math.floor(sec / 60);
 			    sec -= min * 60;
-			    return [hr, min, sec];
+			    return [padNum(hr), padNum(min), padNum(sec)];
+			  }
+			  
+			  function padNum(n) {
+			    if (n < 10) {
+			      return '0' + n;
+			    }
+			    else {
+			      return '' + n;
+			    }
 			  }
 			  
 			  function arrToMs(arr) {
@@ -318,7 +371,17 @@
 			    return length;
 			  }
 			  
-			  // checkboxes
+			  function onEndDisplayNew() {
+			    return $('on-end-display-new').checked;
+			  }
+			  
+			  function onEndReset() {
+			    return $('on-end-reset').checked;
+			  }
+			  
+			  function hideEveryOther() {
+			    return $('hide-every-other').checked;
+			  }
 			}
 			
 			// Draggable divs | refactored copy-paste
@@ -463,8 +526,8 @@
 				
 				function d_displayFilename(img) {
 				  let name = img.webkitRelativePath;
-				  if (name.length > 27) {
-				    name = name.slice(0, 20) + '...' + name.slice(-3);
+				  if (name.length > 66) {
+				    name = name.slice(0, 60) + '...' + name.slice(-3);
 				  }
 				  $('filename').innerHTML = name;
 				}
