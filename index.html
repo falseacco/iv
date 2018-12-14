@@ -9,9 +9,37 @@
 			a:visited {
 				color: #0000EE;
 			}
-			
+			a:hover {
+			  color: #551A8B;
+			}
 			a:active {
 				color: #551A8B;
+			}
+			
+			.black-link {
+			  color: black;
+			}
+			.black-link:visited {
+			  color: black;
+			}
+			.black-link:hover {
+			  color: #551A8B;
+			}
+			.black-link:active {
+			  color: #551A8B;
+			}
+			
+			.gray-link {
+			  color: gray;
+			}
+			.gray-link:visited {
+			  color: gray;
+			}
+			.gray-link:hover {
+			  color: #551A8B;
+			}
+			.gray-link:active {
+			  color: #551A8B;
 			}
 		
 			.monospace {
@@ -21,7 +49,6 @@
 			.indent1 {
 				margin-left: 10px;
 			}
-			
 			.indent2 {
 				margin-left: 20px;
 			}
@@ -47,8 +74,6 @@
 			}
 			
 			#title {
-				/* Appearance */
-		    color: rgb(50, 50, 50);
 				/* Keep it from having infinite width. */
 				display: inline-block;
 			}
@@ -60,15 +85,12 @@
 				/* Positioning */
 				margin: 40px 0 20px 0;
 		  }
-			#title:active {
-				color: #551A8B;
-			}
 			
 			.box {
 				position: absolute; /* Draggy. */
 				/* Appearance */
 				border: 1px solid lightgray;
-				display: inline-block
+				display: inline-block;
 				padding: 0 5px 5px 5px;
 			}
 			#ghost {
@@ -79,13 +101,15 @@
 				font-size: small;
 			}
 			
-			#timer-display {
+			#reset {
+			  margin-left: 60px;
+			}
+			
+			#timer {
 				/* Make it stand out a bit. */
-				margin-left: 70px;
+				margin-left: 5px;
+				font-size: 22px;
 				background-color: white;
-				font-weight: bold;
-				font-size: 24px;
-				font-family: monospace;
 			}
 			
 			#display {
@@ -104,36 +128,48 @@
 				/* Don't use the image as a tile. */
 				background-repeat: no-repeat;
 			}
+			
+			#hide-section-options {
+			  display: none;
+			}
 		</style>
 		<div id="bg"></div>
 		
-		<a id="title" class="indent2" href="https://www.github.com/ooorel/iv" target="_blank" rel="noopener noreferrer">
+		<a id="title" class="indent2 black-link" href="https://www.github.com/ooorel/iv" target="_blank" rel="noopener noreferrer">
 		  <h1>iv</h1>
 		</a><br>
 		
 		<div id="box" class="box" draggable="true">
-			<a id="hide" class="smaller" href="#/">[hide]</a><br>
+			<a id="hide" class="smaller link" href="#/">[hide]</a><br>
 			<span id="hide-section-top">
 			<br>
 				<input id="upload" type="file" webkitdirectory directory multiple><br>
-				<a id="fullscreen" href="#/">toggle fullscreen</a><br>
+				<a id="fullscreen" class="link" href="#/">toggle fullscreen</a><br>
 				<br>
 			</span>
 			<text id="filename"></text><br>
 			<br>
-			<a id="previous" href="#/" inactive>previous</a>
-			<a id="next" href="#/">next</a><br>
-			<input id="toggle-timer" type="checkbox">timer
-			<text id="timer-display">10:00</text><br>
+			<a id="previous" class="link" href="#/" inactive>previous</a>
+			<a id="next" class="link" href="#/">next</a><br>
+			<br>
+			<a id="reset" class="gray-link" href="#/">&#8635;</a>
+			<a id="timer" class="gray-link" href="#/">10:00</a><br>
 			<span id="hide-section-timer">
-				<text id="timer-config">config[hide]:</text><br>
-				<text class="indent1">Timer length:</text><br>
-					<input id="timer-hr" type="text" class="nocancel indent2 monospace" size="2" maxlength="2"> :
-					<input id="timer-min" type="text" class="nocancel monospace" size="2" maxlength="2"> :
-					<input id="timer-sec" type="text" class="nocancel monospace" size="2" maxlength="2"><br>
-				<text class="indent1">When timer ends:</text><br>
-					<input type="checkbox" class="indent2">display new image<br>
-					<input type="checkbox" class="indent2">reset<br>
+			<br >
+				<text>Timer Options</text>
+				<a id="hide-options" class="smaller" href="#/">[show]</a>
+				<text>:</text>
+				<br>
+				<span id="hide-section-options">
+				  <text class="indent1">Length:</text><br>
+					  <input id="timer-hr" type="text" class="nocancel indent2 monospace" placeholder="00" size="2" maxlength="2" autocomplete="off"> :
+					  <input id="timer-min" type="text" class="nocancel monospace" placeholder="10" size="2" maxlength="2" autocomplete="off"> :
+					  <input id="timer-sec" type="text" class="nocancel monospace" placeholder="00" size="2" maxlength="2" autocomplete="off"><br>
+				  <text class="indent1">When timer ends:</text><br>
+					  <input type="checkbox" class="indent2" checked>display new image<br>
+					  <input type="checkbox" class="indent2" checked>reset &#8635;<br>
+					  <input type="checkbox" class="indent2">hide every other image<br>
+				</span>
 			</span>
 		</div>
 		<div id="ghost" class="box"></div>
@@ -182,7 +218,7 @@
 				};
 			}
 			
-			// Minimize the box.
+			// Hiding things.
 			$('hide').onclick = ()=>{
 				// Toggle content.
 				let visible = d_toggleDisplay('hide-section-top');
@@ -196,6 +232,18 @@
 				}
 			}
 			
+			$('hide-options').onclick = ()=>{
+				// Toggle content.
+				let visible = d_toggleDisplay('hide-section-options');
+				// Update label.
+				if (visible) {
+					$('hide-options').innerHTML = '[hide]';
+				}
+				else {
+					$('hide-options').innerHTML = '[show]';
+				}
+			}
+			
 			function d_toggleDisplay(id) {
 				let mode = window.getComputedStyle($(id)).display;
 				if (mode === 'none') {
@@ -204,6 +252,28 @@
 				else {
 					return d_setVisible(id, false);
 				}
+			}
+			
+			// Timer options.
+			{
+			  let active = false;
+			  
+			  $('timer').onclick = ()=>{
+			    if (!active) {
+			      // Timer is counting.
+			      active = true;
+			      // Change colors to something hard to miss.
+			      $('timer').className = 'black-link';
+			      $('reset').className = '';
+			    }
+			    else {
+			      // Timer is just there.
+			      active = false;
+			      // Change colors to something easy to ignore.
+			      $('timer').className = 'gray-link';
+			      $('reset').className = 'gray-link';
+			    }
+			  }
 			}
 			
 			function d_setVisible(id, value) {
@@ -317,7 +387,7 @@
 				}
 			}
 			
-			$('fullscreen').onclick = ()=>{ // Fullscreen has to be triggered by a click, idk
+			$('fullscreen').onclick = ()=>{// Fullscreen has to be triggered by a click, idk
 				if (isFullscreen()) {
 					exitFullscreen();
 				}
@@ -326,7 +396,7 @@
 				}
 			}
 			
-			//
+			// File upload and navigation.
 			{
 				let upload = [],  //
 				    history = [], //
@@ -352,7 +422,11 @@
 				}
 				
 				function d_displayFilename(img) {
-				  $('filename').innerHTML = img.webkitRelativePath;
+				  let name = img.webkitRelativePath;
+				  if (name.length > 27) {
+				    name = name.slice(0, 20) + '...' + name.slice(-3);
+				  }
+				  $('filename').innerHTML = name;
 				}
 			
 				// When a folder is uploaded, display something to start.
@@ -370,7 +444,7 @@
 				}
 				
 				$('next').onclick = ()=>{
-				  if (upload.length !== 0) { // Don't want to try to display nothing.
+				  if (upload.length !== 0) { // Don't try to display nothing.
 				    if (pointer !== 0) {
 				      // Display the next image in historical order.
 				      pointer -= 1;
@@ -460,10 +534,6 @@
 			// ---------------------- End --------------------------
 			
 			// TODO
-			// Responsive timer config fields
-				// Faded pause timer
-				// Change config to options, hide
-				// Print values
 			// Add timer back in
 			// ivconfig
 		</script>
