@@ -50,7 +50,10 @@
 				margin-left: 10px;
 			}
 			.indent2 {
-				margin-left: 20px;
+				margin-left: 25px;
+			}
+			.indent3 {
+			  margin-left: 35px;
 			}
 			
 			[draggable=true] {
@@ -76,6 +79,8 @@
 			#title {
 				/* Keep it from having infinite width. */
 				display: inline-block;
+				/* Stay away from the sides in fullscreen. */
+				margin-left: 20px;
 			}
 			#title h1 {
 				/* This can't move, so it should be covered by the image if necessary.
@@ -135,7 +140,7 @@
 		</style>
 		<div id="bg"></div>
 		
-		<a id="title" class="indent2 black-link" href="https://www.github.com/ooorel/iv" target="_blank" rel="noopener noreferrer">
+		<a id="title" class="black-link" href="https://www.github.com/ooorel/iv" target="_blank" rel="noopener noreferrer">
 		  <h1>iv</h1>
 		</a><br>
 		
@@ -148,7 +153,6 @@
 				<br>
 			</span>
 			<text id="filename"></text><br>
-			<br>
 			<a id="previous" class="link" href="#/" inactive>previous</a>
 			<a id="next" class="link" href="#/">next</a><br>
 			<br>
@@ -165,10 +169,12 @@
 					  <input id="timer-hr" type="text" class="nocancel indent2 monospace" placeholder="00" size="2" maxlength="2" autocomplete="off"> :
 					  <input id="timer-min" type="text" class="nocancel monospace" placeholder="10" size="2" maxlength="2" autocomplete="off"> :
 					  <input id="timer-sec" type="text" class="nocancel monospace" placeholder="00" size="2" maxlength="2" autocomplete="off"><br>
+				  <input id="hide-every-other" type="checkbox" class="indent1">Hide every other image<br>    
+					<input id="display-new" type="checkbox" class="indent1" checked>Display new images<br>
 				  <text class="indent1">When timer ends:</text><br>
 				    <input id="on-end-display-new" type="checkbox" class="indent2" checked>display new image<br>
 					  <input id="on-end-reset" type="checkbox" class="indent2" checked>reset &#8635;<br>
-					<input id="hide-every-other" type="checkbox" class="indent1">Hide every other image<br>
+					    <input id="on-end-count" type="checkbox" class="indent3" checked>start counting down<br>
 				</span>
 			</span>
 		</div>
@@ -187,13 +193,14 @@
 			      console.log(x);
 			    }
 			  }
-				
+			  
 				function s_print(x) { // strong print
 					console.log(x);
 				}
 			  
 			  function printTest(t) {
 			    testing = t;
+			    s_print('printing tests: ' + t);
 			  }
 			}
 			
@@ -206,16 +213,6 @@
 			
 			function random(min, max) { // Don't use negative numbers.
 			  return Math.floor((Math.random() * max) + min);
-			}
-			
-			function d_display (img) {
-				let reader = new FileReader();
-				reader.readAsDataURL(img);
-				reader.onload = (e)=>{
-					let url = e.target.result;
-					
-					$('display').style.backgroundImage = 'url(' + url + ')';
-				};
 			}
 			
 			// Hiding things.
@@ -261,27 +258,86 @@
 			
 			// Timer.
 			{
-			  let active = false,
-			  i;
+			  let counting = false,
+			      hidLastImage = false,
+			      i;
+			  
+			  $('reset').onclick = d_reset;
 			  
 			  $('timer').onclick = ()=>{
-			    if (!active) {
-			      // Timer is counting.
-			      active = true;
-			      // Change colors to something hard to miss.
-			      $('timer').className = 'black-link';
-			      $('reset').className = '';
+			    if (!counting) {
+			      d_resume();
 			    }
 			    else {
-			      // Timer is just there.
-			      active = false;
-			      // Change colors to something easy to ignore.
-			      $('timer').className = 'gray-link';
-			      $('reset').className = 'gray-link';
+			      d_pause();
 			    }
 			  }
 			  
+			  function d_resume(){
+			    // Timer is counting.
+		      d_startCount('resume');
+		      counting = true;
+		      // Change colors to something hard to miss.
+		      $('timer').className = 'black-link';
+		      $('reset').className = '';
+			  }
+			  
+			  function d_pause(){
+			    // Timer is just there.
+	        d_endCount('pause');
+	        counting = false;
+	        // Change colors to something easy to ignore.
+	        $('timer').className = 'gray-link';
+	        $('reset').className = 'gray-link';
+			  }
+			  
+			  function d_reset() {
+			    d_pause();
+			    d_displayTimer(arrToStr(option('timer-length')));
+			  }
+			  
 			  // count
+			  function d_endCount(from) { // reset pause
+			    // Stop counting.
+			    clearInterval(i);
+			    if (from === 'reset') {
+			      if (option('on-end-reset')) {
+			        // Reset timer.
+			        d_displayTimer(arrToStr(option('timer-length')));
+			        // Start counting down.
+			        if (option('on-end-count')) {
+			          // Display a new image, but don't start counting until it loads.
+			          if (option('on-end-display-new')) {
+			            d_next('', ()=>{
+			              d_startCount('reset');
+			              },
+			              'reset');
+			          }
+			          // Count down without changing the display.
+			          else {
+			            print('else');
+			            d_startCount('reset');
+			          }
+			        }
+			      }
+			      else {
+			        // Just display a new image.
+			        d_next();
+			      }
+			    }
+			  }
+			  
+			  function d_startCount(from) {
+			    let goal;
+			    if (from === 'reset') {
+			      goal = getGoal(option('timer-length'));
+			    }
+			    else {
+			      goal = getGoal(strToArr(currentTimer()));
+			    }
+			    d_count(goal);
+			  }
+			  
 			  function d_count(goal) {
 			    // Stop previous countdown.
 			    clearInterval(i);
@@ -293,9 +349,7 @@
 			      d_displayTimer(str);
 			      // When the timer reaches zero:
 			      if (remaining <= 500) {
-			        // Stop counting.
-			        clearInterval(i);
-			        // d_end() probably
+			        d_endCount('reset');
 			        print('end timer');
 			      }
 			    }, 225);
@@ -305,17 +359,13 @@
 			    return Date.now() + arrToMs(arr);
 			  }
 			  
-			  // here
-			  // handle end of timer based on options,
-			  // how am I going to feed d_count goals?
-			  // extend next as well, hide every other image
-			  function d_end() {
-			    //
-			  }
-			  
 			  // Update timer's display.
 			  function d_displayTimer(str) {
 			    $('timer').innerHTML = str;
+			  }
+			  
+			  function currentTimer() {
+			    return $('timer').innerHTML;
 			  }
 			  
 			  // Convert a time array to a string for display, and vice versa.
@@ -328,9 +378,14 @@
 			  }
 			  
 			  function arrToStr(arr) {
-			    let str = arr[0] + ':' + arr[1] + ':' + arr[2];
+			    let str = padNum(arr[0]) + ':' + 
+			              padNum(arr[1]) + ':' + 
+			              padNum(arr[2]);
 			    if (str.slice(0, 2) === '00') {
 			      str = str.slice(3);
+			    }
+			    else if (str[0] === '0') {
+			      str = str.slice(1);
 			    }
 			    return str;
 			  }
@@ -348,6 +403,7 @@
 			  }
 			  
 			  function padNum(n) {
+			    n = Number(n);
 			    if (n < 10) {
 			      return '0' + n;
 			    }
@@ -362,25 +418,22 @@
 			           (arr[2] * 1000);
 			  }
 			  
-			  // Fetch data from the ui.
+			  // Fetch settings from Options.
+			  function option(id) {
+			    if (id === 'timer-length') {
+			      return timerLength();
+			    }
+			    else {
+			      return $(id).checked;
+			    }
+			  }
+			  
 			  function timerLength() {
 			    let hr = $('timer-hr').value || '00',
 			        min = $('timer-min').value || '10',
-			        sec = $('timer-sec').values || '00',
+			        sec = $('timer-sec').value || '00',
 			        length = [hr, min, sec];
 			    return length;
-			  }
-			  
-			  function onEndDisplayNew() {
-			    return $('on-end-display-new').checked;
-			  }
-			  
-			  function onEndReset() {
-			    return $('on-end-reset').checked;
-			  }
-			  
-			  function hideEveryOther() {
-			    return $('hide-every-other').checked;
 			  }
 			}
 			
@@ -500,10 +553,34 @@
 			}
 			
 			// File upload and navigation.
+			function d_display (img, onload) {
+			  if (img === '' || img === undefined) { // Clear the display.
+			    $('display').style.backgroundImage = '';
+			    
+			    if (typeof(onload) === 'function') {
+					    onload();
+					}
+			  }
+			  else { // Draw the image.
+			    let reader = new FileReader();
+				  reader.readAsDataURL(img);
+				  reader.onload = (e)=>{
+					  let url = e.target.result;
+					  $('display').style.backgroundImage = 'url(' + url + ')';
+					  // Delay tasks.
+					  if (typeof(onload) === 'function') {
+					    print('is-function');
+					    onload();
+					  }
+				  };
+			  }
+			}
+			
 			{
 				let upload = [],  //
 				    history = [], //
-						pointer = 0;  //
+						pointer = 0,  //
+						hidLastImage = false;
 			
 			  function d_archive(i) {
 			    history.unshift(i);
@@ -518,16 +595,22 @@
 					return random(0, upload.length);
 				}
 				
-				function d_displayRandom() {
+				function d_displayRandom(onload) {
 				  let i = randomIndex();
-					d_display(upload[i]);
+					d_display(upload[i], onload);
 					return i;
 				}
 				
 				function d_displayFilename(img) {
-				  let name = img.webkitRelativePath;
-				  if (name.length > 66) {
-				    name = name.slice(0, 60) + '...' + name.slice(-3);
+				  let name;
+				  if (img === '' || img === undefined) {
+				    name = '...';
+				  }
+				  else {
+				    name = img.webkitRelativePath;
+				    if (name.length > 66) {
+				      name = name.slice(0, 60) + '...' + name.slice(-3);
+				    }
 				  }
 				  $('filename').innerHTML = name;
 				}
@@ -546,38 +629,103 @@
 					print(upload);
 				}
 				
-				$('next').onclick = ()=>{
-				  if (upload.length !== 0) { // Don't try to display nothing.
-				    if (pointer !== 0) {
-				      // Display the next image in historical order.
-				      pointer -= 1;
-				      let img = fetchHistory(pointer);
-				      d_display(img);
-				      d_displayFilename(img);
-				      print('next.onclick() historical');
+				
+				$('next').onclick = d_next;
+				
+				function d_next(e, onload, from) {
+				  if (upload.length !== 0) {
+				    if (pointer > 0) {
+				      d_nextHistory(onload);
 				    }
 				    else {
-				      // Just display a random image.
-				      let i = d_archive(d_displayRandom());
-				      d_displayFilename(upload[i]);
-				      print('next.onclick() random');
+				      if (option('display-new') ||
+				          from === 'reset' && option('on-end-display-new')) {
+				        if (option('hide-every-other')) {
+				          if (hidLastImage) {
+				            d_nextRandom(onload);
+				            hidLastImage = false;
+				          }
+				          else {
+				            d_nextBlank(onload);
+				            hidLastImage = true;
+				          }
+				        }
+				        else {
+				          d_nextRandom(onload);
+				        }
+				      }
+				      else {
+				        if (option('hide-every-other')) {
+				          if (hidLastImage) {
+				            d_nextIndex(history[1], upload, true, onload);
+				            hidLastImage = false;
+				          }
+				          else {
+				            d_nextBlank(onload);
+				            hidLastImage = true;
+				          }
+				        }
+				      }
 				    }
 				  }
-					else {
-						print('next.onclick() inactive');
-					}
+				}
+				
+				function d_nextBlank(onload) {
+				  // Display the void.
+				  let empty = '';
+				  d_display(empty, onload);
+				  d_archive(empty);
+				  d_displayFilename(empty);
+				  print('d_nextBlank()');
+				}
+				
+				function d_nextIndex(i, arr, archive, onload) { // fileorder should make new arr
+				  // Display the image at index of arr.
+				  let img = arr[i];
+				  d_display(img, onload);
+				  d_displayFilename(img);
+				  if (archive) {
+				    d_archive(i);
+				  }
+				}
+				
+				function d_nextHistory(onload) {
+				  // Display the next image in history.
+				  if (pointer > 0) {
+				    pointer -= 1;
+				    d_nextIndex(history[pointer], upload, false, onload);
+				    print('d_nextHistory() active');
+				  }
+				  else {
+				    print('d_nextHistory() inactive');
+				  }
+				}
+				
+				function d_nextRandom(onload) {
+				  // Display a random image.
+				  if (pointer === 0) {
+				    let i = d_displayRandom(onload);
+				    d_archive(i);
+				    d_displayFilename(upload[i]);
+				    print('d_nextRandom() active');
+				  }
+				  else {
+				    print('d_nextRandom() inactive');
+				  }
 				}
 				
 				$('previous').onclick = ()=>{
+				  d_previous();
+				}
+				
+				function d_previous(onload) {
 				  if (pointer >= 0 && pointer < (history.length - 1)) {
 				    pointer += 1;
-				    let img = fetchHistory(pointer);
-				    d_display(img);
-				    d_displayFilename(img);
-				    print('previous.onclick() active');
+				    d_nextIndex(history[pointer], upload, false, onload);
+				    print('d_previous() active');
 				  }
 					else {
-						print('previous.onclick() inactive');
+						print('d_previous() inactive');
 					}
 				}
 			}
@@ -626,7 +774,6 @@
 			}
 			
 			// -------- Run the following on <startup>: ------------------------
-			print('hello friend');
 			printTest(true);
 			
 			// In case they're reloading the page.
@@ -634,13 +781,14 @@
 			
 			// -----------------------------------------------------------------
 			
-			// This is the safest place to put any commands of your own.
+			
 			
 			// ---------------------- End --------------------------------------
 			
 			// TODO
-			// Add timer back in
-			// ivconfig
+			// Prevent repeats
+			// Image preloading
+			// ivconfig.txt + Image tags
 		</script>
   </body>
 </html>
