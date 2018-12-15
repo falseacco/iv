@@ -659,8 +659,8 @@
 				  }
 				  else {
 				    name = img.webkitRelativePath;
-				    if (name.length > 66) {
-				      name = name.slice(0, 60) + '...' + name.slice(-3);
+				    if (name.length > 31) {
+				      name = name.slice(0, 25) + '...' + name.slice(-3);
 				    }
 				  }
 				  $('filename').innerHTML = name;
@@ -784,6 +784,7 @@
 			// Folder config files and image tagging. --------------------------------
 			// here
 			// Do different things based on file, title image (uploadInit)
+			// search for text file, option to edit
 			
 			// 'Edit' text file contents (insert line)
 			
