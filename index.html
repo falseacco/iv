@@ -169,11 +169,12 @@
 					  <input id="timer-hr" type="text" class="nocancel indent2 monospace" placeholder="00" size="2" maxlength="2" autocomplete="off"> :
 					  <input id="timer-min" type="text" class="nocancel monospace" placeholder="10" size="2" maxlength="2" autocomplete="off"> :
 					  <input id="timer-sec" type="text" class="nocancel monospace" placeholder="00" size="2" maxlength="2" autocomplete="off"><br>
+				  <input id="prevent-recent-repeats" type="checkbox" class="indent1" checked>Prevent recent repeats<br> 
 				  <input id="hide-every-other" type="checkbox" class="indent1">Hide every other image<br>    
-					<input id="display-new" type="checkbox" class="indent1" checked>Display new images<br>
+					<input id="display-new" type="checkbox" class="indent1" checked>Display new images on skip<br>
 				  <text class="indent1">When timer ends:</text><br>
 				    <input id="on-end-display-new" type="checkbox" class="indent2" checked>display new image<br>
-					  <input id="on-end-reset" type="checkbox" class="indent2" checked>reset &#8635;<br>
+					  <input id="on-end-reset" type="checkbox" class="indent2" checked>reset time &#8635;<br>
 					    <input id="on-end-count" type="checkbox" class="indent3" checked>start counting down<br>
 				</span>
 			</span>
@@ -256,7 +257,122 @@
 				return value;
 			}
 			
-			// Timer.
+			// Draggable divs | refactored copy-paste --------------------------------
+			d_draggable('box');
+			function d_draggable(id) {
+				let posx,
+						posy,
+						xOffset,
+						yOffset,
+						el = $(id),
+						ghost = $('ghost');
+						
+				el.addEventListener('mousedown', click);
+				
+				function click(e) {
+					e = e || window.event;
+					if (!e.explicitOriginalTarget.classList ||
+							e.explicitOriginalTarget.classList[0] !== 'nocancel') {
+						e.preventDefault();
+					}
+					if (e.target.id !== id) {
+						return false;
+					}
+					// Get initial mouse position.
+					posx = e.clientX;
+					posy = e.clientY;
+					// Get offset from top left corner.
+					let rect = el.getBoundingClientRect();
+					xOffset = posx - rect.x;
+					yOffset = posy - rect.y;
+					// Set ghost size.
+					ghost.style.paddingRight = rect.width + 'px';
+					ghost.style.height = rect.height + 'px';
+					// Show the ghost.
+					d_setVisible('ghost', true);
+					// And hide the box.
+					d_setVisible(id, false);
+					// Don't want to be running this code all the time.
+					document.onmouseup = close;
+					document.onmousemove = drag;
+					
+					print('clicked box');
+				}
+				
+				function drag(e) {
+					e = e || window.event;
+					e.preventDefault();
+					// Update mouse position.
+					posx = e.clientX;
+					posy = e.clientY;
+					// Move the ghost preview.
+					ghost.style.left = (posx - xOffset) + 'px';
+					ghost.style.top = (posy - yOffset) + 'px';
+					
+					print('dragging box');
+				}
+				
+				function close() {
+					// Hide the ghost.
+					d_setVisible('ghost', false);
+					// Show the box.
+					d_setVisible(id, true);
+					// Set the element's new position.
+					el.style.left = (posx - xOffset) + 'px';
+					el.style.top = (posy - yOffset) + 'px';
+					// Stop doing things when the mouse is released.
+					document.onmouseup = null;
+					document.onmousemove = null;
+					
+					print('let go of box');
+				}
+			}
+			
+			// Fullscreen | copy-paste -----------------------------------------------
+			function requestFullscreen(el) {
+				if(el.requestFullscreen)
+					el.requestFullscreen();
+				else if(el.mozRequestFullScreen)
+					el.mozRequestFullScreen();
+				else if(el.webkitRequestFullscreen)
+					el.webkitRequestFullscreen();
+				else if(el.msRequestFullscreen)
+					el.msRequestFullscreen();
+			}
+			
+			function exitFullscreen() {
+				if(document.exitFullscreen)
+					document.exitFullscreen();
+				else if(document.mozCancelFullScreen)
+					document.mozCancelFullScreen();
+				else if(document.webkitExitFullscreen)
+					document.webkitExitFullscreen();
+				else if(document.msExitFullscreen)
+					document.msExitFullscreen();
+			}
+			
+			function isFullscreen() {
+				var full_screen_element = document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement || null;
+	
+				// If no element is in full-screen
+				if (full_screen_element === null) {
+					return false;
+				}
+				else {
+					return true;
+				}
+			}
+			
+			$('fullscreen').onclick = ()=>{// Fullscreen has to be triggered by a click, idk
+				if (isFullscreen()) {
+					exitFullscreen();
+				}
+				else {
+					requestFullscreen(document.body);
+				}
+			}
+			
+			// Timer. ----------------------------------------------------------------
 			{
 			  let counting = false,
 			      hidLastImage = false,
@@ -437,122 +553,7 @@
 			  }
 			}
 			
-			// Draggable divs | refactored copy-paste
-			d_draggable('box');
-			function d_draggable(id) {
-				let posx,
-						posy,
-						xOffset,
-						yOffset,
-						el = $(id),
-						ghost = $('ghost');
-						
-				el.addEventListener('mousedown', click);
-				
-				function click(e) {
-					e = e || window.event;
-					if (!e.explicitOriginalTarget.classList ||
-							e.explicitOriginalTarget.classList[0] !== 'nocancel') {
-						e.preventDefault();
-					}
-					if (e.target.id !== id) {
-						return false;
-					}
-					// Get initial mouse position.
-					posx = e.clientX;
-					posy = e.clientY;
-					// Get offset from top left corner.
-					let rect = el.getBoundingClientRect();
-					xOffset = posx - rect.x;
-					yOffset = posy - rect.y;
-					// Set ghost size.
-					ghost.style.paddingRight = rect.width + 'px';
-					ghost.style.height = rect.height + 'px';
-					// Show the ghost.
-					d_setVisible('ghost', true);
-					// And hide the box.
-					d_setVisible(id, false);
-					// Don't want to be running this code all the time.
-					document.onmouseup = close;
-					document.onmousemove = drag;
-					
-					print('clicked box');
-				}
-				
-				function drag(e) {
-					e = e || window.event;
-					e.preventDefault();
-					// Update mouse position.
-					posx = e.clientX;
-					posy = e.clientY;
-					// Move the ghost preview.
-					ghost.style.left = (posx - xOffset) + 'px';
-					ghost.style.top = (posy - yOffset) + 'px';
-					
-					print('dragging box');
-				}
-				
-				function close() {
-					// Hide the ghost.
-					d_setVisible('ghost', false);
-					// Show the box.
-					d_setVisible(id, true);
-					// Set the element's new position.
-					el.style.left = (posx - xOffset) + 'px';
-					el.style.top = (posy - yOffset) + 'px';
-					// Stop doing things when the mouse is released.
-					document.onmouseup = null;
-					document.onmousemove = null;
-					
-					print('let go of box');
-				}
-			}
-			
-			// Fullscreen | copy-paste
-			function requestFullscreen(el) {
-				if(el.requestFullscreen)
-					el.requestFullscreen();
-				else if(el.mozRequestFullScreen)
-					el.mozRequestFullScreen();
-				else if(el.webkitRequestFullscreen)
-					el.webkitRequestFullscreen();
-				else if(el.msRequestFullscreen)
-					el.msRequestFullscreen();
-			}
-			
-			function exitFullscreen() {
-				if(document.exitFullscreen)
-					document.exitFullscreen();
-				else if(document.mozCancelFullScreen)
-					document.mozCancelFullScreen();
-				else if(document.webkitExitFullscreen)
-					document.webkitExitFullscreen();
-				else if(document.msExitFullscreen)
-					document.msExitFullscreen();
-			}
-			
-			function isFullscreen() {
-				var full_screen_element = document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement || null;
-	
-				// If no element is in full-screen
-				if (full_screen_element === null) {
-					return false;
-				}
-				else {
-					return true;
-				}
-			}
-			
-			$('fullscreen').onclick = ()=>{// Fullscreen has to be triggered by a click, idk
-				if (isFullscreen()) {
-					exitFullscreen();
-				}
-				else {
-					requestFullscreen(document.body);
-				}
-			}
-			
-			// File upload and navigation.
+			// File upload and navigation. -------------------------------------------
 			function d_display (img, onload) {
 			  if (img === '' || img === undefined) { // Clear the display.
 			    $('display').style.backgroundImage = '';
@@ -595,8 +596,38 @@
 					return random(0, upload.length);
 				}
 				
+				function exclusiveRandomIndex() {
+				  if (option('prevent-recent-repeats')) {
+				    let i,
+				      unique = true,
+				      memory = 5,
+			        length = upload.length;
+				    if (length <= memory) {
+				      memory = length - 1;
+				    }
+				    memory = history.slice(0, memory);
+				    // Keep going until nothing in memory matches.
+				    while(true) {
+				      i = randomIndex();
+				      unique = true;
+				      for (let prev of memory) {
+				        if (prev === i) {
+				          unique = false;
+				          break;
+				        }
+				      }
+				      if (unique) {
+				        return i;
+				      }
+				    }
+				  }
+				  else {
+				    return randomIndex();
+				  }
+				}
+				
 				function d_displayRandom(onload) {
-				  let i = randomIndex();
+				  let i = exclusiveRandomIndex();
 					d_display(upload[i], onload);
 					return i;
 				}
@@ -730,7 +761,7 @@
 				}
 			}
 			
-			// Keyboard shortcuts.
+			// Keyboard shortcuts. ---------------------------------------------------
 			{
 				let active = true;
 				    KEY_NEXT = 'ArrowRight',
@@ -773,20 +804,19 @@
 				});
 			}
 			
-			// -------- Run the following on <startup>: ------------------------
+			// Run the following on <startup>: ---------------------------------------
 			printTest(true);
 			
 			// In case they're reloading the page.
 			$('upload').onchange();
 			
-			// -----------------------------------------------------------------
+			// -----------------------------------------------------------------------
 			
 			
 			
-			// ---------------------- End --------------------------------------
+			// End -------------------------------------------------------------------
 			
 			// TODO
-			// Prevent repeats
 			// Image preloading
 			// ivconfig.txt + Image tags
 		</script>
