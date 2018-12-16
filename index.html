@@ -108,6 +108,7 @@
 			
 			#filename {
 			  background-color: white;
+			  font-size: 12px;
 			}
 			
 			#reset {
@@ -142,8 +143,14 @@
 			#hide-section-options {
 			  display: none;
 			}
+			
+			#download-link {
+			  display: none;
+			}
 		</style>
 		<div id="bg"></div>
+		
+		<div id="display"></div>
 		
 		<a id="title" class="black-link" href="https://www.github.com/ooorel/iv"
 		   target="_blank" rel="noopener noreferrer">
@@ -195,9 +202,8 @@
 			</span>
 		</div>
 		<div id="ghost" class="box"></div>
-			
-		<div id="display"></div>
-			
+		
+		<a id="download-link"></a>
 			
 		<script type="text/javascript">
 			"use strict;"
@@ -216,12 +222,12 @@
 			  
 			  function printTest(t) {
 			    testing = t;
-			    s_print('printing tests: ' + t);
+			    s_print('Printing tests: ' + t);
 			  }
 			}
 			
 			function $(x) {
-				if (typeof x == 'string') {
+				if (typeof(x) == 'string') {
 					return document.getElementById(x);
 				}
 				return x;
@@ -574,48 +580,191 @@
 			}
 			
 			// File upload and navigation. -------------------------------------------
-			function d_display (img, onload) {
-			  if (img === '' || img === undefined) { // Clear the display.
-			    $('display').style.backgroundImage = '';
-			    
-			    if (typeof(onload) === 'function') {
-					    onload();
-					}
-			  }
-			  else { // Draw the image.
-			    let reader = new FileReader();
-				  reader.readAsDataURL(img);
-				  reader.onload = (e)=>{
-					  let url = e.target.result;
-					  $('display').style.backgroundImage = 'url(' + url + ')';
-					  // Delay tasks.
-					  if (typeof(onload) === 'function') {
-					    print('is-function');
-					    onload();
-					  }
-				  };
-			  }
-			}
-			
 			{
-				let upload = [],  //
-				    history = [], //
-						pointer = 0,  //
-						hidLastImage = false;
+				let upload = [],  // Images user uploads.
+				    uploadP = {}, // path: Images in upload with filepath as id.
+				    uploadF = [], // filter: This is the collection to sort.
+				    history = [], // Record of files user's viewed this session.
+						pointer = 0,  // Place in history. 0 is most recent, 1 is 2nd-most.
+						hidLastImage = false; // For memory drawing.
 			
-			  function d_archive(i) {
-			    history.unshift(i);
-			    return i;
+			  function fetchHistory(pointer) {
+			    return history[pointer];
+			  }
+			
+			  function d_archive(file) {
+			    history.unshift(file);
+			    return file;
 			  }
 			  
-			  function fetchHistory(pointer) {
-			    return upload[history[pointer]];
+			  // Display an image, update the ui, and archive it for later.
+			  function d_completeDisplay(img, doArchive, onload) {
+			    d_display(img, onload);
+			    d_displayFilename(img);
+			    if (doArchive) {
+			      d_archive(img);
+			    }
 			  }
+			  
+			  // Display an image.
+			  function d_display (img, onload) {
+			    if (img === '' || img === undefined) { // Clear the display.
+			      $('display').style.backgroundImage = '';
+			      // Delay tasks.
+			      if (typeof(onload) === 'function') {
+					      onload();
+					  }
+			    }
+			    else { // Draw the image.
+			      let reader = new FileReader();
+				    reader.readAsDataURL(img);
+				    reader.onload = (e)=>{
+					    let url = e.target.result;
+					    $('display').style.backgroundImage = 'url(' + url + ')';
+
+					    if (typeof(onload) === 'function') {
+					      onload();
+					    }
+				    };
+			    }
+			  }
+			  
+			  function d_displayFilename(img) {
+				  let name;
+				  if (img === '' || img === undefined) {
+				    name = '...';
+				  }
+				  else {
+				    name = img.webkitRelativePath;
+				    if (name.length > 31) {
+				      name = name.slice(0, 25) + '...' + name.slice(-3);
+				    }
+				  }
+				  $('filename').innerHTML = name;
+				}
 			
-				function randomIndex() {
-					return random(0, upload.length);
+				$('upload').onchange = d_uploadInit; function d_uploadInit(e) {
+					upload = Array.from($('upload').files);
+					// Make sure there's some data before working.
+					if (upload.length > 0) {
+					  // Filter out any non-image files.
+					  upload.forEach((file, i)=>{
+					    let name = file.name;
+					    // File isn't an image, remove it.
+					    if (!isDisplay(filetype(name))) {
+					      upload.splice(i, 1);
+					      print('Removed file from display list: ' + name);
+					      // File is a config, use it.
+					      if (name === 'ivconfig.txt') {
+					        print('Found config file!');
+					        d_readConfig(file, ()=>{
+					          print('callback');
+					          // There might not have been any images in the upload.
+					          if (upload.length > 0) {
+					            // Display an image to start.
+					            let cover = config('cover-img'),
+					                        img;
+					            // No cover image specified.
+					            if (cover === undefined) {
+					              img = upload[0];
+					            }
+					            // Cover image is provided as a path.
+					            else if (isPath(cover)) {
+					              img = uploadF[cover];
+					            }
+					            // Cover image is provided as an index.
+					            else {
+					              img = upload[Number(cover)];
+					            }
+					            d_completeDisplay(img, true);
+					          }
+					        });
+					      }
+					    }
+					    // File is an image, store it in a hash for name lookup.
+					    else {
+					      let path = file.webkitRelativePath;
+					      uploadF[path] = file;
+					    }
+					  });
+					}
+					print('d_uploadInit()');
+					print(upload);
 				}
 				
+				// Check if a file is good to display.
+				{
+				  let valid = ['jpg'.toLocaleUpperCase(),
+				               'png'.toLocaleUpperCase(),
+				               'jpeg'.toLocaleUpperCase()];
+				  function isDisplay(extension) {
+				    extension = extension.toLocaleUpperCase();
+				    for (i in valid) {
+				      let type = valid[i];
+				      if (extension === type) {
+				        return true;
+				      }
+				    }
+				    return false;
+				  }
+				}
+				
+				// Get a file's extension.
+				function filetype(name) {
+				  return name.split('.').slice(-1)[0];
+				}
+				
+				$('next').onclick = d_next; function d_next(e, onload, from) {
+				  if (upload.length !== 0) {
+				    if (pointer > 0) {
+				      d_displayNextHistory(onload);
+				    }
+				    else {
+				      if (option('display-new') ||
+				          from === 'reset' && option('on-end-display-new')) {
+				        if (option('hide-every-other')) {
+				          if (hidLastImage) {
+				            d_displayRandom(onload);
+				            hidLastImage = false;
+				          }
+				          else {
+				            d_displayBlank(onload);
+				            hidLastImage = true;
+				          }
+				        }
+				        else {
+				          d_displayRandom(onload);
+				        }
+				      }
+				      else {
+				        if (option('hide-every-other')) {
+				          if (hidLastImage) {
+				            d_completeDisplay(fetchHistory(1), true, onload);
+				            hidLastImage = false;
+				          }
+				          else {
+				            d_displayBlank(onload);
+				            hidLastImage = true;
+				          }
+				        }
+				      }
+				    }
+				  }
+				}
+				
+				// Display a random image.
+				function d_displayRandom(onload) {
+				  if (pointer === 0) {
+				    let img = upload[exclusiveRandomIndex()];
+				    d_completeDisplay(img, true, onload);
+				    print('d_displayRandom() active');
+				  }
+				  else {
+				    print('d_displayRandom() inactive');
+				  }
+				}
+				
+				// Random number generator.
 				function exclusiveRandomIndex() {
 				  if (option('prevent-recent-repeats')) {
 				    let i,
@@ -646,133 +795,33 @@
 				  }
 				}
 				
-				function d_displayRandom(onload) {
-				  let i = exclusiveRandomIndex();
-					d_display(upload[i], onload);
-					return i;
+				function randomIndex() {
+					return random(0, upload.length);
 				}
 				
-				function d_displayFilename(img) {
-				  let name;
-				  if (img === '' || img === undefined) {
-				    name = '...';
-				  }
-				  else {
-				    name = img.webkitRelativePath;
-				    if (name.length > 31) {
-				      name = name.slice(0, 25) + '...' + name.slice(-3);
-				    }
-				  }
-				  $('filename').innerHTML = name;
-				}
-			
-				// When a folder is uploaded, display something to start.
-				$('upload').onchange = (e)=>{
-					upload = Array.from($('upload').files);
-					
-					if (upload.length !== 0) {
-					  let img = upload[0];
-						d_display(img);
-						d_displayFilename(img);
-						d_archive(0);
-					};
-					print('upload.onchange()');
-					print(upload);
+				// Display the void.
+				function d_displayBlank(onload) {
+				  d_completeDisplay('', true, onload);
+				  print('d_displayBlank');
 				}
 				
-				
-				$('next').onclick = d_next;
-				
-				function d_next(e, onload, from) {
-				  if (upload.length !== 0) {
-				    if (pointer > 0) {
-				      d_nextHistory(onload);
-				    }
-				    else {
-				      if (option('display-new') ||
-				          from === 'reset' && option('on-end-display-new')) {
-				        if (option('hide-every-other')) {
-				          if (hidLastImage) {
-				            d_nextRandom(onload);
-				            hidLastImage = false;
-				          }
-				          else {
-				            d_nextBlank(onload);
-				            hidLastImage = true;
-				          }
-				        }
-				        else {
-				          d_nextRandom(onload);
-				        }
-				      }
-				      else {
-				        if (option('hide-every-other')) {
-				          if (hidLastImage) {
-				            d_nextIndex(history[1], upload, true, onload);
-				            hidLastImage = false;
-				          }
-				          else {
-				            d_nextBlank(onload);
-				            hidLastImage = true;
-				          }
-				        }
-				      }
-				    }
-				  }
-				}
-				
-				function d_nextBlank(onload) {
-				  // Display the void.
-				  let empty = '';
-				  d_display(empty, onload);
-				  d_archive(empty);
-				  d_displayFilename(empty);
-				  print('d_nextBlank()');
-				}
-				
-				function d_nextIndex(i, arr, archive, onload) {//fileorder needs new arr
-				  // Display the image at index of arr.
-				  let img = arr[i];
-				  d_display(img, onload);
-				  d_displayFilename(img);
-				  if (archive) {
-				    d_archive(i);
-				  }
-				}
-				
-				function d_nextHistory(onload) {
-				  // Display the next image in history.
+				// Display the next image in history.
+				function d_displayNextHistory(onload) {
 				  if (pointer > 0) {
 				    pointer -= 1;
-				    d_nextIndex(history[pointer], upload, false, onload);
-				    print('d_nextHistory() active');
+				    d_completeDisplay(fetchHistory(pointer), false, onload);
+				    print('d_displayNextHistory() active');
 				  }
 				  else {
-				    print('d_nextHistory() inactive');
+				    print('d_displayNextHistory() inactive');
 				  }
 				}
 				
-				function d_nextRandom(onload) {
-				  // Display a random image.
-				  if (pointer === 0) {
-				    let i = d_displayRandom(onload);
-				    d_archive(i);
-				    d_displayFilename(upload[i]);
-				    print('d_nextRandom() active');
-				  }
-				  else {
-				    print('d_nextRandom() inactive');
-				  }
-				}
-				
-				$('previous').onclick = ()=>{
-				  d_previous();
-				}
-				
-				function d_previous(onload) {
+				// Display the previous image in history.
+				$('previous').onclick = d_previous; function d_previous(onload) {
 				  if (pointer >= 0 && pointer < (history.length - 1)) {
 				    pointer += 1;
-				    d_nextIndex(history[pointer], upload, false, onload);
+				    d_completeDisplay(fetchHistory(pointer), false, onload);
 				    print('d_previous() active');
 				  }
 					else {
@@ -782,24 +831,114 @@
 			}
 			
 			// Folder config files and image tagging. --------------------------------
-			// here
-			// Do different things based on file, title image (uploadInit)
-			// search for text file, option to edit
+			// go here
 			
-			// 'Edit' text file contents (insert line)
+			// Config file sets default options and filter, title change
 			
-			// Read text file contents
-			// https://stackoverflow.com/questions/31746837/reading-uploaded-text-file-contents-in-html
+			// Jump to file, both modes (probably different impl.)
 			
-			// Create and write to a text file
-			// https://stackoverflow.com/questions/3665115/create-a-file-in-memory-for-user-to-download-not-through-server
+			// nond Filter tags, return arr
 			
-			//x2
-			// Filter images and set to arr | support both filetype and future tags
+			// Folder tag editor
 			
-			//x1
-			// Folder tag editor, mandatory tags, jump to w/e image
-			// Folder section in box, edit link opens to closeable box
+			// Implement tags
+			  // Tag descriptions with "ivconfig!-descr" entry in JSON
+			  // normal tag: |red|
+			  // category tag: |color:red|
+			    // but can have multiple of one category
+			    // "ivconfig!-children" true/false determines if you have to include next layer, and how many if so
+			      // This doesn't apply when you're just filtering
+			  // mandatory tag: category tag that must be included
+			  // recommended tag: everything that's not mandatory
+			  // dependent tags:
+			    // are actually just non-man cat tags
+			    // click on tag color
+			    // expands to color:red, color:blue, color:green, etc.
+			
+			// Folder tag filter (hidden until upload), edit tags link opens to closeable box
+			  // Move toggle fullscreen to top
+			  // Put filter there
+			
+			// Read config file contents.
+			function d_readConfig(file, onload) {
+			  let reader = new FileReader();
+			  reader.onload = (e)=>{
+			    d_setConfig('', JSON.parse(e.target.result));
+			    
+			    if (typeof(onload) === 'function') {
+			      onload();
+			    }
+			  }
+			  reader.readAsText(file);
+			}
+			
+			/*function readText(file) {
+			  let reader = new FileReader();
+			  reader.onload = (e)=>{
+			    console.log(e.target.result);
+			  }
+        reader.readAsText(file);
+			}*/
+			
+			// Make a text file from ivconfig.
+			function downloadConfig() {
+			  downloadText('ivconfig.txt', JSON.stringify(config()));
+			}
+			
+			function downloadText(filename, text) {
+			  // Set hidden link to download file on click.
+        var link = $('download-link');
+        link.setAttribute('href',
+          'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+        link.setAttribute('download', filename);
+        // Prompt download.
+        link.click();
+      }
+			
+			// Config object.
+			{
+			  let ivconfig = {
+			    'title': 'none',
+			    'cover-img': 'none',
+			    'tags': {}
+			  };
+			  
+			  function config(str) {
+			    // Get the whole obj.
+			    if (str === undefined || str === '') {
+			      return ivconfig;
+			    }
+			    // Accessing an image's tags.
+			    else if (isPath(str)) {
+			      return ivconfig['tags'][str];
+			    }
+			    // Accessing a property of the folder.
+			    else {
+			      return ivconfig[str];
+			    }
+			  }
+			  
+			  function d_setConfig(str, value) {
+			    if (str === '') {
+			      ivconfig = value;
+			    }
+			    else if (isPath(str)) {
+			      ivconfig['tags'][str] = value;
+			    } 
+			    else {
+			      ivconfig[str] = value;
+			    }
+			  }
+			}
+			
+			function isPath(str) {
+			  if (str.split('/').length > 1) {
+			    return true;
+			  }
+			  else {
+			    return false;
+			  }
+			}
 			
 			// Keyboard shortcuts. ---------------------------------------------------
 			{
@@ -859,7 +998,8 @@
 			// TODO
 			// ivconfig.txt + Image tags
 			// File order sort
-			// Jump to file
+			// God what a pain in the ass. Learn this:
+			  // https://medium.com/quick-code/javascript-promises-in-twenty-minutes-3aac5b65b887
 		</script>
   </body>
 </html>
