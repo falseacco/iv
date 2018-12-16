@@ -615,7 +615,7 @@
       function count() { //pass the block to count
         // Stop previous countdown.
         clearInterval(i);
-        goal = getGoal(remaining || getNextBlock());
+        goal = getGoal(remaining || getNextBlock())
         i = setInterval(function() {
           let delta = goal - Date.now(),
               display = milliToTime(delta),
