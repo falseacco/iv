@@ -643,6 +643,7 @@
 				}
 			
 				$('upload').onchange = d_uploadInit; function d_uploadInit(e) {
+				  let hasConfig = false;
 					upload = Array.from($('upload').files);
 					// Make sure there's some data before working.
 					if (upload.length > 0) {
@@ -656,26 +657,22 @@
 					      // File is a config, use it.
 					      if (name === 'ivconfig.txt') {
 					        print('Found config file!');
+					        hasConfig = true;
 					        d_readConfig(file, ()=>{
 					          print('callback');
 					          // There might not have been any images in the upload.
 					          if (upload.length > 0) {
 					            // Display an image to start.
-					            let cover = config('cover-img'),
-					                        img;
-					            // No cover image specified.
-					            if (cover === undefined) {
-					              img = upload[0];
-					            }
+					            let cover = config('cover-img');
 					            // Cover image is provided as a path.
-					            else if (isPath(cover)) {
-					              img = uploadF[cover];
+					            if (isPath(cover)) {
+					              d_completeDisplay(uploadF[cover], true);
 					            }
 					            // Cover image is provided as an index.
 					            else {
 					              img = upload[Number(cover)];
+					              d_completeDisplay(upload[Number(cover)], true);
 					            }
-					            d_completeDisplay(img, true);
 					          }
 					        });
 					      }
@@ -687,6 +684,12 @@
 					    }
 					  });
 					}
+					if (!hasConfig) {
+					  print('No config file found.');
+		        // No cover image specified, just display the first.
+		        d_completeDisplay(upload[0], true);
+					}
+					
 					print('d_uploadInit()');
 					print(upload);
 				}
