@@ -774,7 +774,7 @@
 				      memory = 20,
 			        length = upload.length;
 				    if (length <= memory) {
-				      memory = Math.floor(length / 2);
+				      memory = length - 1;
 				    }
 				    memory = history.slice(0, memory);
 				    // Keep going until nothing in memory matches.
@@ -782,7 +782,7 @@
 				      i = randomIndex();
 				      unique = true;
 				      for (let prev of memory) {
-				        if (prev === i) {
+				        if (prev === upload[i]) {
 				          unique = false;
 				          break;
 				        }
