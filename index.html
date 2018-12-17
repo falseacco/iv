@@ -6,6 +6,9 @@
   </head>
   <body>
 		<style>
+		  .hidden {
+		    display: none;
+		  }
       .smaller {
 				font-size: small;
 			}		
@@ -111,7 +114,7 @@
 			}
 			
 			#reset {
-			  margin-left: 60px;
+			  margin-left: 10px;
 			  background-color: white;
 			}
 			
@@ -146,6 +149,28 @@
 			#download-link {
 			  display: none;
 			}
+			
+			#tag-search {
+			  font-size: 14px;
+			  font-family: monospace;
+			  width: 200px;
+			  height: 80px;
+			  overflow-y: auto;
+			  resize: none;
+			}
+			
+			#tags-list {
+			  list-style-type: none;
+			  margin-top: 10px;
+			  padding-left: 0;
+			  width: 190px;
+			}
+			
+			#tags-list li {
+			  font-size: 14px;
+			  font-family: monospace;
+			  display: inline;
+			}
 		</style>
 		<div id="bg"></div>
 		
@@ -157,12 +182,45 @@
 		</a><br>
 		
 		<div id="box" class="box" draggable="true">
-			<a id="hide" class="smaller link" href="#/">[hide]</a><br>
-			<span id="hide-section-top">
-			<br>
-				<input id="upload" type="file" webkitdirectory directory multiple><br>
-				<a id="fullscreen" class="link" href="#/">toggle fullscreen</a><br>
-				<br>
+			<a id="hide" class="smaller link hide-link" href="#/">[hide]</a>
+			<a id="fullscreen" class="smaller link" href="#/">[toggle fullscreen]</a><br>
+			<span class="hide-section">
+			  <br>
+			  <input id="upload" type="file" webkitdirectory directory multiple><br>
+			  <text>Filter</text>
+			  <a id="hide-filter" class="smaller hide-link" href="#/">[show]</a>
+			  <text>:</text><br>
+			  <span class="hide-filter-section hidden">
+			    <text id="filter-count" class="indent1">[num. images here, upload font]</text><br>
+			    <textarea id="tag-search" class="nocancel indent1"
+			      placeholder="Only display images with the contained tags.
+			      [No tags selected.]"></textarea>
+			    <ul id="tags-list" class="indent2">
+			      <li><a href="#/" class="search-tag-link">Red</a></li>
+			      <li><a href="#/" class="search-tag-link">Milk</a></li>
+			      <li><a href="#/" class="search-tag-link">Tea</a></li>
+			      <li><a href="#/" class="search-tag-link">Green</a></li>
+			      <li><a href="#/" class="search-tag-link">Ice</a></li>
+			      <li><a href="#/" class="search-tag-link">Cream</a></li>
+			      <li><a href="#/" class="search-tag-link">Peach</a></li>
+			      <li><a href="#/" class="search-tag-link">Juice</a></li>
+			      <li><a href="#/" class="search-tag-link">Fresh</a></li>
+			      <li><a href="#/" class="search-tag-link">Lemon</a></li>
+			      <li><a href="#/" class="search-tag-link">Ginger</a></li>
+			      <li><a href="#/" class="search-tag-link">Spicy</a></li>
+			      <li><a href="#/" class="search-tag-link">Pasta</a></li>
+			      <li><a href="#/" class="search-tag-link">White</a></li>
+			      <li><a href="#/" class="search-tag-link">Rice</a></li>
+			      <li><a href="#/" class="search-tag-link">Fish</a></li>
+			      <li><a href="#/" class="search-tag-link">Flakes</a></li>
+			      <li><a href="#/" class="search-tag-link">Orange</a></li>
+			      <li><a href="#/" class="search-tag-link">Pulp</a></li>
+			      <li><a href="#/" class="search-tag-link">Fanta</a></li>
+			    </ul>
+			    <a id="edit-folder" href="#/" class="indent1 smaller">Edit folder</a>
+			    <a id="edit-tags" href="#/" class="indent1 smaller">Edit tags</a><br>
+			  </span>
+		    <br>
 			</span>
 			<text id="filename" class="smaller"></text><br>
 			<a id="previous" class="link" href="#/" inactive>previous</a>
@@ -170,33 +228,32 @@
 			<br>
 			<a id="reset" class="gray-link" href="#/">&#8635;</a>
 			<a id="timer" class="gray-link" href="#/">10:00</a><br>
-			<span id="hide-section-timer">
+			<span class="hide-section">
 			<br >
 				<text>Options</text>
-				<a id="hide-options" class="smaller" href="#/">[show]</a>
-				<text>:</text>
-				<br>
-				<span id="hide-section-options">
+				<a id="hide-options" class="smaller hide-link" href="#/">[show]</a>
+				<text>:</text><br>
+				<span class="hide-options-section hidden">
 				  <text class="indent1">Length:</text><br>
 					  <input id="timer-hr" type="text" class="nocancel indent2 monospace"
-					  placeholder="00" size="2" maxlength="2" autocomplete="off"> :
+					    placeholder="00" size="2" maxlength="2" autocomplete="off"> :
 					  <input id="timer-min" type="text" class="nocancel monospace"
-					  placeholder="10" size="2" maxlength="2" autocomplete="off"> :
+					    placeholder="10" size="2" maxlength="2" autocomplete="off"> :
 					  <input id="timer-sec" type="text" class="nocancel monospace"
-					  placeholder="00" size="2" maxlength="2" autocomplete="off"><br>
+					    placeholder="00" size="2" maxlength="2" autocomplete="off"><br>
 				  <input id="prevent-recent-repeats" type="checkbox"
-				  class="indent1" checked>Prevent recent repeats<br> 
+				    class="indent1" checked>Prevent recent repeats<br> 
 				  <input id="hide-every-other" type="checkbox"
-				  class="indent1">Hide every other image<br>    
+				    class="indent1">Hide every other image<br>    
 					<input id="display-new" type="checkbox"
-					class="indent1" checked>Display new images on skip<br>
+					  class="indent1" checked>Display new images on skip<br>
 				  <text class="indent1">When timer ends:</text><br>
 				    <input id="on-end-display-new" type="checkbox"
-				    class="indent2" checked>display new image<br>
+				      class="indent2" checked>display new image<br>
 					  <input id="on-end-reset" type="checkbox"
-					  class="indent2" checked>reset time &#8635;<br>
+					    class="indent2" checked>reset time &#8635;<br>
 					    <input id="on-end-count" type="checkbox"
-					    class="indent3" checked>start counting down<br>
+					      class="indent3" checked>start counting down<br>
 				</span>
 			</span>
 		</div>
@@ -225,55 +282,52 @@
 			  }
 			}
 			
-			function $(x) {
-				if (typeof(x) == 'string') {
-					return document.getElementById(x);
-				}
-				return x;
+			function $(str) {
+			  return document.getElementById(str);
 			}
 			
-			function random(min, max) { // Don't use negative numbers.
-			  return Math.floor((Math.random() * max) + min);
+			function $c(str) {
+			  return Array.prototype.slice.call(document.getElementsByClassName(str));
 			}
 			
-			// Hiding things.
-			$('hide').onclick = ()=>{
-				// Toggle content.
-				let visible = d_toggleDisplay('hide-section-top');
-				d_setVisible('hide-section-timer', visible);
-				// Update label.
-				if (visible) {
-					$('hide').innerHTML = '[hide]';
-				}
-				else {
-					$('hide').innerHTML = '[show]';
-				}
+			// Assign events to multiple objects at once. (does not hoist)
+			Array.prototype.listen = function(event, body) {
+        this.forEach((el)=>{
+          el.addEventListener(event, body);
+        });
+      }
+
+			// Hiding things. --------------------------------------------------------
+			$c('hide-link').listen('click', (el)=>{
+			  let id = el.target.id,
+			      label = $(id).innerHTML;
+			  if (label === '[hide]') {
+			    d_setSectionVisible(id, false);
+			  }
+			  else {
+			    d_setSectionVisible(id, true);
+			  }
+			});
+			
+			function d_setSectionVisible(id, value) {
+			  let link = $(id),
+			      sections = $c(id + '-section');
+			  // Hide or show content.
+			  sections.forEach((el)=>{
+			    d_setVisible(el, value);
+			  });
+			  // Update label.
+			  if (value) {
+			    link.innerHTML = '[hide]'; // does something bad happen when you pass DOM elements?
+			  }
+			  else {
+			    link.innerHTML = '[show]';
+			  }
+			  print('d_setSectionVisible(' + id + ', ' + value + ')');
 			}
 			
-			$('hide-options').onclick = ()=>{
-				// Toggle content.
-				let visible = d_toggleDisplay('hide-section-options');
-				// Update label.
-				if (visible) {
-					$('hide-options').innerHTML = '[hide]';
-				}
-				else {
-					$('hide-options').innerHTML = '[show]';
-				}
-			}
-			
-			function d_toggleDisplay(id) {
-				let mode = window.getComputedStyle($(id)).display;
-				if (mode === 'none') {
-					return d_setVisible(id, true);
-				}
-				else {
-					return d_setVisible(id, false);
-				}
-			}
-			
-			function d_setVisible(id, value) {
-				$(id).style.display = value ? 'block' : 'none';
+			function d_setVisible(el, value) {
+				el.style.display = value ? 'block' : 'none';
 				return value;
 			}
 			
@@ -658,8 +712,9 @@
 					      if (name === 'ivconfig.txt') {
 					        print('Found config file!');
 					        hasConfig = true;
-					        d_readConfig(file, ()=>{
-					          print('callback');
+					        d_readConfig(file, ()=>{ // wants named fun
+					          // Expand filter.
+					          d_setSectionVisible('hide-filter', true);
 					          // There might not have been any images in the upload.
 					          if (upload.length > 0) {
 					            // Display an image to start.
@@ -801,6 +856,10 @@
 					return random(0, upload.length);
 				}
 				
+				function random(min, max) { // Don't use negative numbers.
+			    return Math.floor((Math.random() * max) + min);
+			  }
+				
 				// Display the void.
 				function d_displayBlank(onload) {
 				  d_completeDisplay('', true, onload);
@@ -832,8 +891,8 @@
 				}
 			}
 			
-			// Folder config files and image tagging. --------------------------------
-			// go here
+			// Image tagging. --------------------------------------------------------
+			// gohere
 			
 			// Config file sets default options and filter, title change
 			
@@ -857,11 +916,27 @@
 			    // are actually just non-man cat tags
 			    // click on tag color
 			    // expands to color:red, color:blue, color:green, etc.
+			    // tags list should have option to expand dependent tags
 			
-			// Folder tag filter (hidden until upload), edit tags link opens to closeable box
-			  // Move toggle fullscreen to top
-			  // Put filter there
+			// Edit tags box
 			
+			// Edit folder box
+			
+			// Make it work like the r34 searchbar
+			
+		  // Generate tags-list from config | configInit
+		    // exclude link
+			
+			// Tag search links.
+			$c('search-tag-link').listen('click', addTag('tag-search'));
+			
+			function addTag(destination) { // isExclude
+			  return (el)=>{
+			    $(destination).value += el.target.innerHTML + ' ';
+			  }
+			}
+			
+			// Config files. ---------------------------------------------------------
 			// Read config file contents.
 			function d_readConfig(file, onload) {
 			  let reader = new FileReader();
@@ -975,22 +1050,23 @@
 			
 			// Disable shortcuts when focus is inside a text input.
 			{
-				let inputs = ['timer-hr', 'timer-min', 'timer-sec'];
-				inputs.forEach((id)=>{
-					$(id).onfocus = ()=>{ // Why does addEventListener not work here?
-						useKeys(false);
-					}
-					$(id).onblur = ()=>{
-						useKeys(true);
-					}
+			  // All the inputs have nocancel
+				let inputs = $c('nocancel'); 
+				inputs.listen('focus', ()=>{
+				  useKeys(false);
+				});
+				inputs.listen('blur', ()=>{
+				  useKeys(true);
 				});
 			}
 			
 			// Run the following on <startup>: ---------------------------------------
-			printTest(true);
-			
-			// In case they're reloading the page.
-			$('upload').onchange();
+			window.onload = ()=>{
+			  printTest(true);
+			  
+			  // In case they're reloading the page.
+			  d_uploadInit();
+			}
 			
 			// -----------------------------------------------------------------------
 			
@@ -1001,6 +1077,8 @@
 			// TODO
 			// ivconfig.txt + Image tags
 			// File order sort
+			// Hide display option
+			// exlusiveRNG is a bit naive
 			// God what a pain in the ass. Learn this:
 			  // https://medium.com/quick-code/javascript-promises-in-twenty-minutes-3aac5b65b887
 		</script>
