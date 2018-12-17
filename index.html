@@ -6,7 +6,7 @@
   </head>
   <body>
 		<style>
-		  .hidden {
+		  body .hidden {
 		    display: none;
 		  }
       .smaller {
@@ -62,10 +62,6 @@
 			.gray-link:active {
 			  color: #551A8B;
 			}
-			
-			[draggable=true] {
-				cursor: move;
-			}
 		
 			#bg { /* Workaround to prevent fullscreen from changing page color. */
 				/* Color. */
@@ -78,9 +74,6 @@
 				left: 0;
 				height: 100%;
 				width: 100%;
-			}
-		  /* Workaround to allow text inputs in draggable divs to be selected. */
-			.nocancel {
 			}
 			
 			#title {
@@ -99,14 +92,22 @@
 		  }
 			
 			.box {
-				position: absolute; /* Draggy. */
+			  /* Draggy. */
+				position: absolute;
+				cursor: move;
 				/* Appearance */
 				border: 1px solid lightgray;
 				display: inline-block;
 				padding: 0 5px 5px 5px;
 			}
-			#ghost {
-				display: none;
+			
+			#edit-folder {
+			  padding-top: 5px;
+			  background-color: white;
+			}
+			
+			.close-link {
+			  float: right;
 			}
 			
 			#filename {
@@ -142,14 +143,6 @@
 				background-repeat: no-repeat;
 			}
 			
-			#hide-section-options {
-			  display: none;
-			}
-			
-			#download-link {
-			  display: none;
-			}
-			
 			#tag-search {
 			  font-size: 14px;
 			  font-family: monospace;
@@ -171,6 +164,9 @@
 			  font-family: monospace;
 			  display: inline;
 			}
+			text {
+			  cursor: pointer;
+			}
 		</style>
 		<div id="bg"></div>
 		
@@ -181,7 +177,7 @@
 		  <h1>iv</h1>
 		</a><br>
 		
-		<div id="box" class="box" draggable="true">
+		<div id="box" class="box">
 			<a id="hide" class="smaller link hide-link" href="#/">[hide]</a>
 			<a id="fullscreen" class="smaller link" href="#/">[toggle fullscreen]</a><br>
 			<span class="hide-section">
@@ -192,33 +188,16 @@
 			  <text>:</text><br>
 			  <span class="hide-filter-section hidden">
 			    <text id="filter-count" class="indent1">[num. images here, upload font]</text><br>
-			    <textarea id="tag-search" class="nocancel indent1"
-			      placeholder="Only display images with the contained tags.
+			    <textarea id="tag-search" class="cancel-key indent1"
+			      placeholder="Only display images with these tags.
 			      [No tags selected.]"></textarea>
 			    <ul id="tags-list" class="indent2">
 			      <li><a href="#/" class="search-tag-link">Red</a></li>
 			      <li><a href="#/" class="search-tag-link">Milk</a></li>
 			      <li><a href="#/" class="search-tag-link">Tea</a></li>
-			      <li><a href="#/" class="search-tag-link">Green</a></li>
-			      <li><a href="#/" class="search-tag-link">Ice</a></li>
-			      <li><a href="#/" class="search-tag-link">Cream</a></li>
-			      <li><a href="#/" class="search-tag-link">Peach</a></li>
-			      <li><a href="#/" class="search-tag-link">Juice</a></li>
-			      <li><a href="#/" class="search-tag-link">Fresh</a></li>
-			      <li><a href="#/" class="search-tag-link">Lemon</a></li>
-			      <li><a href="#/" class="search-tag-link">Ginger</a></li>
-			      <li><a href="#/" class="search-tag-link">Spicy</a></li>
-			      <li><a href="#/" class="search-tag-link">Pasta</a></li>
-			      <li><a href="#/" class="search-tag-link">White</a></li>
-			      <li><a href="#/" class="search-tag-link">Rice</a></li>
-			      <li><a href="#/" class="search-tag-link">Fish</a></li>
-			      <li><a href="#/" class="search-tag-link">Flakes</a></li>
-			      <li><a href="#/" class="search-tag-link">Orange</a></li>
-			      <li><a href="#/" class="search-tag-link">Pulp</a></li>
-			      <li><a href="#/" class="search-tag-link">Fanta</a></li>
 			    </ul>
-			    <a id="edit-folder" href="#/" class="indent1 smaller">Edit folder</a>
-			    <a id="edit-tags" href="#/" class="indent1 smaller">Edit tags</a><br>
+			    <a id="open-edit-folder" href="#/" class="indent1 smaller box-link">Edit folder</a>
+			    <a id="open-edit-tags" href="#/" class="indent1 smaller box-link">Edit tags</a><br>
 			  </span>
 		    <br>
 			</span>
@@ -235,11 +214,11 @@
 				<text>:</text><br>
 				<span class="hide-options-section hidden">
 				  <text class="indent1">Length:</text><br>
-					  <input id="timer-hr" type="text" class="nocancel indent2 monospace"
+					  <input id="timer-hr" type="text" class="cancel-key indent2 monospace"
 					    placeholder="00" size="2" maxlength="2" autocomplete="off"> :
-					  <input id="timer-min" type="text" class="nocancel monospace"
+					  <input id="timer-min" type="text" class="cancel-key monospace"
 					    placeholder="10" size="2" maxlength="2" autocomplete="off"> :
-					  <input id="timer-sec" type="text" class="nocancel monospace"
+					  <input id="timer-sec" type="text" class="cancel-key monospace"
 					    placeholder="00" size="2" maxlength="2" autocomplete="off"><br>
 				  <input id="prevent-recent-repeats" type="checkbox"
 				    class="indent1" checked>Prevent recent repeats<br> 
@@ -257,8 +236,23 @@
 				</span>
 			</span>
 		</div>
-		<div id="ghost" class="box"></div>
-		
+		<div id="edit-folder" class="hidden box">
+		  <text>Edit folder properties:</text>
+		  <a id="close-edit-folder" href="#/" class="close-link">x</a><br>
+		  <br>
+		  <text>Folder name:</text>
+		  <input id="name" type="text" class="cancel-key indent1 folder-setting"
+					    placeholder="iv" size="8" autocomplete="off"><br>
+		  <br>
+		  <text>Cover Image:</text>
+		  <input id="cover-image" type="text" class="cancel-key indent1 folder-setting"
+					    placeholder="none" size="8" autocomplete="off"><br>
+			<br>
+		  <a id="download-folder" href="#/" class="">Save and download</a>
+		</div>
+		<!--<div id="edit-tags-box" class="hidden"></div>-->
+		<!-- will have to swap class between box and hidden -->
+		<div id="ghost" class="hidden box"></div>
 		<a id="download-link"></a>
 			
 		<script type="text/javascript">
@@ -298,8 +292,28 @@
       }
 
 			// Hiding things. --------------------------------------------------------
-			$c('hide-link').listen('click', (el)=>{
-			  let id = el.target.id,
+			// Hide the non-main menus.
+			$c('box-link').listen('click', (e)=>{
+			  let box = $(e.target.id.slice(5));
+			  if (elDisplay(box) === 'none') {
+			    d_setVisible(box, true);
+			  }
+			  else {
+			    d_setVisible(box, false);
+			  }
+			});
+			$c('close-link').listen('click', (e)=>{
+			  let box = $(e.target.id.slice(6));
+			  d_setVisible(box, false);
+			});
+			
+			function elDisplay(el) {
+			  return window.getComputedStyle(el)['display'];
+			}
+			
+			// Hide sections within the main menu.
+			$c('hide-link').listen('click', (e)=>{
+			  let id = e.target.id,
 			      label = $(id).innerHTML;
 			  if (label === '[hide]') {
 			    d_setSectionVisible(id, false);
@@ -318,7 +332,7 @@
 			  });
 			  // Update label.
 			  if (value) {
-			    link.innerHTML = '[hide]'; // does something bad happen when you pass DOM elements?
+			    link.innerHTML = '[hide]';
 			  }
 			  else {
 			    link.innerHTML = '[show]';
@@ -332,7 +346,11 @@
 			}
 			
 			// Draggable divs | refactored copy-paste --------------------------------
-			d_draggable('box');
+			//d_draggable('box');
+			$c('box').forEach((el)=>{
+			  d_draggable(el.id);
+			});
+			
 			function d_draggable(id) {
 				let posx,
 						posy,
@@ -345,12 +363,12 @@
 				
 				function click(e) {
 					e = e || window.event;
-					if (!e.explicitOriginalTarget.classList ||
-							e.explicitOriginalTarget.classList[0] !== 'nocancel') {
-						e.preventDefault();
-					}
-					if (e.target.id !== id) {
-						return false;
+					// Make sure this doesn't gank everything in the div.
+					let nodeType = e.explicitOriginalTarget.nodeName;
+					if (nodeType === 'TEXTAREA' ||
+					    nodeType === '#text' ||
+					    nodeType === "INPUT") {
+					  return false;
 					}
 					// Get initial mouse position.
 					posx = e.clientX;
@@ -363,9 +381,9 @@
 					ghost.style.paddingRight = rect.width + 'px';
 					ghost.style.height = rect.height + 'px';
 					// Show the ghost.
-					d_setVisible('ghost', true);
+					d_setVisible(ghost, true);
 					// And hide the box.
-					d_setVisible(id, false);
+					d_setVisible(el, false);
 					// Don't want to be running this code all the time.
 					document.onmouseup = close;
 					document.onmousemove = drag;
@@ -388,9 +406,9 @@
 				
 				function close() {
 					// Hide the ghost.
-					d_setVisible('ghost', false);
+					d_setVisible(ghost, false);
 					// Show the box.
-					d_setVisible(id, true);
+					d_setVisible(el, true);
 					// Set the element's new position.
 					el.style.left = (posx - xOffset) + 'px';
 					el.style.top = (posy - yOffset) + 'px';
@@ -715,12 +733,18 @@
 					        d_readConfig(file, ()=>{ // wants named fun
 					          // Expand filter.
 					          d_setSectionVisible('hide-filter', true);
+					          // Update menu, in case they want to edit.
+					          d_syncEditFolder();
 					          // There might not have been any images in the upload.
 					          if (upload.length > 0) {
 					            // Display an image to start.
-					            let cover = config('cover-img');
+					            let cover = config('cover-image');
+					            // Cover image is not provided.
+					            if (cover === undefined || cover === '') {
+					              d_completeDisplay(upload[0], true);
+					            }
 					            // Cover image is provided as a path.
-					            if (isPath(cover)) {
+					            else if (isPath(cover)) {
 					              d_completeDisplay(uploadF[cover], true);
 					            }
 					            // Cover image is provided as an index.
@@ -741,6 +765,8 @@
 					}
 					if (!hasConfig) {
 					  print('No config file found.');
+					  // Minimize the filter.
+					  d_setSectionVisible('hide-filter', false);
 		        // No cover image specified, just display the first.
 		        d_completeDisplay(upload[0], true);
 					}
@@ -920,12 +946,10 @@
 			
 			// Edit tags box
 			
-			// Edit folder box
-			
 			// Make it work like the r34 searchbar
 			
-		  // Generate tags-list from config | configInit
-		    // exclude link
+		  // Generate tags-list from config | d_configInit
+		    // make-link + exclude link
 			
 			// Tag search links.
 			$c('search-tag-link').listen('click', addTag('tag-search'));
@@ -937,6 +961,27 @@
 			}
 			
 			// Config files. ---------------------------------------------------------
+			// Update config file from menu.
+			{
+			  let settings = $c('folder-setting');
+			  $('download-folder').onclick = ()=>{
+			    // Update config's settings.
+			    settings.forEach((el)=>{
+			      d_setConfig(el.id, el.value);
+			    });
+			    print(config());
+			    // Download the new config.
+			    downloadConfig();
+			  }
+			  
+			  // Set the menu's settings to the current settings.
+			  function d_syncEditFolder() {
+			    settings.forEach((el)=>{
+			      el.value = config(el.id);
+			    });
+			  }
+			}
+			
 			// Read config file contents.
 			function d_readConfig(file, onload) {
 			  let reader = new FileReader();
@@ -976,10 +1021,19 @@
 			// Config object.
 			{
 			  let ivconfig = {
-			    'title': 'none',
-			    'cover-img': 'none',
-			    'tags': {}
+			    'name': '',
+			    'cover-image': '',
+			    'images': {},
+			    'tags-list': [] // holds descriptions and colors and such
 			  };
+			  /*
+			  // Generate an array of every tag used.x
+			  function generateTagsList() {
+			    let acc = [],
+			        tags = config('tags');
+			    
+			    return tags;
+			  }*/
 			  
 			  function config(str) {
 			    // Get the whole obj.
@@ -1006,6 +1060,7 @@
 			    else {
 			      ivconfig[str] = value;
 			    }
+			    return ivconfig;
 			  }
 			}
 			
@@ -1051,7 +1106,7 @@
 			// Disable shortcuts when focus is inside a text input.
 			{
 			  // All the inputs have nocancel
-				let inputs = $c('nocancel'); 
+				let inputs = $c('cancel-key'); 
 				inputs.listen('focus', ()=>{
 				  useKeys(false);
 				});
@@ -1081,6 +1136,7 @@
 			// exlusiveRNG is a bit naive
 			// God what a pain in the ass. Learn this:
 			  // https://medium.com/quick-code/javascript-promises-in-twenty-minutes-3aac5b65b887
+			// Image comments
 		</script>
   </body>
 </html>
