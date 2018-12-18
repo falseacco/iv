@@ -195,7 +195,7 @@
 			      <text id="filter-count" class="indent1">[num. images here, upload font]</text><br>
 			      <textarea id="tag-search" class="cancel-key tag-box indent1" spellcheck="false"
 			        placeholder="Only display images with these tags.
-			        (No tags selected.)"></textarea>
+			        (No tags selected)"></textarea>
 			      <ul id="tags-list" class="tag-list indent2"></ul>
 			      <a id="open-edit-folder" href="#/" class="indent1 smaller box-link">Edit folder</a>
 			      <a id="open-edit-tags" href="#/" class="indent1 smaller box-link">Edit tags</a><br>
@@ -203,7 +203,7 @@
 		      <br>
 		      <br>
 		      </span>
-			</span>
+			</span><br>
 			<text id="filename" class="smaller"></text><br>
 			<a id="previous" class="link" href="#/">previous</a>
 			<a id="next" class="link" href="#/">next</a><br>
@@ -236,6 +236,18 @@
 					    class="indent2" checked>reset time &#8635;<br>
 					    <input id="on-end-count" type="checkbox"
 					      class="indent3" checked>start counting down<br>
+					<!--gohere-->
+					<input id="display-in-file-order" type="checkbox"
+					  class="indent1">Display images in file order</input><br>
+					  <text class="indent2">Property:</text><br>
+					    <input type="radio" class="indent3" name="property" value="name" checked> name<br>
+					    <input type="radio" class="indent3" name="property" value="type"> type<br>
+					    <input type="radio" class="indent3" name="property" value="path"> path<br>
+					    <input type="radio" class="indent3" name="property" value="size"> size<br>
+					    <input type="radio" class="indent3" name="property" value="lastModified"> last modified<br>
+					  <text class="indent2">Order:</text><br>
+					    <input type="radio" class="indent3" name="order" value="ascending" checked> ascending<br>
+					    <input type="radio" class="indent3" name="order" value="descending"> descending<br>
 				</span>
 			</span>
 		</div>
@@ -260,7 +272,7 @@
 		  <text id="tags-filename" class="smaller">current/image/name</text><br>
 		  <text id="untagged-images" class="smaller"># untagged images</text><br>
 		    <textarea id="edit-tag-search" class="cancel-key tag-box indent1" spellcheck="false"
-			    placeholder="The current image's tags. (There are none.)"></textarea>
+			    placeholder="The current image's tags. (There are none)"></textarea>
 			    <ul id="edit-tags-list" class="tag-list indent2"></ul>
 		  <a id="tags-previous" class="link" href="#/">previous</a>
 			<a id="tags-next" class="link" href="#/">next</a><br>
@@ -689,6 +701,66 @@
 			    return file;
 			  }
 			  
+			  //gohere
+			  // Have save and download do what it says
+			  
+				// Mandatory fileorder for edit-tags, prev/next fill out
+				  // Main box
+				    // pass uploads somewhere and use uploadF - not as bad as I thought
+				      // d_uploadInit, d_configInit, exclusiveRandomIndex
+				  
+				// Set uploadF - as opposed to upload.
+				function d_uploadF(arr) {
+				  uploadF = arr;
+				}
+			  
+			  // Sort by file properties.
+			  function sortUploads(parameter, order) {
+			    order = order || 'ascending';
+			    return upload.sort(compareFun(parameter, order));
+			  }
+			  
+			  function compareFun(parameter, order) { // screwed by names w/ nums
+			    if (order === 'ascending') {
+			      order = 1;
+			    }
+			    else {
+			      order = -1;
+			    }
+			    return (file1, file2)=>{
+			      let data1 = fileParameter(file1, parameter),
+			          data2 = fileParameter(file2, parameter);
+			      if (data1 > data2) {
+			        // data2 comes first in alphanumeric order.
+			        return 1 * order;
+			      }
+			      else {
+			        return -1 * order;
+			      }
+			    };
+			  }
+			  
+			  function fileParameter(file, parameter) {
+			    if (parameter === 'lastModified') {
+			      return file.lastModified;
+			    }
+			    else if (parameter === 'name') {
+			      return file.name;
+			    }
+			    else if (parameter === 'size') {
+			      return file.size;
+			    }
+			    else if (parameter === 'type') {
+			      return file.type;
+			    }
+			    else if (parameter === 'path') {
+			      return file.webkitRelativePath;
+			    }
+			    else {
+			      print('fileParameter() ):');
+			    }
+			  }
+			  
 			  // Display an image, update the ui, and archive it for later.
 			  function d_completeDisplay(img, doArchive, onload) {
 			    d_display(img, onload);
@@ -757,7 +829,7 @@
 					    // File is an image, store it in a hash for name lookup.
 					    else {
 					      let path = file.webkitRelativePath;
-					      uploadF[path] = file;
+					      uploadP[path] = file;
 					    }
 					  });
 					}
@@ -775,8 +847,9 @@
 				
 				// Run this when a config file is loaded. || Might want to move this away if displays start taking arr
 			  function d_configInit() {
-			    // Fill out the tag list.
-			    d_syncTagLinks();
+			    // Fill out the tag lists.
+			    d_syncTagLinks('tags-list', 'tag-search');
+			    d_syncTagLinks('edit-tags-list', 'edit-tag-search');
 			    // Show filter.
 			    d_setVisible($('filter-section'), true);
 			    // Expand filter.
@@ -793,7 +866,7 @@
             }
             // Cover image is provided as a path.
             else if (isPath(cover)) {
-              d_completeDisplay(uploadF[cover], true);
+              d_completeDisplay(uploadP[cover], true);
             }
             // Cover image is provided as an index.
             else {
@@ -825,7 +898,7 @@
 				  return name.split('.').slice(-1)[0];
 				}
 				
-				$('next').onclick = d_next; function d_next(e, onload, from) {
+				$('next').onclick = d_next; function d_next(e, onload) {
 				  if (upload.length !== 0) {
 				    if (pointer > 0) {
 				      d_displayNextHistory(onload);
@@ -950,12 +1023,12 @@
 			
 			// display current image's tags
 				// just below the name, but put a limit (based on char length, not tags)
-			// pretty links (close button) / custom css support
-				// Can just add style to directly to search text
+			  // pretty links (close button) / custom css support
+				  // Can just add style to directly to search text
 			
 			// Config file sets default options and filter, title change
 			
-			// Jump to file, both modes (probably different impl.)
+			// filename + tags + nonconforming images left have explanation text on hover
 			
 			// nond Filter tags, return arr
 			
@@ -975,6 +1048,8 @@
 			    // expands to color:red, color:blue, color:green, etc.
 			    // tags list should have option to expand dependent tags
 			
+			// Jump to file, both modes (probably different impl.)
+			
 			// Edit tags box
 				// Is it possible to rename files from the browser?
 				// Tag images
@@ -982,7 +1057,6 @@
 				// Add edit-tags (see above)
 				  // Fill out texts
 				  // Add fileorder sort both modes so you can tag images
-				  // Fill out edit-tags list
 				
 			// Hide the main menu when edit-tags is opened.
 			$('open-edit-tags').addEventListener('click', ()=>{
@@ -994,27 +1068,30 @@
 			});
 			
 			// Hide and show tags based on user search.
-			{
-				let tagsHidden = [];
-				function d_hideTags() {
-					print(searchWord());
+			function hideTags (tagBox, tagList) {
+			  let lamb = {};
+			  lamb.tagsHidden = [];
+			  lamb.fun = ()=>{
+			    print('searchWord(): ' + searchWord(tagBox));
 					// Re-show old tags
-					tagsHidden.forEach((tag)=>{
+					lamb.tagsHidden.forEach((tag)=>{
 						d_setVisible(tag, 'inline');
 					});
 					// Hide new tags
-					tagsHidden = sortTags(searchWord());
-					tagsHidden.forEach((tag)=>{
+					lamb.tagsHidden = sortTags(searchWord(tagBox), tagBox, tagList);
+					lamb.tagsHidden.forEach((tag)=>{
 						d_setVisible(tag, false);
 					});
-				}
-				$('tag-search').oninput = d_hideTags;
+			  };
+			  return lamb.fun;
 			}
+			$('tag-search').oninput = hideTags('tag-search', 'tags-list');
+			$('edit-tag-search').oninput = hideTags('edit-tag-search', 'edit-tags-list');
 			
 			// Make a list of tags that don't match the current search text.
-			function sortTags(searchText) {
-				let search = $('tag-search'),
-						tagsContainer = $('tags-list'),
+			function sortTags(searchText, tagBox, tagList) {
+				let search = $(tagBox),
+						tagsContainer = $(tagList),
 						tags = Array.prototype.slice.call(tagsContainer.childNodes),
 						toHide = [];
 				// Hide any tags that don't match the query so far.
@@ -1022,7 +1099,6 @@
 					let tagLink = tag.firstChild,
 							tagName = tagLink.innerHTML || tagLink.innerText;
 					// Test for not-matches.
-					print(searchText);
 					if (searchText.toUpperCase() !== tagName.slice(0, searchText.length).toUpperCase()) {
 						toHide.push(tag);
 					}
@@ -1031,19 +1107,19 @@
 			}
 			
 			// Get the current search text.
-			function searchWord() {
-				return $('tag-search').value
+			function searchWord(tagBox) {
+				return $(tagBox).value
 				.replace(/^\s/, '') // Remove any leading spaces.
 				.split(' ').slice(-1)[0]; // Get the last word in the search.
 			}
 			
 			// Sync the tag links with the current config file.
-			function d_syncTagLinks() {
-			  let list = $('tags-list');
+			function d_syncTagLinks(tagList, destination) {
+			  let list = $(tagList);
 			  // Clear children.
 			  list.innerHTML = '';
 			  // Add tags from config.
-			  genTagLinks('tag-search').forEach((li)=>{
+			  genTagLinks(destination).forEach((li)=>{
 			    list.appendChild(li);
 			  });
 			}
@@ -1078,7 +1154,7 @@
 			function addTag(value, destination, prefix) { // ):
 			  return (el)=>{
 					let curr = $(destination).value,
-							startIndex = curr.length - searchWord().length;
+							startIndex = curr.length - searchWord(destination).length;
 					$(destination).value = curr.slice(0, startIndex) + // Remove word fragments.
 						value + ' '; // Add a space to keep tags separate.
 			  }
@@ -1255,9 +1331,7 @@
 			
 			// TODO
 			// ivconfig.txt + Image tags
-			// File order sort
 			// Hide display option || keyboard shortcut as well
-			// exclusiveRNG is a bit naive, don't create a new mem every call
 			// POST (and ask about flashlights)
 			// God what a pain in the ass. Learn this:
 			  // https://medium.com/quick-code/javascript-promises-in-twenty-minutes-3aac5b65b887
