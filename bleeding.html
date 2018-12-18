@@ -143,30 +143,33 @@
 				background-repeat: no-repeat;
 			}
 			
-			#tag-search {
+			.tag-box {
 			  font-size: 14px;
 			  font-family: monospace;
 			  width: 200px;
 			  height: 80px;
 			  overflow-y: auto;
 			  resize: none;
+			  margin-top: 5px;
 			}
 			
-			#tags-list {
+			.tag-list {
 			  list-style-type: none;
 			  margin-top: 10px;
 			  padding-left: 0;
 			  width: 190px;
-				word-break: none;
 			}
 			
-			#tags-list li {
+			.tag-list li {
 			  font-size: 14px;
 			  font-family: monospace;
 			  display: inline;
 			}
 			text {
 			  cursor: pointer;
+			}
+			#edit-tags {
+			  background-color: white;
 			}
 		</style>
 		<div id="bg"></div>
@@ -184,23 +187,25 @@
 			<span class="hide-section">
 			  <br>
 			  <input id="upload" type="file" webkitdirectory directory multiple><br>
-			  <text>Filter</text>
-			  <a id="hide-filter" class="smaller hide-link" href="#/">[show]</a>
-			  <text>:</text><br>
-			  <span class="hide-filter-section hidden">
-			    <text id="filter-count" class="indent1">[num. images here, upload font]</text><br>
-			    <textarea id="tag-search" class="cancel-key indent1" spellcheck="false"
-			      placeholder="Only display images with these tags.
-			      (No tags selected.)"></textarea>
-			    <ul id="tags-list" class="indent2">
-			    </ul>
-			    <a id="open-edit-folder" href="#/" class="indent1 smaller box-link">Edit folder</a>
-			    <a id="open-edit-tags" href="#/" class="indent1 smaller box-link">Edit tags</a><br>
-			  </span>
-		    <br>
+			  <span id="filter-section" class="hidden">
+			    <text>Filter</text>
+			    <a id="hide-filter" class="smaller hide-link" href="#/">[show]</a>
+			    <text>:</text><br>
+			    <span class="hide-filter-section hidden">
+			      <text id="filter-count" class="indent1">[num. images here, upload font]</text><br>
+			      <textarea id="tag-search" class="cancel-key tag-box indent1" spellcheck="false"
+			        placeholder="Only display images with these tags.
+			        (No tags selected.)"></textarea>
+			      <ul id="tags-list" class="tag-list indent2"></ul>
+			      <a id="open-edit-folder" href="#/" class="indent1 smaller box-link">Edit folder</a>
+			      <a id="open-edit-tags" href="#/" class="indent1 smaller box-link">Edit tags</a><br>
+			    </span>
+		      <br>
+		      <br>
+		      </span>
 			</span>
 			<text id="filename" class="smaller"></text><br>
-			<a id="previous" class="link" href="#/" inactive>previous</a>
+			<a id="previous" class="link" href="#/">previous</a>
 			<a id="next" class="link" href="#/">next</a><br>
 			<br>
 			<a id="reset" class="gray-link" href="#/">&#8635;</a>
@@ -246,10 +251,23 @@
 		  <input id="cover-image" type="text" class="cancel-key indent1 folder-setting"
 					    placeholder="none" size="8" autocomplete="off"><br>
 			<br>
-		  <a id="download-folder" href="#/" class="">Save and download</a>
+		  <a id="download-folder" href="#/" class="smaller">
+		    Save and download config</a>
 		</div>
-		<!--<div id="edit-tags-box" class="hidden"></div>-->
-		<!-- will have to swap class between box and hidden -->
+		<div id="edit-tags" class="hidden box">
+		  <text>Tag images:</text>
+		  <a id="close-edit-tags" href="#/" class="close-link">x</a><br>
+		  <text id="tags-filename" class="smaller">current/image/name</text><br>
+		  <text id="untagged-images" class="smaller"># untagged images</text><br>
+		    <textarea id="edit-tag-search" class="cancel-key tag-box indent1" spellcheck="false"
+			    placeholder="The current image's tags. (There are none.)"></textarea>
+			    <ul id="edit-tags-list" class="tag-list indent2"></ul>
+		  <a id="tags-previous" class="link" href="#/">previous</a>
+			<a id="tags-next" class="link" href="#/">next</a><br>
+			<a id="download-tags" class="smaller link" href="#/">
+		    Save and download config</a>
+		  <!--gohere-->
+		</div>
 		<div id="ghost" class="hidden box"></div>
 		<a id="download-link"></a>
 			
@@ -343,7 +361,7 @@
 					el.style.display = value;
 				}
 				else {
-					el.style.display = value ? 'block' : 'none';
+					el.style.display = value ? 'inline-block' : 'none';
 				}
 				return value;
 			}
@@ -706,7 +724,7 @@
 			  function d_displayFilename(img) {
 				  let name;
 				  if (img === '' || img === undefined) {
-				    name = '...';
+				    name = '';
 				  }
 				  else {
 				    name = img.webkitRelativePath;
@@ -759,6 +777,8 @@
 			  function d_configInit() {
 			    // Fill out the tag list.
 			    d_syncTagLinks();
+			    // Show filter.
+			    d_setVisible($('filter-section'), true);
 			    // Expand filter.
           d_setSectionVisible('hide-filter', true);
           // Update menu, in case they want to edit.
@@ -958,7 +978,20 @@
 			// Edit tags box
 				// Is it possible to rename files from the browser?
 				// Tag images
-				// Add a tag (see above)
+				  // Implement cat/man tags
+				// Add edit-tags (see above)
+				  // Fill out texts
+				  // Add fileorder sort both modes so you can tag images
+				  // Fill out edit-tags list
+				
+			// Hide the main menu when edit-tags is opened.
+			$('open-edit-tags').addEventListener('click', ()=>{
+		    d_setVisible($('box'), false);
+			});
+			// Show the main menu again when edit-tags is closed.
+			$('close-edit-tags').addEventListener('click', ()=>{
+			  d_setVisible($('box'), true);
+			});
 			
 			// Hide and show tags based on user search.
 			{
