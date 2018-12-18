@@ -157,6 +157,7 @@
 			  margin-top: 10px;
 			  padding-left: 0;
 			  width: 190px;
+				word-break: none;
 			}
 			
 			#tags-list li {
@@ -338,11 +339,16 @@
 			}
 			
 			function d_setVisible(el, value) {
-				el.style.display = value ? 'block' : 'none';
+				if (typeof(value) === 'string') {
+					el.style.display = value;
+				}
+				else {
+					el.style.display = value ? 'block' : 'none';
+				}
 				return value;
 			}
 			
-			// Draggable divs | refactored copy-paste --------------------------------
+			// Draggable divs --------------------------------
 			//d_draggable('box');
 			$c('box').forEach((el)=>{
 			  d_draggable(el.id);
@@ -417,7 +423,7 @@
 				}
 			}
 			
-			// Fullscreen | copy-paste -----------------------------------------------
+			// Fullscreen -----------------------------------------------
 			function requestFullscreen(el) {
 				if(el.requestFullscreen)
 					el.requestFullscreen();
@@ -928,8 +934,6 @@
 			
 			// nond Filter tags, return arr
 			
-			// Folder tag editor
-			
 			// Implement tags
 			  // Tag descriptions with "ivconfig!-descr" entry in JSON
 			  // normal tag: |red|
@@ -947,12 +951,54 @@
 			    // tags list should have option to expand dependent tags
 			
 			// Edit tags box
+				// Tag images
+				// Add a tag (see above)
 			
-			// Make it look/work like the r34 searchbar
-			  // Overlay css-html over textarea
-			  // caret position https://stackoverflow.com/questions/263743/how-to-get-the-caret-column-not-pixels-position-in-a-textarea-in-characters
-			  // Search-dropdown first - https://www.w3schools.com/howto/howto_js_filter_lists.asp
+			// Hide and show tags based on user search.
+			{
+				let tagsHidden = [];
+				function d_hideTags() {
+					print(searchWord());
+					// Re-show old tags
+					tagsHidden.forEach((tag)=>{
+						d_setVisible(tag, 'inline');
+					});
+					// Hide new tags
+					tagsHidden = sortTags(searchWord());
+					tagsHidden.forEach((tag)=>{
+						d_setVisible(tag, false);
+					});
+				}
+				$('tag-search').oninput = d_hideTags;
+			}
 			
+			// Make a list of tags that don't match the current search text.
+			function sortTags(searchText) {
+				let search = $('tag-search'),
+						tagsContainer = $('tags-list'),
+						tags = Array.prototype.slice.call(tagsContainer.childNodes),
+						toHide = [];
+				// Hide any tags that don't match the query so far.
+				tags.forEach((tag)=>{ // can use array.filter for this
+					let tagLink = tag.firstChild,
+							tagName = tagLink.innerHTML || tagLink.innerText;
+					// Test for not-matches.
+					print(searchText);
+					if (searchText.toUpperCase() !== tagName.slice(0, searchText.length).toUpperCase()) {
+						toHide.push(tag);
+					}
+				});
+				return toHide;
+			}
+			
+			// Get the current search text.
+			function searchWord() {
+				return $('tag-search').value
+				.replace(/^\s/, '') // Remove any leading spaces.
+				.split(' ').slice(-1)[0]; // Get the last word in the search.
+			}
+			
+			// Sync the tag links with the current config file.
 			function d_syncTagLinks() {
 			  let list = $('tags-list');
 			  // Clear children.
@@ -981,7 +1027,7 @@
 			  mainLink.onclick = addTag(tag, destination);
 			  excludeLink.href='#/';
 			  excludeLink.innerHTML = '[!]';
-			  excludeLink.onclick = addTag('!' + tag, destination);
+			  excludeLink.onclick = addTag('!' + tag, destination, '!');
 			  // Keep the links from clustering together.
 			  li.style.paddingRight = '5px';
 			  // Put it all together.
@@ -990,12 +1036,12 @@
 			  return li;
 			}
 			
-			// Tag search links. might be obsolete
-			//$c('search-tag-link').listen('click', addTag('tag-search'));
-			
-			function addTag(value, destination) { // isExclude
+			function addTag(value, destination, prefix) { // ):
 			  return (el)=>{
-			    $(destination).value += value + ' ';
+					let curr = $(destination).value,
+							startIndex = curr.length - searchWord().length;
+					$(destination).value = curr.slice(0, startIndex) + // Remove word fragments.
+						value + ' '; // Add a space to keep tags separate.
 			  }
 			}
 			
