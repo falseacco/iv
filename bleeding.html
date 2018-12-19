@@ -187,7 +187,7 @@
 			<span class="hide-section">
 			  <br>
 			  <input id="upload" type="file" webkitdirectory directory multiple><br>
-			  <span id="filter-section" class="hidden">
+			  <span id="hidden-to-start-filter-section" class="hidden">
 			    <text>Filter</text>
 			    <a id="hide-filter" class="smaller hide-link" href="#/">[show]</a>
 			    <text>:</text><br>
@@ -199,15 +199,17 @@
 			      <ul id="tags-list" class="tag-list indent2"></ul>
 			      <a id="open-edit-folder" href="#/" class="indent1 smaller box-link">Edit folder</a>
 			      <a id="open-edit-tags" href="#/" class="indent1 smaller box-link">Edit tags</a><br>
-			    </span>
-		      <br>
+			    <br>
+					</span>
 		      <br>
 		      </span>
 			</span><br>
+			<span id="hidden-to-start-file-section" class="hidden">
 			<text id="filename" class="smaller"></text><br>
 			<a id="previous" class="link" href="#/">previous</a>
 			<a id="next" class="link" href="#/">next</a><br>
 			<br>
+			</span><br>
 			<a id="reset" class="gray-link" href="#/">&#8635;</a>
 			<a id="timer" class="gray-link" href="#/">10:00</a><br>
 			<span class="hide-section">
@@ -704,15 +706,10 @@
 			  //gohere
 			  // Have save and download do what it says
 			  
+				// Be able to add tags to images
+				
 				// Mandatory fileorder for edit-tags, prev/next fill out
-				  // Main box
-				    // pass uploads somewhere and use uploadF - not as bad as I thought
-				      // d_uploadInit, d_configInit, exclusiveRandomIndex
-				  
-				// Set uploadF - as opposed to upload.
-				function d_uploadF(arr) {
-				  uploadF = arr;
-				}
+				  // Have fileorder option sort uploadF now
 			  
 			  // Sort by file properties.
 			  function sortUploads(parameter, order) {
@@ -812,6 +809,10 @@
 					upload = Array.from($('upload').files);
 					// Make sure there's some data before working.
 					if (upload.length > 0) {
+						// Show file navigation.
+						d_setVisible($('hidden-to-start-file-section'), true);
+						// Show filter.
+						d_setVisible($('hidden-to-start-filter-section'), true);
 					  // Filter out any non-image files.
 					  upload.forEach((file, i)=>{
 					    let name = file.name;
@@ -831,7 +832,9 @@
 					      let path = file.webkitRelativePath;
 					      uploadP[path] = file;
 					    }
-					  });
+					  })
+						// Clone upload to uploadF
+						uploadF = upload.slice();
 					}
 					if (!hasConfig) {
 					  print('No config file found.');
@@ -850,8 +853,6 @@
 			    // Fill out the tag lists.
 			    d_syncTagLinks('tags-list', 'tag-search');
 			    d_syncTagLinks('edit-tags-list', 'edit-tag-search');
-			    // Show filter.
-			    d_setVisible($('filter-section'), true);
 			    // Expand filter.
           d_setSectionVisible('hide-filter', true);
           // Update menu, in case they want to edit.
@@ -868,7 +869,7 @@
             else if (isPath(cover)) {
               d_completeDisplay(uploadP[cover], true);
             }
-            // Cover image is provided as an index.
+            // Cover image is provided as an index? Nobody's going to use this
             else {
               img = upload[Number(cover)];
               d_completeDisplay(upload[Number(cover)], true);
@@ -899,7 +900,7 @@
 				}
 				
 				$('next').onclick = d_next; function d_next(e, onload) {
-				  if (upload.length !== 0) {
+				  if (uploadF.length !== 0) {
 				    if (pointer > 0) {
 				      d_displayNextHistory(onload);
 				    }
@@ -939,7 +940,7 @@
 				// Display a random image.
 				function d_displayRandom(onload) {
 				  if (pointer === 0) {
-				    let img = upload[exclusiveRandomIndex()];
+				    let img = uploadF[exclusiveRandomIndex()];
 				    d_completeDisplay(img, true, onload);
 				    print('d_displayRandom() active');
 				  }
@@ -954,7 +955,7 @@
 				    let i,
 				      unique = true,
 				      memory = 20,
-			        length = upload.length;
+			        length = uploadF.length;
 				    if (length <= memory) {
 				      memory = length - 1;
 				    }
@@ -964,7 +965,7 @@
 				      i = randomIndex();
 				      unique = true;
 				      for (let prev of memory) {
-				        if (prev === upload[i]) {
+				        if (prev === uploadF[i]) {
 				          unique = false;
 				          break;
 				        }
@@ -980,7 +981,7 @@
 				}
 				
 				function randomIndex() {
-					return random(0, upload.length);
+					return random(0, uploadF.length);
 				}
 				
 				function random(min, max) { // Don't use negative numbers.
