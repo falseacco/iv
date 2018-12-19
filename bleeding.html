@@ -136,7 +136,8 @@
 				left: 0;
 				height: 100%;
 				width: 100%;
-				background-size: auto 100%;
+				/*background-size: auto 100%;*/
+				background-size: contain;
 				/* Center the background image. */
 				background-position: center;
 				/* Don't use the image as a tile. */
@@ -1061,7 +1062,15 @@
 					let fileIndex = 0;
 					function d_displayFileOrder(onload) {
 						d_completeDisplay(uploadF[fileIndex], true, onload);
-						fileIndex += 1;
+						// Go to next image in file order.
+						if (fileIndex < uploadF.length - 1) {
+						  fileIndex += 1;
+						}
+						// Reached end of folder, loop back around.
+						else {
+						  fileIndex = 0;
+						}
+						
 						print('d_displayFileOrder()');
 					}
 					
