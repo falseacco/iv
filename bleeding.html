@@ -239,17 +239,19 @@
 					    <input id="on-end-count" type="checkbox"
 					      class="indent3" checked>start counting down<br>
 					<!--gohere-->
-					<input id="display-in-file-order" type="checkbox"
+					<input id="display-in-file-order" class="file-sort" type="checkbox"
 					  class="indent1">Display images in file order</input><br>
 					  <text class="indent2">Property:</text><br>
-					    <input type="radio" class="indent3" name="property" value="name" checked> name<br>
-					    <input type="radio" class="indent3" name="property" value="type"> type<br>
-					    <input type="radio" class="indent3" name="property" value="path"> path<br>
-					    <input type="radio" class="indent3" name="property" value="size"> size<br>
-					    <input type="radio" class="indent3" name="property" value="lastModified"> last modified<br>
+					    <input type="radio" class="file-sort indent3" name="file-property" value="name" checked> name<br>
+					    <input type="radio" class="file-sort indent3" name="file-property" value="type"> type<br>
+					    <input type="radio" class="file-sort indent3" name="file-property" value="path"> path<br>
+					    <input type="radio" class="file-sort indent3" name="file-property" value="size"> size<br>
+					    <input type="radio" class="file-sort indent3" name="file-property" value="lastModified"> last modified<br>
 					  <text class="indent2">Order:</text><br>
-					    <input type="radio" class="indent3" name="order" value="ascending" checked> ascending<br>
-					    <input type="radio" class="indent3" name="order" value="descending"> descending<br>
+					    <input type="radio" class="file-sort indent3" name="file-order" value="ascending" checked> ascending<br>
+					    <input type="radio" class="file-sort indent3" name="file-order" value="descending"> descending<br>
+						<a href="#/" class="jump-to-start indent2">Jump to start</a><br>
+						
 				</span>
 			</span>
 		</div>
@@ -280,7 +282,6 @@
 			<a id="tags-next" class="link" href="#/">next</a><br>
 			<a id="download-tags" class="smaller link" href="#/">
 		    Save and download config</a>
-		  <!--gohere-->
 		</div>
 		<div id="ghost" class="hidden box"></div>
 		<a id="download-link"></a>
@@ -312,6 +313,10 @@
 			
 			function $c(str) {
 			  return Array.prototype.slice.call(document.getElementsByClassName(str));
+			}
+			
+			function $n(str) {
+			  return Array.prototype.slice.call(document.getElementsByName(str));
 			}
 			
 			// Assign events to multiple objects at once. (does not hoist)
@@ -707,14 +712,42 @@
 			  // Have save and download do what it says
 			  
 				// Be able to add tags to images
+				// Display current image's tags
 				
-				// Mandatory fileorder for edit-tags, prev/next fill out
-				  // Have fileorder option sort uploadF now
+				// Mandatory fileorder for edit-tags | use d_next's from
+					// prev/next fill out
 			  
+				// Jump to the first index of uploadF
+				$c('jump-to-start').listen('click', ()=>{
+					d_completeDisplay(uploadF[0], true);
+					d_setFileIndex(1);
+				});
+				
+				$c('file-sort').listen('click', ()=>{
+					uploadF = sortUploadsFromMenu('file-property', 'file-order');
+					d_setFileIndex(0);
+					//print(uploadF);
+				});
+				
+				// Sort by file properties pulled from menu.
+				function sortUploadsFromMenu(propertyName, orderName) {
+					return sortUploads(selectedRadio(propertyName), selectedRadio(orderName));
+				}
+				
+				// Find which radio button in a group is selected.
+				function selectedRadio(name) {
+					let options = $n(name);
+					for (let i in options) {
+						let option = options[i];
+						if (option.checked) {
+							return option.value;
+						}
+					}
+				}
+				
 			  // Sort by file properties.
 			  function sortUploads(parameter, order) {
-			    order = order || 'ascending';
-			    return upload.sort(compareFun(parameter, order));
+			    return uploadF.sort(compareFun(parameter, order));
 			  }
 			  
 			  function compareFun(parameter, order) { // screwed by names w/ nums
@@ -835,6 +868,11 @@
 					  })
 						// Clone upload to uploadF
 						uploadF = upload.slice();
+						// Sort uploadF if the folder wants to be fileordered
+						if (option('display-in-file-order')) {
+							print('This folder wants to be displayed in order of file properties by default.');
+							uploadF = sortUploadsFromMenu('file-property', 'file-order');
+						}
 					}
 					if (!hasConfig) {
 					  print('No config file found.');
@@ -899,13 +937,16 @@
 				  return name.split('.').slice(-1)[0];
 				}
 				
-				$('next').onclick = d_next; function d_next(e, onload) {
+				$('next').onclick = d_next; function d_next(e, onload, from) {
 				  if (uploadF.length !== 0) {
 				    if (pointer > 0) {
 				      d_displayNextHistory(onload);
 				    }
 				    else {
-				      if (option('display-new') ||
+							if (option('display-in-file-order')) {
+								d_displayFileOrder(onload);
+							}
+				      else if (option('display-new') ||
 				          from === 'reset' && option('on-end-display-new')) {
 				        if (option('hide-every-other')) {
 				          if (hidLastImage) {
@@ -991,7 +1032,22 @@
 				// Display the void.
 				function d_displayBlank(onload) {
 				  d_completeDisplay('', true, onload);
-				  print('d_displayBlank');
+				  print('d_displayBlank()');
+				}
+				
+				// Display the next image in file order.
+				{
+					// Have to keep track of this separately.
+					let fileIndex = 0;
+					function d_displayFileOrder(onload) {
+						d_completeDisplay(uploadF[fileIndex], true, onload);
+						fileIndex += 1;
+						print('d_displayFileOrder()');
+					}
+					
+					function d_setFileIndex(n) {
+						fileIndex = n;
+					}
 				}
 				
 				// Display the next image in history.
@@ -1054,6 +1110,8 @@
 			
 			// Edit tags box
 				// Is it possible to rename files from the browser?
+				// Display images w/ fewest tags first option
+				// Display un-man-tagged images first option
 				// Tag images
 				  // Implement cat/man tags
 				// Add edit-tags (see above)
@@ -1335,6 +1393,7 @@
 			// ivconfig.txt + Image tags
 			// Get rid of the dotted outlines on click
 			// Hide display option || keyboard shortcut as well
+			// Pause timer when skipping/jumping w/e
 			// POST (and ask about flashlights)
 			// God what a pain in the ass. Learn this:
 			  // https://medium.com/quick-code/javascript-promises-in-twenty-minutes-3aac5b65b887
