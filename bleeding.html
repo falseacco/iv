@@ -313,6 +313,7 @@
 		  <a id="hide-tags-options" class="smaller link hide-link" href="#/">[show]</a>
 		  <text>:</text><br>
 		  <span class="hide-tags-options-section hidden">
+				<input id="display-untagged-first" type="checkbox" class="tags-file-sort indent1" checked>Display untagged images first<br>
 		    <text class="indent1">Sort by</text><br>
 			  <text class="indent2">file property:</text><br>
 			    <input type="radio" class="tags-file-sort indent3" name="tags-file-property" value="name" checked> name<br>
@@ -767,6 +768,7 @@
 				});
 				
 				$c('tags-file-sort').listen('click', ()=>{
+					// Sort by file property.
 					uploadF = sortUploadsFromMenu('tags-file-property', 'tags-file-order');
 					d_setFileIndex(0);
 					print('tags-file-sort()');
@@ -775,7 +777,12 @@
 				
 				// Sort by file properties pulled from menu.
 				function sortUploadsFromMenu(propertyName, orderName) {
-					return sortUploads(selectedRadio(propertyName), selectedRadio(orderName));
+					let sorted = sortUploads(selectedRadio(propertyName), selectedRadio(orderName));
+					if ($('display-untagged-first').checked) {
+						// Display untagged images first.
+						sorted = sortUploads('is-tagged', selectedRadio('tags-file-order'));
+					}
+					return sorted;
 				}
 				
 				// Find which radio button in a group is selected.
@@ -794,7 +801,7 @@
 			    return uploadF.sort(compareFun(parameter, order));
 			  }
 			  
-			  function compareFun(parameter, order) { // screwed by names w/ nums
+			  function compareFun(parameter, order) {
 			    if (order === 'ascending') {
 			      order = 1;
 			    }
@@ -830,6 +837,9 @@
 			    else if (parameter === 'path') {
 			      return file.webkitRelativePath;
 			    }
+					else if (parameter === 'is-tagged') {
+						return isTagged(file); //! so it works with compareFun
+					}
 			    else {
 			      print('fileParameter() ):');
 			    }
@@ -986,7 +996,7 @@
 								link = document.createElement('a');
 						// Set up link.
 						link.href = '#/';
-						link.innerHTML = tag.name;
+						link.innerHTML = tag.name.slice(0, -2);
 						// Hover text.
 						link.title = tag.description || '';
 						// Sort edit-tags-list on click.
@@ -1010,33 +1020,57 @@
 				function untagged() {
 					let acc = [];
 					upload.forEach((file)=>{
-						let path = file.webkitRelativePath,
-								tags = config(path);
-						if (tags && recTags.length !== 0) {
-							recTags.forEach((recTag)=>{
-								for (let i in tags) {
-									let tagName = tags[i],
-											recCategory = recTag.name.slice(0, -1);
-									// Sometimes tagname is listen(), wtf?
-									if (typeof(tagName) === 'string' && recCategory === tagName.slice(0, recCategory.length)) {
-										// Tag matches, leave it alone.
-										return;
-									}
-								}
-								// None of the tags matched, this image is untagged.
-								acc.push(file);
-							});
-						}
-						else if (tags && recTags.length === 0) {
-							if (tags.length === 0) {
-								acc.push(file);
-							}
-						}
-						else {
+						if (!isTagged(file)) {
 							acc.push(file);
 						}
 					});
 					return acc;
+				}
+				
+				function isTagged(image) {
+					let path = image.webkitRelativePath,
+							tags = config(path);
+					// The image has an array for tags.
+					if (tags) {
+						// man tags have been defined.
+						if (recTags.length > 0) {
+							// Check for each man tag's presence.
+							for (let r = 0; r < tags.length; r += 1) { // for (let i in x) format was causing bugs here
+								let recTag = recTags[r],
+										match = false;
+								for (let i = 0; i < tags.length; i += 1) {
+									let tagName = tags[i],
+											recCategory = recTag.name.slice(0, -1);
+									if (/*typeof(tagName) === 'string' && */recCategory === tagName.slice(0, recCategory.length)) {
+										// Tag matches.
+										match = true;
+									}
+								}
+								// None of the tags matched, this image is untagged.
+								if (!match) {
+									return false;
+								}
+							//});
+							}
+							// All of the images matched, this image is tagged.
+							return true;
+						}
+						// No man tags have been defined.
+						else {
+							// The image has tags.
+							if (tags.length > 0) {
+								return true;
+							}
+							// The image's tags are empty.
+							else {
+								return false;
+							}
+						}
+					}
+					// The image has no tags entry.
+					else {
+						return false;
+					}
 				}
 				
 				function d_syncRecTags() {
@@ -1331,12 +1365,6 @@
 					// Link to add tag
 					// Link to download config
 					// tags-list, click fills form
-		  
-			// Display untagged images first.
-			
-				// Compare fun untagged images | going to have to split untagged up
-				
-				// checkbox
 			
 			// Hide the main menu when edit-tags is opened.
 			$('open-edit-tags').addEventListener('click', ()=>{
