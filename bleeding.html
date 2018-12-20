@@ -197,7 +197,7 @@
 		
 		<a id="title" class="black-link" href="https://www.github.com/ooorel/iv"
 		   target="_blank" rel="noopener noreferrer">
-		  <h1>iv</h1>
+		  <h2>iv</h2>
 		</a><br>
 		
 		<div id="box" class="box">
@@ -206,7 +206,8 @@
 			<span class="hide-section">
 			  <br>
 			  <input id="upload" type="file" webkitdirectory directory multiple><br>
-			  <span id="hidden-to-start-filter-section" class="hidden">
+			  <a id="open-edit-folder" href="#/" class="indent1 smaller box-link">Edit folder</a><br>
+			  <br>
 			    <text>Filter images</text>
 			    <a id="hide-filter" class="smaller hide-link" href="#/">[show]</a>
 			    <text>:</text><br>
@@ -215,11 +216,9 @@
 			      <textarea id="tag-search" class="cancel-key tag-box indent1" spellcheck="false"
 			        placeholder="Only display images with these tags.&#10;&#10;(No tags selected)"></textarea>
 			      <ul id="tags-list" class="tag-list"></ul>
-			      <a id="open-edit-folder" href="#/" class="indent1 smaller box-link">Edit folder</a>
-			      <a id="open-edit-tags" href="#/" class="indent1 smaller box-link">Edit tags</a><br>
-			    <br>
-					</span>
-		      <br>
+			      <a id="open-tag-images" href="#/" class="indent1 smaller box-link">Tag images</a>
+			      <a id="open-edit-tags" href="#/" class="indent1 smaller box-link">Add/edit tags</a><br>
+					<br>
 		      </span>
 			</span><br>
 			<span id="hidden-to-start-file-section" class="hidden">
@@ -287,12 +286,12 @@
 		  <a id="download-folder" href="#/" class="download-config smaller">
 		    Save settings</a>
 		</div>
-		<div id="edit-tags" class="hidden box">
+		<div id="tag-images" class="hidden box">
 		  <text>Tag images:</text>
-		  <a id="close-edit-tags" href="#/" class="close-link">x</a><br>
+		  <a id="close-tag-images" href="#/" class="close-link">x</a><br>
 		  <text id="tags-filename" class="smaller filename"></text><br>
 		  <text id="untagged-images" class="smaller indent1"></text><br>
-		    <textarea id="edit-tag-search" class="cancel-key tag-box indent1" spellcheck="false"
+		    <textarea id="tag-images-search" class="cancel-key tag-box indent1" spellcheck="false"
 			    placeholder="The current image's tags.&#10;(There are none)"></textarea><br>
 					<br>
 					<span id="man-tags-section">
@@ -303,7 +302,7 @@
 							</ul>
 						</div>
 					</span>
-			    <ul id="edit-tags-list" class="tag-list"></ul>
+			    <ul id="tag-images-list" class="tag-list"></ul>
 		  <a id="tags-previous" class="link" href="#/">previous</a>
 			<a id="tags-next" class="link" href="#/">next</a><br>
 			<a id="download-tags" class="download-config smaller" href="#/">
@@ -762,7 +761,7 @@
 				// Sort uploads whenever the user changes menu.
 				$c('file-sort').listen('click', ()=>{
 					uploadF = sortUploadsFromMenu('file-property', 'file-order');
-					d_setFileIndex(0);
+					d_setFileIndex(-1);
 					print('file-sort()');
 					print(uploadF);
 				});
@@ -770,7 +769,7 @@
 				$c('tags-file-sort').listen('click', ()=>{
 					// Sort by file property.
 					uploadF = sortUploadsFromMenu('tags-file-property', 'tags-file-order');
-					d_setFileIndex(0);
+					d_setFileIndex(-1);
 					print('tags-file-sort()');
 					print(uploadF);
 				});
@@ -780,7 +779,7 @@
 					let sorted = sortUploads(selectedRadio(propertyName), selectedRadio(orderName));
 					if ($('display-untagged-first').checked) {
 						// Display untagged images first.
-						sorted = sortUploads('is-tagged', selectedRadio('tags-file-order'));
+						sorted = sortUploads('is-tagged');
 					}
 					return sorted;
 				}
@@ -802,21 +801,21 @@
 			  }
 			  
 			  function compareFun(parameter, order) {
-			    if (order === 'ascending') {
-			      order = 1;
-			    }
-			    else {
-			      order = -1;
+			    let modifier = -1;
+			    if (order === 'ascending' || parameter === 'is-tagged') {
+			      modifier = 1;
 			    }
 			    return (file1, file2)=>{
 			      let data1 = fileParameter(file1, parameter),
 			          data2 = fileParameter(file2, parameter);
+			      if (parameter === 'is-tagged') {
+			      }
 			      if (data1 > data2) {
 			        // data2 comes first in alphanumeric order.
-			        return 1 * order;
+			        return 1 * modifier;
 			      }
 			      else {
-			        return -1 * order;
+			        return -1 * modifier;
 			      }
 			    };
 			  }
@@ -838,7 +837,7 @@
 			      return file.webkitRelativePath;
 			    }
 					else if (parameter === 'is-tagged') {
-						return isTagged(file); //! so it works with compareFun
+						return isTagged(file); // boolean comparisons shouldn't exist
 					}
 			    else {
 			      print('fileParameter() ):');
@@ -852,6 +851,7 @@
 			    if (doArchive) {
 			      d_archive(img);
 			    }
+			    d_listTags();
 			  }
 			  
 			  // Display an image.
@@ -904,8 +904,6 @@
 					if (upload.length > 0) {
 						// Show file navigation.
 						d_setVisible($('hidden-to-start-file-section'), true);
-						// Show filter.
-						d_setVisible($('hidden-to-start-filter-section'), true);
 					  // Filter out any non-image files.
 					  upload.forEach((file, i)=>{
 					    let name = file.name;
@@ -950,7 +948,7 @@
 			  function d_configInit() {
 			    // Fill out the tag lists.
 			    d_syncTagLinks('tags-list', 'tag-search', true);
-			    d_syncTagLinks('edit-tags-list', 'edit-tag-search');
+			    d_syncTagLinks('tag-images-list', 'tag-images-search');
 					d_syncRecTags();
 					// Add man tag links for edit.
 					d_updateRecTagsList();
@@ -999,7 +997,7 @@
 						link.innerHTML = tag.name.slice(0, -2);
 						// Hover text.
 						link.title = tag.description || '';
-						// Sort edit-tags-list on click.
+						// Sort tag-images-list on click.
 						link.onclick = ()=>{
 							editHideTags('', tag.name.slice(0, -1));
 						};
@@ -1148,12 +1146,11 @@
 				
 				// Update title based on config.
 				function d_syncTitle() {
-					let title = $('title'),
-							settings = config('name'),
-							newText = settings.name,
-							newHref = settings.homepage;
+					let title = $('title')
+							newText = config('name'),
+							newHref = config('homepage');
 					if (newText) {
-						title.innerHTML = '<h1>' + newText + '</h1>';
+						title.innerHTML = '<h2>' + newText + '</h2>';
 					}
 					if(newHref) {
 						title.href = newHref;
@@ -1220,7 +1217,7 @@
 				// Display the next image in file order.
 				{
 					// Have to keep track of this separately.
-					let fileIndex = 0;
+					let fileIndex = -1;
 					function d_displayFileOrder(onload) {
 						// Go to next image in file order.
 						if (fileIndex < uploadF.length - 1) {
@@ -1232,6 +1229,7 @@
 						}
 						d_completeDisplay(uploadF[fileIndex], true, onload);
 						print('d_displayFileOrder()');
+						print(fileIndex);
 					}
 					
 					function d_setFileIndex(n) {
@@ -1265,13 +1263,13 @@
 				}
 			
 			
-			// Navigation buttons for edit-tags. Constrained to fileorder.
+			// Navigation buttons for tag-images. Constrained to fileorder.
 			$('tags-next').onclick = ()=>{
 			  d_syncImageTags(()=>{
 			    // Display the next image. (In fileorder, so no repeats)
 			    d_next(false, false, 'tags-next');
 					d_updateUntagged();
-			    d_listTags();
+			    //d_listTags();
 			  });
 			}
 			
@@ -1280,15 +1278,15 @@
 			  d_syncImageTags(()=>{
 			    d_previous();
 					d_updateUntagged();
-			    if (pointer >= 0 && pointer < (history.length)) {
-			      d_listTags();
-			    }
+			    //if (pointer >= 0 && pointer < (history.length)) {
+			      //d_listTags();
+			    //}
 			  });
 			}
 			
 			// Update current image's tags based on the menu.
 			function d_syncImageTags(wait) { // wait is probably stupid but idk
-			  let tags = $('edit-tag-search').value // Get the textbox's value
+			  let tags = $('tag-images-search').value // Get the textbox's value
 			                  .trim() // Remove whitespace on outside of string
 			                  .split(' '), // Convert to array
 			      currentImagePath = fetchHistory(pointer).webkitRelativePath;
@@ -1307,16 +1305,18 @@
 			      path = current.webkitRelativePath,
 			      tags = config('images')[path];
 			  // Clear the last image's tags.
-			  $('edit-tag-search').value = '';
+			  $('tag-images-search').value = '';
 			  // Update text box.
 			  if (tags !== undefined) {
 			    tags.forEach((tag)=>{
 						// If there's no tag, don't edit the box and remove the placeholder.
 						if (tag.length !== 0) {
-							$('edit-tag-search').value += (tag + ' ');
+							$('tag-images-search').value += (tag + ' ');
 						}
 			    });
 			  }
+			  print('d_listTags():');
+			  print(tags);
 			}
 			
 			// Let the user know when they have unsaved data.
@@ -1341,7 +1341,7 @@
 		    // valid search words arr
 				// Option to not exlude cat tags
 			
-			// Give edit tags a filter too.
+			// Give tag-images a filter too.
 			
 			// filter tags
 			
@@ -1349,15 +1349,11 @@
 				// Pause timer when skipping/jumping w/e
 			  // Put it next to prev/next, but smaller font | Jump...
 			
-			// Edit folder place above Filter Images (filter still has an edit tags link)
-			
 			// Remember extinct files, allow user to transfer tags from
 				
 			// gohere
 			// User needs to be able to add/edit tags of their own
-				// Link below edit-tags-list
-					// goddamit change edit-tags to tag-images
-				// Another box:
+				// 'edit-tags' div
 					// Form with name and descr
 						// Add param link + text
 						// required
@@ -1366,18 +1362,18 @@
 					// Link to download config
 					// tags-list, click fills form
 			
-			// Hide the main menu when edit-tags is opened.
-			$('open-edit-tags').addEventListener('click', ()=>{
+			// Hide the main menu when tag-images is opened.
+			$('open-tag-images').addEventListener('click', ()=>{
 		    d_setVisible($('box'), false);
 		    // Sort//adasdasd
 		    uploadF = sortUploadsFromMenu('tags-file-property', 'tags-file-order');
 		    print('tags-file-sort()');
 		    print(uploadF);
 		    // Display current image's tags.
-		    d_listTags();
+		    //d_listTags();
 			});
-			// Show the main menu again when edit-tags is closed.
-			$('close-edit-tags').addEventListener('click', ()=>{
+			// Show the main menu again when tag-images is closed.
+			$('close-tag-images').addEventListener('click', ()=>{
 			  d_setVisible($('box'), true);
 			});
 			
@@ -1402,8 +1398,8 @@
 			  return lamb.fun;
 			}
 			$('tag-search').oninput = hideTags('tag-search', 'tags-list');
-			let editHideTags = hideTags('edit-tag-search', 'edit-tags-list');
-			$('edit-tag-search').oninput = editHideTags;
+			let editHideTags = hideTags('tag-images-search', 'tag-images-list');
+			$('tag-images-search').oninput = editHideTags;
 			
 			// Make a list of tags that don't match the current search text.
 			function sortTags(searchText, tagBox, tagList) { // tagBox is obsolete
