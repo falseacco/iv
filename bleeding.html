@@ -159,6 +159,7 @@
 			  margin-top: 10px;
 			  padding-left: 0;
 			  width: 307px;
+			  
 			}
 			
 			.tag-list li {
@@ -180,15 +181,6 @@
 				border: 1px solid lightgray;
 				padding: 0;
 				width: 250px;
-			}
-			
-			#man-tags-list {
-				margin: 0;
-				width: 250px;
-			}
-			
-			#man-tags-list li {
-				display: inline-block;
 			}
 		</style>
 		<div id="bg"></div>
@@ -325,6 +317,30 @@
 			    <input type="radio" class="tags-file-sort indent3" name="tags-file-order" value="descending"> descending<br>
 				<a href="#/" class="jump-to-start indent2">Jump to start</a><br>
 		  </span>
+		</div>
+		<!--gohere-->
+		<div id="edit-tags" class="hidden box">
+		  <text>Add a tag:</text>
+		  <a id="close-edit-tags" href="#/" class="close-link">x</a><br>
+		    <span id="tag-properties">
+		      <text class="indent1">Tag name: </text>
+		      <input id="edit-tag-name" data_property="name" type="text" class="cancel-key indent1 tag-property"
+					      size="8" autocomplete="off"><br>
+				  <text class="indent1">Description: </text>
+		      <input id="edit-tag-description" data_property="description" type="text" class="cancel-key indent1 tag-property"
+					      size="8" autocomplete="off"><br>
+				</span>
+				<a href="#/" class="indent1">Add property: </a>
+		    <input id="add-tag-property" type="text" class="cancel-key indent1 tag-property"
+					    placeholder="property name" size="10" autocomplete="off"><br>
+			  <input id="edit-tag-mandatory" data_property="mandatory" type="checkbox" class="indent1 tag-property">is mandatory category<br>
+			    <input id="edit-tag-discrete" data_property="discrete" type="checkbox" class="indent2 tag-property">is discrete tag<br>
+			  <br>
+			  <text>Edit a tag:</text>
+			  <ul id="edit-tags-list" class="tag-list"></ul>
+			  <br>
+			  <a href="#/">Save tag</a><br>
+			  <a href="#/" class="smaller">Save settings</a>
 		</div>
 		<div id="ghost" class="hidden box"></div>
 		<a id="download-link"></a>
@@ -946,11 +962,12 @@
 				
 				// Run this when a config file is loaded. || Might want to move this away if displays start taking arr
 			  function d_configInit() {
-			    // Fill out the tag lists.
+			    // Fill out the tag lists. || generic fun, read data_ for args
 			    d_syncTagLinks('tags-list', 'tag-search', true);
 			    d_syncTagLinks('tag-images-list', 'tag-images-search');
+			    d_updateEditTagsList();
 					d_syncRecTags();
-					// Add man tag links for edit.
+					// Add man tag links for tag-images.
 					d_updateRecTagsList();
 					// Check for untagged images.
 					d_updateUntagged();
@@ -979,6 +996,70 @@
             }
           }
 			  }
+			  
+			  //
+        function d_updateEditTagsList() {
+					genEditTagsList().forEach((li)=>{
+						$('edit-tags-list').appendChild(li);
+					});
+				}			  
+			  
+			  function genEditTagsList() {
+					let acc = [];
+					config('tags-list').forEach((tag)=>{
+						let li = document.createElement('li'),
+								link = document.createElement('a');
+						// Set up link.
+						link.href = '#/';
+						link.innerHTML = tag.name;
+						// Hover text.
+						link.title = tag.description || '';
+						// Sort tag-images-list on click.
+						link.onclick = ()=>{
+							print(tag.name);
+							d_setEditTagMenu(tag);
+						};
+						// Keep the links from clustering together.
+						li.style.paddingRight = '5px';
+						//
+						li.display = 'inline';
+						// Add link to the list.
+						li.appendChild(link);
+						acc.push(li);
+					});
+					return acc;
+				}
+				
+				// gohere
+				function d_setEditTagMenu(tag) {  // revisit when you can add properties
+				  let properties = findTag(tag.name);
+				  $c('tag-property').forEach((el)=>{
+				    let menuProperty = el.getAttribute('data_property');
+				    if (menuProperty) {
+				      print(properties[menuProperty]);
+				      if (el.type === 'text') {
+				        el.value = properties[menuProperty];
+				      }
+				      else if (el.type === 'checkbox') {
+				        el.checked = properties[menuProperty];
+				      }
+				      else {
+				        print('d_setEditTagMenu() fallthrough');
+				      }
+				    }
+				  });
+				}
+				
+				function findTag(tagName) {
+				  let tagsList = config('tags-list');
+				  for (let i = 0; i < tagsList.length; i += 1) {
+				    let obj = tagsList[i];
+				    if (obj.name === tagName) {
+				      return obj;
+				    }
+				  }
+				  return undefined;
+				}
 						
 				// 
 				function d_updateRecTagsList() {
@@ -1345,7 +1426,7 @@
 			
 			// filter tags
 			
-			// Jump to file, both modes (probably different impl.)
+			// Jump to file, both modes
 				// Pause timer when skipping/jumping w/e
 			  // Put it next to prev/next, but smaller font | Jump...
 			
@@ -1353,14 +1434,10 @@
 				
 			// gohere
 			// User needs to be able to add/edit tags of their own
-				// 'edit-tags' div
-					// Form with name and descr
-						// Add param link + text
-						// required
-							// is-tag
-					// Link to add tag
-					// Link to download config
-					// tags-list, click fills form
+			    // Lexical current-tag
+			      // Save tag edit-adds to tags-list, update tags-list display
+			    // add tag property dom
+					// rework mandatory tag identification, should be a property after all
 			
 			// Hide the main menu when tag-images is opened.
 			$('open-tag-images').addEventListener('click', ()=>{
@@ -1374,6 +1451,16 @@
 			});
 			// Show the main menu again when tag-images is closed.
 			$('close-tag-images').addEventListener('click', ()=>{
+			  d_setVisible($('box'), true);
+			});
+			
+			// Same for edit-tags, probably shouldn't repeat, put in $c func
+			// Hide the main menu when tag-images is opened.
+			$('open-edit-tags').addEventListener('click', ()=>{
+		    d_setVisible($('box'), false);
+			});
+			// Show the main menu again when tag-images is closed.
+			$('close-edit-tags').addEventListener('click', ()=>{
 			  d_setVisible($('box'), true);
 			});
 			
@@ -1595,6 +1682,9 @@
 			    else if (isPath(str)) {
 			      ivconfig['images'][str] = value;
 			    } 
+			    else if (str === 'name' || str === 'homepage') {
+						ivconfig['name'][str] = value;
+					}
 			    else {
 			      ivconfig[str] = value;
 			    }
@@ -1671,7 +1761,6 @@
 			// ivconfig.txt + Image tags
 			// Get rid of the dotted outlines on click
 			// Hide display option || keyboard shortcut as well
-			// [?] links
 			// POST (and ask about flashlight)
 			// Homepage + docs
 			// Chrome bugfixes fuck chrome
