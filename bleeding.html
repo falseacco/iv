@@ -175,6 +175,21 @@
 			.download-config {
 			  background: white;
 			}
+			
+			#man-tags {
+				border: 1px solid lightgray;
+				padding: 0;
+				width: 250px;
+			}
+			
+			#man-tags-list {
+				margin: 0;
+				width: 250px;
+			}
+			
+			#man-tags-list li {
+				display: inline-block;
+			}
 		</style>
 		<div id="bg"></div>
 		
@@ -275,10 +290,19 @@
 		<div id="edit-tags" class="hidden box">
 		  <text>Tag images:</text>
 		  <a id="close-edit-tags" href="#/" class="close-link">x</a><br>
-		  <text id="tags-filename" class="smaller filename">current/image/name</text><br>
-		  <text id="untagged-images" class="smaller"># untagged images</text><br>
+		  <text id="tags-filename" class="smaller filename"></text><br>
+		  <text id="untagged-images" class="smaller indent1"></text><br>
 		    <textarea id="edit-tag-search" class="cancel-key tag-box indent1" spellcheck="false"
-			    placeholder="The current image's tags.&#10;(There are none)"></textarea>
+			    placeholder="The current image's tags.&#10;(There are none)"></textarea><br>
+					<br>
+					<span id="man-tags-section">
+						<text class="smaller">Mandatory tags:</text>
+						<div id="man-tags" class="indent1">
+							<ul id="man-tags-list" class="tag-list">
+								<text class="smaller indent1"></text>
+							</ul>
+						</div>
+					</span>
 			    <ul id="edit-tags-list" class="tag-list"></ul>
 		  <a id="tags-previous" class="link" href="#/">previous</a>
 			<a id="tags-next" class="link" href="#/">next</a><br>
@@ -339,7 +363,7 @@
 			}
 			
 			// Assign events to multiple objects at once. (does not hoist)
-			Array.prototype.listen = function(event, body) {
+			Array.prototype.listen = listen; function listen(event, body) {
         this.forEach((el)=>{
           el.addEventListener(event, body);
         });
@@ -716,6 +740,7 @@
 				    uploadF = [], // filter: This is the collection to sort.
 				    history = [], // Record of files user's viewed this session.
 						pointer = 0,  // Place in history. 0 is most recent, 1 is 2nd-most.
+						recTags = [],
 						hidLastImage = false; // For memory drawing.
 			
 			  function fetchHistory(pointer) {
@@ -730,7 +755,7 @@
 				// Jump to the first index of uploadF
 				$c('jump-to-start').listen('click', ()=>{
 					d_completeDisplay(uploadF[0], true);
-					d_setFileIndex(1);
+					d_setFileIndex(0);
 				});
 				
 				// Sort uploads whenever the user changes menu.
@@ -843,18 +868,23 @@
 			  }
 			  
 			  function d_displayFilename(img) {
-				  let name;
+				  let name,
+							shortName;
 				  if (img === '' || img === undefined) {
 				    name = '';
 				  }
 				  else {
 				    name = img.webkitRelativePath;
 				    if (name.length > 31) {
-				      name = name.slice(0, 25) + '...' + name.slice(-3);
+				      shortName = name.slice(0, 25) + '...' + name.slice(-3);
 				    }
 				  }
+					// Update display.
 				  $('filename').innerHTML = name;
 				  $('tags-filename').innerHTML = name;
+					// Update hover text.
+				  $('filename').title = name;
+				  $('tags-filename').title = name;
 				}
 			
 				$('upload').onchange = d_uploadInit; function d_uploadInit(e) {
@@ -911,8 +941,15 @@
 			    // Fill out the tag lists.
 			    d_syncTagLinks('tags-list', 'tag-search', true);
 			    d_syncTagLinks('edit-tags-list', 'edit-tag-search');
+					d_syncRecTags();
+					// Add man tag links for edit.
+					d_updateRecTagsList();
+					// Check for untagged images.
+					d_updateUntagged();
 			    // Expand filter.
           d_setSectionVisible('hide-filter', true);
+					// Update the title.
+					d_syncTitle();
           // Update menu, in case they want to edit.
           d_syncEditFolder();
           // There might not have been any images in the upload.
@@ -934,6 +971,82 @@
             }
           }
 			  }
+						
+				// 
+				function d_updateRecTagsList() {
+					genRecTagsList().forEach((li)=>{
+						$('man-tags-list').appendChild(li);
+					});
+				}
+				
+				function genRecTagsList() {
+					let acc = [];
+					recTags.forEach((tag)=>{
+						let li = document.createElement('li'),
+								link = document.createElement('a');
+						// Set up link.
+						link.href = '#/';
+						link.innerHTML = tag.name;
+						// Hover text.
+						link.title = tag.description || '';
+						// Sort edit-tags-list on click.
+						link.onclick = ()=>{
+							editHideTags('', tag.name.slice(0, -1));
+						};
+						// Keep the links from clustering together.
+						li.style.paddingRight = '5px';
+						// Add link to the list.
+						li.appendChild(link);
+						acc.push(li);
+					});
+					return acc;
+				}
+				
+				function d_updateUntagged() {
+					$('untagged-images').innerText = untagged().length + ' untagged images'
+				}
+				
+				// Return an array of all the untagged images uploaded.
+				function untagged() {
+					let acc = [];
+					upload.forEach((file)=>{
+						let path = file.webkitRelativePath,
+								tags = config(path);
+						if (tags && recTags.length !== 0) {
+							recTags.forEach((recTag)=>{
+								for (let i in tags) {
+									let tagName = tags[i],
+											recCategory = recTag.name.slice(0, -1);
+									// Sometimes tagname is listen(), wtf?
+									if (typeof(tagName) === 'string' && recCategory === tagName.slice(0, recCategory.length)) {
+										// Tag matches, leave it alone.
+										return;
+									}
+								}
+								// None of the tags matched, this image is untagged.
+								acc.push(file);
+							});
+						}
+						else if (tags && recTags.length === 0) {
+							if (tags.length === 0) {
+								acc.push(file);
+							}
+						}
+						else {
+							acc.push(file);
+						}
+					});
+					return acc;
+				}
+				
+				function d_syncRecTags() {
+					config('tags-list').forEach((tag)=>{
+						// A tag ending in :: is recommended.
+						if (tag.name.slice(-2) === '::') {
+							recTags.push(tag);
+						}
+					});
+				}
 				
 				// Check if a file is good to display.
 				{
@@ -999,6 +1112,20 @@
 				  }
 				}
 				
+				// Update title based on config.
+				function d_syncTitle() {
+					let title = $('title'),
+							settings = config('name'),
+							newText = settings.name,
+							newHref = settings.homepage;
+					if (newText) {
+						title.innerHTML = '<h1>' + newText + '</h1>';
+					}
+					if(newHref) {
+						title.href = newHref;
+					}
+				}
+				
 				// Display a random image.
 				function d_displayRandom(onload) {
 				  if (pointer === 0) {
@@ -1061,7 +1188,6 @@
 					// Have to keep track of this separately.
 					let fileIndex = 0;
 					function d_displayFileOrder(onload) {
-						d_completeDisplay(uploadF[fileIndex], true, onload);
 						// Go to next image in file order.
 						if (fileIndex < uploadF.length - 1) {
 						  fileIndex += 1;
@@ -1070,7 +1196,7 @@
 						else {
 						  fileIndex = 0;
 						}
-						
+						d_completeDisplay(uploadF[fileIndex], true, onload);
 						print('d_displayFileOrder()');
 					}
 					
@@ -1093,6 +1219,7 @@
 				
 				// Display the previous image in history.
 				$('previous').onclick = d_previous; function d_previous(onload) {
+					print(history);
 				  if (pointer >= 0 && pointer < (history.length - 1)) {
 				    pointer += 1;
 				    d_completeDisplay(fetchHistory(pointer), false, onload);
@@ -1109,6 +1236,7 @@
 			  d_syncImageTags(()=>{
 			    // Display the next image. (In fileorder, so no repeats)
 			    d_next(false, false, 'tags-next');
+					d_updateUntagged();
 			    d_listTags();
 			  });
 			}
@@ -1117,6 +1245,7 @@
 			$('tags-previous').onclick = ()=>{
 			  d_syncImageTags(()=>{
 			    d_previous();
+					d_updateUntagged();
 			    if (pointer >= 0 && pointer < (history.length)) {
 			      d_listTags();
 			    }
@@ -1148,7 +1277,10 @@
 			  // Update text box.
 			  if (tags !== undefined) {
 			    tags.forEach((tag)=>{
-			      $('edit-tag-search').value += (tag + ' ');
+						// If there's no tag, don't edit the box and remove the placeholder.
+						if (tag.length !== 0) {
+							$('edit-tag-search').value += (tag + ' ');
+						}
 			    });
 			  }
 			}
@@ -1165,53 +1297,47 @@
 			
 			// Image tagging. --------------------------------------------------------
 			
+			// Switch between preset options/filters
+			
 			// display current image's tags
 				// just below the name, but put a limit (based on char length, not tags)
-				
+			
 			// Extend tags-list
 		    // different link colors for custom tags
 		    // valid search words arr
-				
-			// Config file sets default options and filter, title change + href
+				// Option to not exlude cat tags
 			
-			// filename + tags + nonconforming-images-left have explanation text on hover
+			// Give edit tags a filter too.
 			
 			// filter tags
 			
-			// Implement tags
-			  // Tag descriptions with "ivconfig!-descr" entry in JSON
-			  // normal tag: |red|
-			    // "ivconfig!-color
-			  // category tag: |color:red|
-			    // but can have multiple of one category
-			    // "ivconfig!-children" true/false determines if you have to include next layer, and how many if so
-			      // This doesn't apply when you're just filtering
-			  // mandatory tag: category tag that must be included
-			  // recommended tag: everything that's not mandatory
-			  // dependent tags:
-			    // are actually just non-man cat tags
-			    // click on tag color
-			    // expands to color:red, color:blue, color:green, etc.
-			    // tags list should have option to expand dependent tags
-			
 			// Jump to file, both modes (probably different impl.)
+				// Pause timer when skipping/jumping w/e
 			  // Put it next to prev/next, but smaller font | Jump...
 			
+			// Edit folder place above Filter Images (filter still has an edit tags link)
+			
+			// Remember extinct files, allow user to transfer tags from
+				
 			// gohere
-			// Edit tags box
-		    // Add a tag filter here too
-		    
-			  // Remember extinct files, allow user to transfer tags from
-			  
-			  // User needs to be able to add tags of their own
+			// User needs to be able to add/edit tags of their own
+				// Link below edit-tags-list
+					// goddamit change edit-tags to tag-images
+				// Another box:
+					// Form with name and descr
+						// Add param link + text
+						// required
+							// is-tag
+					// Link to add tag
+					// Link to download config
+					// tags-list, click fills form
 		  
-        // Display fewest tags, but not at the same time for fuck's sake?	
-			  // Display un-man-tagged images first option
-			  // Make a list of man tags on configInit
-			    // Count num images w/o man tags -> fill text
-			      // Inc/dec num w/o man tags
-			      // Message on startup if images w/o man tags
-				  
+			// Display untagged images first.
+			
+				// Compare fun untagged images | going to have to split untagged up
+				
+				// checkbox
+			
 			// Hide the main menu when edit-tags is opened.
 			$('open-edit-tags').addEventListener('click', ()=>{
 		    d_setVisible($('box'), false);
@@ -1231,14 +1357,16 @@
 			function hideTags (tagBox, tagList) {
 			  let lamb = {};
 			  lamb.tagsHidden = [];
-			  lamb.fun = ()=>{
-			    print('searchWord(): ' + searchWord(tagBox));
+			  lamb.fun = (e, search)=>{
+					let query = search || searchWord(tagBox);
+			    print('searchWord(): ' + query);
 					// Re-show old tags
 					lamb.tagsHidden.forEach((tag)=>{
 						d_setVisible(tag, 'inline');
 					});
 					// Hide new tags
-					lamb.tagsHidden = sortTags(searchWord(tagBox), tagBox, tagList);
+					print(query);
+					lamb.tagsHidden = sortTags(query, tagBox, tagList);
 					lamb.tagsHidden.forEach((tag)=>{
 						d_setVisible(tag, false);
 					});
@@ -1246,10 +1374,11 @@
 			  return lamb.fun;
 			}
 			$('tag-search').oninput = hideTags('tag-search', 'tags-list');
-			$('edit-tag-search').oninput = hideTags('edit-tag-search', 'edit-tags-list');
+			let editHideTags = hideTags('edit-tag-search', 'edit-tags-list');
+			$('edit-tag-search').oninput = editHideTags;
 			
 			// Make a list of tags that don't match the current search text.
-			function sortTags(searchText, tagBox, tagList) {
+			function sortTags(searchText, tagBox, tagList) { // tagBox is obsolete
 				let search = $(tagBox),
 						tagsContainer = $(tagList),
 						tags = Array.prototype.slice.call(tagsContainer.childNodes),
@@ -1305,12 +1434,15 @@
 			    mainLink.href='#/';
 			    mainLink.innerHTML = content;
 			    // Hover text.
-			    mainLink.title = tag.description;
+			    mainLink.title = tag.description || '';
+					// Add the tag's text to destination on click.
 			    mainLink.onclick = addTag(content, destination);
+					// Add the link to the list.
 			    li.appendChild(mainLink);
 			    if (exclude) {
 			      excludeLink.href='#/';
 			      excludeLink.innerHTML = '[!]';
+						excludeLink.title = 'Filter out images with this tag.';
 			      excludeLink.onclick = addTag('!' + content, destination, '!');
 			      li.appendChild(excludeLink);
 			    }
@@ -1423,6 +1555,9 @@
 			    else if (isPath(str)) {
 			      return ivconfig['images'][str];
 			    }
+					else if (str === 'name' || str === 'homepage') {
+						return ivconfig['name'][str];
+					}
 			    // Accessing a property of the folder.
 			    else {
 			      return ivconfig[str];
@@ -1499,7 +1634,7 @@
 			  printTest(true);
 			  
 			  // In case they're reloading the page.
-			  d_uploadInit();
+			  d_uploadInit(); // Instead of this, just prevent input from remembering things
 			}
 			
 			// -----------------------------------------------------------------------
@@ -1512,8 +1647,10 @@
 			// ivconfig.txt + Image tags
 			// Get rid of the dotted outlines on click
 			// Hide display option || keyboard shortcut as well
-			// Pause timer when skipping/jumping w/e
-			// POST (and ask about flashlights)
+			// [?] links
+			// POST (and ask about flashlight)
+			// Homepage + docs
+			// Chrome bugfixes fuck chrome
 			// God what a pain in the ass. Learn this:
 			  // https://medium.com/quick-code/javascript-promises-in-twenty-minutes-3aac5b65b887
 			// Image comments
