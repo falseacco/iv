@@ -198,8 +198,9 @@
 			<span class="hide-section">
 			  <br>
 			  <input id="upload" type="file" webkitdirectory directory multiple autocomplete="off"><br>
-			  <a id="open-edit-folder" href="#/" class="indent1 smaller box-link">Edit folder</a><br>
-			  
+			  <a id="open-edit-folder" href="#/" class="indent1 smaller box-link">Edit folder</a>
+				<a href="#/" class="open-edit-tags indent1 smaller">Add tags</a><br>
+				<span id="hidden-to-start-file-section" class="hidden">
 			    <text>Filter images</text>
 			    <a id="hide-filter" class="smaller hide-link" href="#/">[show]</a>
 			    <text>:</text><br>
@@ -209,15 +210,15 @@
 			        placeholder="Only display images with these tags.&#10;&#10;(No tags selected)"></textarea>
 			      <ul id="tags-list" class="tag-list"></ul>
 			      <a id="open-tag-images" href="#/" class="indent1 smaller box-link">Tag images</a>
-			      <a id="open-edit-tags" href="#/" class="indent1 smaller box-link">Add/edit tags</a><br>
+			      <a href="#/" class="open-edit-tags indent1 smaller">Add/edit tags</a><br>
 					<br>
 		      </span>
-			</span><br>
-			<span id="hidden-to-start-file-section" class="hidden">
-			<text id="filename" class="smaller filename"></text><br>
-			<a id="previous" class="link" href="#/">previous</a>
-			<a id="next" class="link" href="#/">next</a><br>
 			<br>
+				<text id="filename" class="smaller filename"></text><br>
+				<a id="previous" class="link" href="#/">previous</a>
+				<a id="next" class="link" href="#/">next</a><br>
+				<a id="jump" class="link smaller indent1 jump-link" href="#/">[Jump...]</a><br>
+				<br>
 			</span><br>
 			<a id="reset" class="gray-link" href="#/">&#8635;</a>
 			<a id="timer" class="gray-link" href="#/">10:00</a><br>
@@ -297,6 +298,7 @@
 			    <ul id="tag-images-list" class="tag-list"></ul>
 		  <a id="tags-previous" class="link" href="#/">previous</a>
 			<a id="tags-next" class="link" href="#/">next</a><br>
+			<a id="tags-jump" class="link smaller indent1 jump-link" href="#/">[Jump...]</a><br>
 			<a id="download-tags" class="download-config smaller" href="#/">
 		    Save settings</a><br>
 		  <br>
@@ -318,7 +320,6 @@
 				<a href="#/" class="jump-to-start indent2">Jump to start</a><br>
 		  </span>
 		</div>
-		<!--gohere-->
 		<div id="edit-tags" class="hidden box">
 		  <text>Add a tag:</text>
 		  <a id="close-edit-tags" href="#/" class="close-link">x</a><br>
@@ -387,6 +388,16 @@
       }
 
 			// Hiding things. --------------------------------------------------------
+			// Duct tape
+			$c('open-edit-tags').listen('click', ()=>{
+				let box = $('edit-tags');
+			  if (elDisplay(box) === 'none') {
+			    d_setVisible(box, true);
+			  }
+			  else {
+			    d_setVisible(box, false);
+			  }
+			});
 			// Hide the non-main menus.
 			$c('box-link').listen('click', (e)=>{
 			  let box = $(e.target.id.slice(5));
@@ -923,11 +934,12 @@
 						// Show file navigation.
 						d_setVisible($('hidden-to-start-file-section'), true);
 					  // Filter out any non-image files.
+						let clone = [];
 					  upload.forEach((file, i)=>{
+						print(upload.length);
 					    let name = file.name;
-					    // File isn't an image, remove it.
+					    // File isn't an image.
 					    if (!isDisplay(filetype(name))) {
-					      upload.splice(i, 1);
 					      print('Removed file from display list: ' + name);
 					      // File is a config, use it.
 					      if (name === 'ivconfig.txt') {
@@ -936,12 +948,14 @@
 					        d_readConfig(file, d_configInit);
 					      }
 					    }
-					    // File is an image, store it in a hash for name lookup.
+					    // File is an image, store it.
 					    else {
+								clone.push(file);
 					      let path = file.webkitRelativePath;
 					      uploadP[path] = file;
 					    }
-					  })
+					  });
+						upload = clone;
 						// Clone upload to uploadF
 						uploadF = upload.slice();
 						// Sort uploadF if the folder wants to be fileordered
@@ -1065,8 +1079,8 @@
 					return acc;
 				}
 				
-				// gohere
-				function d_setEditTagMenu(tagName) {  // revisit, add/remove custom tag properties
+				//
+				function d_setEditTagMenu(tagName) {
 				  let tag = findTag(tagName) || {};
 					// Clear custom tag properties.
 					$('custom-tag-properties').innerHTML = '';
@@ -1271,7 +1285,12 @@
 				  return name.split('.').slice(-1)[0];
 				}
 				
-				$('next').onclick = d_next; function d_next(e, onload, from) {
+				$('next').onclick = ()=>{
+					d_pause();
+					d_next();
+				}
+				
+				function d_next(e, onload, from) {
 				  if (uploadF.length !== 0) {
 				    if (pointer > 0) {
 				      d_displayNextHistory(onload);
@@ -1420,6 +1439,7 @@
 				
 				// Display the previous image in history.
 				$('previous').onclick = d_previous; function d_previous(onload) {
+					d_pause();
 					print(history);
 				  if (pointer >= 0 && pointer < (history.length - 1)) {
 				    pointer += 1;
@@ -1509,18 +1529,28 @@
 			
 			// Extend tag-defs
 		    // different link colors for custom tags
+					// custom css classes
 		    // valid search words arr
 			
-			// Give tag-images a filter too.
-			
 			// Filter tags
+				// Give tag-images a filter too
 			
-			// Remember extinct files, allow user to transfer tags from
-				
 			// gohere
-			// Jump to file, both modes
-				// Pause timer when skipping/jumping w/e
-			  // Put it next to prev/next, but smaller font | Jump...
+			// Remember extinct files, allow user to transfer tags from
+			
+			// Jump to file by path.
+			$c('jump-link').listen('click', ()=>{
+				d_pause();
+				let destination = prompt("Jump to where?", "filepath"),
+						image = uploadP[destination];
+				if (image) {
+					d_completeDisplay(image, true);
+					print('Jump to ' + destination);
+				}
+				else {
+					print('Nowhere to jump to.');
+				}
+			});
 			
 			// A bit reckless but fine for now
 			$('save-tag').onclick = ()=>{
@@ -1589,7 +1619,7 @@
 			
 			// Same for edit-tags, probably shouldn't repeat, put in $c func
 			// Hide the main menu when tag-images is opened.
-			$('open-edit-tags').addEventListener('click', ()=>{
+			$c('open-edit-tags').listen('click', ()=>{
 		    d_setVisible($('box'), false);
 			});
 			// Show the main menu again when tag-images is closed.
@@ -1844,16 +1874,21 @@
 			{
 				let active = true;
 				    KEY_NEXT = 'ArrowRight',
-						KEY_PREV = 'ArrowLeft';
+						KEY_PREV = 'ArrowLeft',
+						KEY_JUMP = 'J';
 						
 				document.onkeydown = (e)=>{
 					if (active) {
 						e = e || window.event;
+						print(e.key);
 						if (e.key === KEY_NEXT) {
 							$('next').click();
 						}
 						else if (e.key === KEY_PREV) {
 							$('previous').click();
+						}
+						else if (e.key.toUpperCase() === KEY_JUMP) {
+							$('jump').click();
 						}
 					}
 					else {
