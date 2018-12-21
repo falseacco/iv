@@ -197,9 +197,9 @@
 			<a id="fullscreen" class="smaller link" href="#/">[toggle fullscreen]</a><br>
 			<span class="hide-section">
 			  <br>
-			  <input id="upload" type="file" webkitdirectory directory multiple><br>
+			  <input id="upload" type="file" webkitdirectory directory multiple autocomplete="off"><br>
 			  <a id="open-edit-folder" href="#/" class="indent1 smaller box-link">Edit folder</a><br>
-			  <br>
+			  
 			    <text>Filter images</text>
 			    <a id="hide-filter" class="smaller hide-link" href="#/">[show]</a>
 			    <text>:</text><br>
@@ -234,30 +234,30 @@
 					    placeholder="10" size="2" maxlength="2" autocomplete="off"> :
 					  <input id="timer-sec" type="text" class="cancel-key monospace"
 					    placeholder="00" size="2" maxlength="2" autocomplete="off"><br>
-				  <input id="prevent-recent-repeats" type="checkbox"
+				  <input id="prevent-recent-repeats" type="checkbox" autocomplete="off"
 				    class="indent1" checked>Prevent recent repeats<br> 
-				  <input id="hide-every-other" type="checkbox"
+				  <input id="hide-every-other" type="checkbox" autocomplete="off"
 				    class="indent1">Hide every other image<br>    
-					<input id="display-new" type="checkbox"
+					<input id="display-new" type="checkbox" autocomplete="off"
 					  class="indent1" checked>Display new images on skip<br>
 				  <text class="indent1">When timer ends:</text><br>
-				    <input id="on-end-display-new" type="checkbox"
+				    <input id="on-end-display-new" type="checkbox" autocomplete="off"
 				      class="indent2" checked>display new image<br>
-					  <input id="on-end-reset" type="checkbox"
+					  <input id="on-end-reset" type="checkbox" autocomplete="off"
 					    class="indent2" checked>reset time &#8635;<br>
-					    <input id="on-end-count" type="checkbox"
+					    <input id="on-end-count" type="checkbox" autocomplete="off"
 					      class="indent3" checked>start counting down<br>
-					<input id="display-in-file-order" class="file-sort" type="checkbox"
+					<input id="display-in-file-order" class="file-sort" type="checkbox" autocomplete="off"
 					  class="indent1">Display images in file order</input><br>
 					  <text class="indent2">Property:</text><br>
-					    <input type="radio" class="file-sort indent3" name="file-property" value="name" checked> name<br>
-					    <input type="radio" class="file-sort indent3" name="file-property" value="type"> type<br>
-					    <input type="radio" class="file-sort indent3" name="file-property" value="path"> path<br>
-					    <input type="radio" class="file-sort indent3" name="file-property" value="size"> size<br>
-					    <input type="radio" class="file-sort indent3" name="file-property" value="lastModified"> last modified<br>
+					    <input type="radio" class="file-sort indent3" name="file-property" value="name" checked autocomplete="off"> name<br>
+					    <input type="radio" class="file-sort indent3" name="file-property" value="type" autocomplete="off"> type<br>
+					    <input type="radio" class="file-sort indent3" name="file-property" value="path" autocomplete="off"> path<br>
+					    <input type="radio" class="file-sort indent3" name="file-property" value="size" autocomplete="off"> size<br>
+					    <input type="radio" class="file-sort indent3" name="file-property" value="lastModified" autocomplete="off"> last modified<br>
 					  <text class="indent2">Order:</text><br>
-					    <input type="radio" class="file-sort indent3" name="file-order" value="ascending" checked> ascending<br>
-					    <input type="radio" class="file-sort indent3" name="file-order" value="descending"> descending<br>
+					    <input type="radio" class="file-sort indent3" name="file-order" value="ascending" checked autocomplete="off"> ascending<br>
+					    <input type="radio" class="file-sort indent3" name="file-order" value="descending" autocomplete="off"> descending<br>
 						<a href="#/" class="jump-to-start indent2">Jump to start</a><br>    
 						
 				</span>
@@ -307,14 +307,14 @@
 				<input id="display-untagged-first" type="checkbox" class="tags-file-sort indent1" checked>Display untagged images first<br>
 		    <text class="indent1">Sort by</text><br>
 			  <text class="indent2">file property:</text><br>
-			    <input type="radio" class="tags-file-sort indent3" name="tags-file-property" value="name" checked> name<br>
-			    <input type="radio" class="tags-file-sort indent3" name="tags-file-property" value="type"> type<br>
-			    <input type="radio" class="tags-file-sort indent3" name="tags-file-property" value="path"> path<br>
-			    <input type="radio" class="tags-file-sort indent3" name="tags-file-property" value="size"> size<br>
-			    <input type="radio" class="tags-file-sort indent3" name="tags-file-property" value="lastModified"> last modified<br>
+			    <input type="radio" class="tags-file-sort indent3" name="tags-file-property" value="name" checked autocomplete="off"> name<br>
+			    <input type="radio" class="tags-file-sort indent3" name="tags-file-property" value="type" autocomplete="off"> type<br>
+			    <input type="radio" class="tags-file-sort indent3" name="tags-file-property" value="path" autocomplete="off"> path<br>
+			    <input type="radio" class="tags-file-sort indent3" name="tags-file-property" value="size" autocomplete="off"> size<br>
+			    <input type="radio" class="tags-file-sort indent3" name="tags-file-property" value="lastModified" autocomplete="off"> last modified<br>
 			  <text class="indent2">order:</text><br>
-			    <input type="radio" class="tags-file-sort indent3" name="tags-file-order" value="ascending" checked> ascending<br>
-			    <input type="radio" class="tags-file-sort indent3" name="tags-file-order" value="descending"> descending<br>
+			    <input type="radio" class="tags-file-sort indent3" name="tags-file-order" value="ascending" checked autocomplete="off"> ascending<br>
+			    <input type="radio" class="tags-file-sort indent3" name="tags-file-order" value="descending" autocomplete="off"> descending<br>
 				<a href="#/" class="jump-to-start indent2">Jump to start</a><br>
 		  </span>
 		</div>
@@ -322,25 +322,26 @@
 		<div id="edit-tags" class="hidden box">
 		  <text>Add a tag:</text>
 		  <a id="close-edit-tags" href="#/" class="close-link">x</a><br>
-		    <span id="tag-properties">
-		      <text class="indent1">Tag name: </text>
-		      <input id="edit-tag-name" data_property="name" type="text" class="cancel-key indent1 tag-property"
+		      <text class="indent1">Tag name</text>
+		      <input id="edit-tag-name" data_property="name" type="text" class="cancel-key tag-property"
 					      size="8" autocomplete="off"><br>
-				  <text class="indent1">Description: </text>
-		      <input id="edit-tag-description" data_property="description" type="text" class="cancel-key indent1 tag-property"
+				  <text class="indent1">Description</text>
+		      <input id="edit-tag-description" data_property="description" type="text" class="cancel-key tag-property"
 					      size="8" autocomplete="off"><br>
+				<span id="custom-tag-properties">
 				</span>
-				<a href="#/" class="indent1">Add property: </a>
-		    <input id="add-tag-property" type="text" class="cancel-key indent1 tag-property"
+				<a id="add-tag-property" href="#/" class="indent1">Add property</a>
+		    <input id="add-tag-property-name" type="text" class="cancel-key tag-property"
 					    placeholder="property name" size="10" autocomplete="off"><br>
-			  <input id="edit-tag-mandatory" data_property="mandatory" type="checkbox" class="indent1 tag-property">is mandatory category<br>
-			    <input id="edit-tag-discrete" data_property="discrete" type="checkbox" class="indent2 tag-property">is discrete tag<br>
+			  <input id="edit-tag-mandatory" data_property="mandatory" type="checkbox" class="indent1 tag-property" autocomplete="off">is mandatory category<br>
+			    <input id="edit-tag-discrete" data_property="discrete" type="checkbox" class="indent2 tag-property" autocomplete="off">is discrete tag<br>
 			  <br>
 			  <text>Edit a tag:</text>
 			  <ul id="edit-tags-list" class="tag-list"></ul>
 			  <br>
-			  <a href="#/">Save tag</a><br>
-			  <a href="#/" class="smaller">Save settings</a>
+			  <a id="save-tag" href="#/">Save tag</a>
+				<a id="delete-tag" class="smaller indent1" href="#/">Delete tag</a><br>
+			  <a id="save-tag-settings" href="#/" class="smaller">Save settings</a>
 		</div>
 		<div id="ghost" class="hidden box"></div>
 		<a id="download-link"></a>
@@ -757,6 +758,7 @@
 				    history = [], // Record of files user's viewed this session.
 						pointer = 0,  // Place in history. 0 is most recent, 1 is 2nd-most.
 						recTags = [],
+						fullTagList = [],
 						hidLastImage = false; // For memory drawing.
 			
 			  function fetchHistory(pointer) {
@@ -960,14 +962,44 @@
 					print(upload);
 				}
 				
+				function d_syncFullTagList() {
+					fullTagList = genFullTagList();
+				}
+				
+				// Generate an array of tags from both tag-definitions and images.
+				function genFullTagList() {
+					let tags = [],
+							tagDefinitions = config('tag-definitions'),
+							imageTags = config('images');
+					// tag-defs
+					Object.keys(tagDefinitions).forEach((tagName)=>{
+						let tag = tagDefinitions[tagName];
+						tag['name'] = tagName;
+						tags.push(tag);
+					});
+					// images
+					Object.values(imageTags).forEach((arr)=>{
+						arr.forEach((tagName)=>{
+							// If the tag isn't already defined, add it to the list.
+							if (tagName !== '' && !tagDefinitions[tagName]) {
+								tags.push({'name': tagName});
+							}
+						});
+					});
+					print('genFullTagList():');
+					print(tags);
+					return tags;
+				}
+				
 				// Run this when a config file is loaded. || Might want to move this away if displays start taking arr
 			  function d_configInit() {
+					// Make tagList
+					d_syncFullTagList();
 			    // Fill out the tag lists. || generic fun, read data_ for args
 			    d_syncTagLinks('tags-list', 'tag-search', true);
 			    d_syncTagLinks('tag-images-list', 'tag-images-search');
 			    d_updateEditTagsList();
 					d_syncRecTags();
-					// Add man tag links for tag-images.
 					d_updateRecTagsList();
 					// Check for untagged images.
 					d_updateUntagged();
@@ -995,10 +1027,13 @@
               d_completeDisplay(upload[Number(cover)], true);
             }
           }
+					print('d_configInit():');
+					print(config());
 			  }
 			  
 			  //
         function d_updateEditTagsList() {
+					$('edit-tags-list').innerHTML = '';
 					genEditTagsList().forEach((li)=>{
 						$('edit-tags-list').appendChild(li);
 					});
@@ -1006,7 +1041,7 @@
 			  
 			  function genEditTagsList() {
 					let acc = [];
-					config('tags-list').forEach((tag)=>{
+					fullTagList.forEach((tag)=>{
 						let li = document.createElement('li'),
 								link = document.createElement('a');
 						// Set up link.
@@ -1014,10 +1049,10 @@
 						link.innerHTML = tag.name;
 						// Hover text.
 						link.title = tag.description || '';
-						// Sort tag-images-list on click.
+						//
 						link.onclick = ()=>{
-							print(tag.name);
-							d_setEditTagMenu(tag);
+							print(tag);
+							d_setEditTagMenu(tag.name);//[tag]
 						};
 						// Keep the links from clustering together.
 						li.style.paddingRight = '5px';
@@ -1031,14 +1066,44 @@
 				}
 				
 				// gohere
-				function d_setEditTagMenu(tag) {  // revisit when you can add properties
-				  let properties = findTag(tag.name);
-				  $c('tag-property').forEach((el)=>{
+				function d_setEditTagMenu(tagName) {  // revisit, add/remove custom tag properties
+				  let tag = findTag(tagName) || {};
+					// Clear custom tag properties.
+					$('custom-tag-properties').innerHTML = '';
+					//
+					d_clearEditTagMenu();
+					//
+					Object.keys(tag).forEach((propertyName)=>{
+						let maybeEl = $('edit-tag-' + propertyName);
+						if (maybeEl) {
+							if (maybeEl.type === 'text') {
+								maybeEl.value = tag[propertyName] || '';
+							}
+							else if (maybeEl.type === 'checkbox') {
+								maybeEl.checked = tag[propertyName];
+							}
+							else {
+								print('d_setEditTagMenu() fallthrough');
+							}
+						}
+						else {
+							if (propertyName && propertyName !== 'null') { // buggy mess
+								// Entry for property isn't there, so make one.
+								d_addTagProperty('', propertyName);
+								$('edit-tag-' + propertyName).value = tag[propertyName];
+							}
+						}
+					});
+				  /*$c('tag-property').forEach((el)=>{
 				    let menuProperty = el.getAttribute('data_property');
 				    if (menuProperty) {
-				      print(properties[menuProperty]);
 				      if (el.type === 'text') {
-				        el.value = properties[menuProperty];
+								if (menuProperty === 'name') {
+									el.value = tag;
+								}
+								else {
+									el.value = properties[menuProperty] || '';
+								}
 				      }
 				      else if (el.type === 'checkbox') {
 				        el.checked = properties[menuProperty];
@@ -1047,22 +1112,45 @@
 				        print('d_setEditTagMenu() fallthrough');
 				      }
 				    }
-				  });
+				  })*/;
+				}
+				
+				function d_clearEditTagMenu() {
+					$c('tag-property').forEach((el)=>{
+						if (el.type === 'text') {
+							el.value = '';
+						}
+						else {
+							el.checked = false;
+						}
+					});
+				}
+				
+				function editTagMenu() {
+					let tag = {};
+					$c('tag-property').forEach((el)=>{
+						let property = el.getAttribute('data_property');
+						if (el.type === 'text') {
+							tag[property] = el.value || '';
+						}
+						else if (el.type === 'checkbox') {
+							tag[property] = el.checked;
+						}
+						else {
+							print('editTagMenu() fallthrough');
+						}
+					});
+					return tag;
 				}
 				
 				function findTag(tagName) {
-				  let tagsList = config('tags-list');
-				  for (let i = 0; i < tagsList.length; i += 1) {
-				    let obj = tagsList[i];
-				    if (obj.name === tagName) {
-				      return obj;
-				    }
-				  }
-				  return undefined;
+				  let tags = config('tag-definitions');
+				  return tags[tagName];
 				}
 						
 				// 
 				function d_updateRecTagsList() {
+					$('man-tags-list').innerHTML = '';
 					genRecTagsList().forEach((li)=>{
 						$('man-tags-list').appendChild(li);
 					});
@@ -1075,12 +1163,12 @@
 								link = document.createElement('a');
 						// Set up link.
 						link.href = '#/';
-						link.innerHTML = tag.name.slice(0, -2);
+						link.innerHTML = tag;
 						// Hover text.
-						link.title = tag.description || '';
-						// Sort tag-images-list on click.
+						link.title = config('tag-definitions')[tag]['description'] || '';
+						// 
 						link.onclick = ()=>{
-							editHideTags('', tag.name.slice(0, -1));
+							editHideTags('', tag);
 						};
 						// Keep the links from clustering together.
 						li.style.paddingRight = '5px';
@@ -1119,7 +1207,7 @@
 										match = false;
 								for (let i = 0; i < tags.length; i += 1) {
 									let tagName = tags[i],
-											recCategory = recTag.name.slice(0, -1);
+											recCategory = recTag;
 									if (/*typeof(tagName) === 'string' && */recCategory === tagName.slice(0, recCategory.length)) {
 										// Tag matches.
 										match = true;
@@ -1153,9 +1241,9 @@
 				}
 				
 				function d_syncRecTags() {
-					config('tags-list').forEach((tag)=>{
+					Object.keys(config('tag-definitions')).forEach((tag)=>{
 						// A tag ending in :: is recommended.
-						if (tag.name.slice(-2) === '::') {
+						if (config('tag-definitions')[tag]['mandatory']) {
 							recTags.push(tag);
 						}
 					});
@@ -1419,31 +1507,70 @@
 			
 			// select tags from tag search w/ up-down-enter
 			
-			// Extend tags-list
+			// Extend tag-defs
 		    // different link colors for custom tags
 		    // valid search words arr
-			
-			// Convert tags-list to obj format -> tag-definitions
-			  // genTagCollection on start up
 			
 			// Give tag-images a filter too.
 			
 			// Filter tags
 			
+			// Remember extinct files, allow user to transfer tags from
+				
+			// gohere
 			// Jump to file, both modes
 				// Pause timer when skipping/jumping w/e
 			  // Put it next to prev/next, but smaller font | Jump...
 			
-			// Remember extinct files, allow user to transfer tags from
-				
-			// gohere
-			// User needs to be able to add/edit tags of their own
-			    // Save settings
-			    // Lexical current-tag
-			      // Save tag edit-adds to tags-list, update tags-list display
-			      // Remove tag removes from tag-list
-			    // add tag property dom
-					// rework mandatory tag identification, should be a property after all
+			// A bit reckless but fine for now
+			$('save-tag').onclick = ()=>{
+				let tag = editTagMenu();
+				if (tag.name) {
+					d_addTagDefinition(tag);
+					d_configInit();
+				}
+			}
+			
+			$('delete-tag').onclick = ()=>{
+				let tagName = $('edit-tag-name').value;
+				d_deleteTagDefinition(tagName);
+				d_configInit();
+			}
+			
+			$('save-tag-settings').onclick = ()=>{
+				downloadConfig();
+				d_configInit();
+				print(config());
+			}
+			
+			$('add-tag-property').onclick = d_addTagProperty; function d_addTagProperty(e, str) {
+				let newPropertyName = str || $('add-tag-property-name').value;
+				if (newPropertyName) {
+					// Add the new tag to the form.
+					$('custom-tag-properties').appendChild(genTagProperty(newPropertyName));
+					// Clear the input.
+					$('add-tag-property-name').value = '';
+				}
+				print('d_addTagProperty(): ' + newPropertyName);
+			}
+			
+			function genTagProperty(propertyName) {
+				let container = document.createElement('span'),
+						label = document.createElement('text'),
+						input = document.createElement('input'),
+						linebreak = document.createElement('br');
+				label.innerText = propertyName + ' ';
+				input.type = 'text';
+				input.id = 'edit-tag-' + propertyName;
+				input.className = 'cancel-key tag-property'; // cancel-key probably won't work right, maybe just assign individually?
+				input.setAttribute('data_property', propertyName);
+				// Return as a single element.
+				container.appendChild(label);
+				container.appendChild(input);
+				container.appendChild(linebreak); // Might want to add multiple tags.
+				container.style.marginLeft = '10px';
+				return container;
+			}
 			
 			// Hide the main menu when tag-images is opened.
 			$('open-tag-images').addEventListener('click', ()=>{
@@ -1534,7 +1661,7 @@
 			
 			function genTagLinks(destination, exclude) {
 			  let links = [];
-			  config('tags-list').forEach((tag)=>{
+			  fullTagList.forEach((tag)=>{
 			    links.push(genTagLink(tag, destination, exclude));
 			  });
 			  return links;
@@ -1542,7 +1669,7 @@
 			
 			function genTagLink(tag, destination, exclude) {
 			  // Only proceed if the tag is not a category tag.
-			  if (tag.name.slice(-1) !== ':') {
+			  if (!tag.mandatory) {
 			    let li = document.createElement('li'),
 			        mainLink = document.createElement('a'),
 			        excludeLink = document.createElement('a'),
@@ -1585,6 +1712,7 @@
 			  d_syncImageTags();
 			  // Download the new config.
 			  downloadConfig();
+				d_configInit();
 			  d_unsavedData('download-tags', false);
 			  print(config());
 			}
@@ -1599,6 +1727,7 @@
 			    });
 			    // Download the new config.
 			    downloadConfig();
+					d_configInit();
 			    print(config());
 			  }
 			  
@@ -1651,17 +1780,9 @@
 			  let ivconfig = {
 			    'name': '',
 			    'cover-image': '',
-			    'tags-list': [], // holds descriptions and colors and such
+			    'tag-definitions': {}, // holds descriptions and colors and such
 			    'images': {},
 			  };
-			  /*
-			  // Generate an array of every tag used.x
-			  function generateTagsList() {
-			    let acc = [],
-			        tags = config('tags');
-			    
-			    return tags;
-			  }*/
 			  
 			  function config(str) {
 			    // Get the whole obj.
@@ -1681,6 +1802,18 @@
 			    }
 			  }
 			  
+				function d_addTagDefinition(tag) {
+					ivconfig['tag-definitions'][tag.name] = tag;
+					print('d_addTagDefinition():');
+					print(config('tag-definitions'));
+				}
+				
+				function d_deleteTagDefinition(tagName) {
+					delete ivconfig['tag-definitions'][tagName];
+					print('d_deleteTagDefinition():');
+					print(config('tag-definitions'));
+				}
+				
 			  function d_setConfig(str, value) {
 			    if (str === '') {
 			      ivconfig = value;
@@ -1752,15 +1885,12 @@
 			// Run the following on <startup>: ---------------------------------------
 			window.onload = ()=>{
 			  printTest(true);
-			  
-			  // In case they're reloading the page.
-			  d_uploadInit(); // Instead of this, just prevent input from remembering things
+			
+			
+				// ---------------------------------------------------------------------
+			
+			
 			}
-			
-			// -----------------------------------------------------------------------
-			
-			
-			
 			// End -------------------------------------------------------------------
 			
 			// TODO
@@ -1770,7 +1900,8 @@
 			// POST (and ask about flashlight)
 			// Homepage + docs
 			// Chrome bugfixes fuck chrome
-			// God what a pain in the ass. Learn this:
+			// Refactor
+			// God what a pain in the ass:
 			  // https://medium.com/quick-code/javascript-promises-in-twenty-minutes-3aac5b65b887
 			// Image comments
 		</script>
