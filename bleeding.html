@@ -941,7 +941,6 @@
 					  // Filter out any non-image files.
 						let clone = [];
 					  upload.forEach((file, i)=>{
-						print(upload.length);
 					    let name = file.name;
 					    // File isn't an image.
 					    if (!isDisplay(filetype(name))) {
@@ -988,6 +987,7 @@
 				// Generate an array of tags from both tag-definitions and images.
 				function genFullTagList() {
 					let tags = [],
+					    seenTags = [],
 							tagDefinitions = config('tag-definitions'),
 							imageTags = config('images');
 					// tag-defs
@@ -995,19 +995,32 @@
 						let tag = tagDefinitions[tagName];
 						tag['name'] = tagName;
 						tags.push(tag);
+						seenTags.push(tagName);
 					});
 					// images
 					Object.values(imageTags).forEach((arr)=>{
 						arr.forEach((tagName)=>{
 							// If the tag isn't already defined, add it to the list.
-							if (tagName !== '' && !tagDefinitions[tagName]) {
-								tags.push({'name': tagName});
+							if (tagName !== '') {
+							  if (!tagDefinitions[tagName] && !member(seenTags, tagName)) {
+							    tags.push({'name': tagName});
+							    seenTags.push(tagName);
+							  }
 							}
 						});
 					});
 					print('genFullTagList():');
 					print(tags);
 					return tags;
+				}
+				
+				function member(arr, x) {
+				  for (let i = 0; i < arr.length; i += 1) {
+				    if (arr[i] === x) {
+				      return true;
+				    }
+				  }
+				  return false;
 				}
 				
 				// Run this when a config file is loaded. || Might want to move this away if displays start taking arr
