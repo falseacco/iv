@@ -11,7 +11,7 @@
 		  }
       .smaller {
 				font-size: small;
-			}		
+			}
 		
 		  .monospace {
 				font-family: monospace;
@@ -92,13 +92,16 @@
 		  }
 			
 			.box {
-			  /* Draggy. */
 				position: absolute;
-				cursor: move;
 				/* Appearance */
 				border: 1px solid lightgray;
 				display: inline-block;
 				padding: 0 5px 5px 5px;
+			}
+			
+			.can-drag {
+			  position: absolute;
+			  cursor: move;
 			}
 			
 			#edit-folder {
@@ -187,6 +190,15 @@
 				padding: 0;
 				margin: 0;
 			}
+			#dead-files {
+			  background-color: white;
+			  left: 0; 
+        right: 0; 
+        margin-left: auto; 
+        margin-right: auto; 
+        padding-bottom: 20px;
+        width: 640px;
+			}
 		</style>
 		<div id="bg"></div>
 		
@@ -197,20 +209,21 @@
 		  <h2>iv</h2>
 		</a><br>
 		
-		<div id="box" class="box">
+		<div id="box" class="box can-drag">
 			<a id="hide" class="smaller link hide-link" href="#/">[hide]</a>
 			<a id="fullscreen" class="smaller link" href="#/">[toggle fullscreen]</a><br>
 			<span class="hide-section">
 			  <br>
 			  <input id="upload" type="file" webkitdirectory directory multiple autocomplete="off"><br>
 			  <a id="open-edit-folder" href="#/" class="indent1 smaller box-link">Edit folder</a>
-				<a href="#/" class="open-edit-tags indent1 smaller">Add tags</a><br>
+				<a href="#/" class="open-edit-tags indent1 smaller">Add tags</a>
+				<a id="open-dead-files" href="#/" class="hidden box-link indent1 smaller">Dead files</a><br>
 				<span id="hidden-to-start-file-section" class="hidden">
 			    <text>Filter images</text>
 			    <a id="hide-filter" class="smaller hide-link" href="#/">[show]</a>
 			    <text>:</text><br>
 			    <span class="hide-filter-section hidden">
-			      <text id="filter-count" class="indent1">[num. images here, upload font]</text><br>
+			      <text id="filter-count" class="smaller indent1"></text><br>
 			      <textarea id="tag-search" class="cancel-key tag-box indent1" spellcheck="false"
 			        placeholder="Only display images with these tags.&#10;&#10;(No tags selected)"></textarea>
 			      <ul id="tags-list" class="tag-list"></ul>
@@ -269,22 +282,21 @@
 				</span>
 			</span>
 		</div>
-		<div id="edit-folder" class="hidden box">
+		<div id="edit-folder" class="hidden box can-drag">
 		  <text>Edit folder properties:</text>
 		  <a id="close-edit-folder" href="#/" class="close-link">x</a><br>
 		  <br>
-		  <text>Folder name:</text>
-		  <input id="name" type="text" class="cancel-key indent1 folder-setting"
+		  <text>Name</text>
+		  <input id="name" type="text" class="cancel-key folder-setting"
 					    placeholder="iv" size="8" autocomplete="off"><br>
-		  <br>
-		  <text>Cover Image:</text>
-		  <input id="cover-image" type="text" class="cancel-key indent1 folder-setting"
+		  <text>Cover Image</text>
+		  <input id="cover-image" type="text" class="cancel-key folder-setting"
 					    placeholder="none" size="8" autocomplete="off"><br>
 			<br>
 		  <a id="download-folder" href="#/" class="download-config smaller">
 		    Save settings</a>
 		</div>
-		<div id="tag-images" class="hidden box">
+		<div id="tag-images" class="hidden box can-drag">
 		  <text>Tag images:</text>
 		  <a id="close-tag-images" href="#/" class="close-link">x</a><br>
 		  <text id="tags-filename" class="smaller filename"></text><br>
@@ -325,7 +337,7 @@
 				<a href="#/" class="jump-to-start indent2">Jump to start</a><br>
 		  </span>
 		</div>
-		<div id="edit-tags" class="hidden box">
+		<div id="edit-tags" class="hidden box can-drag">
 		  <text>Add a tag:</text>
 		  <a id="close-edit-tags" href="#/" class="close-link">x</a><br>
 		      <text class="indent1">Tag name</text>
@@ -348,6 +360,19 @@
 			  <a id="save-tag" href="#/">Save tag</a>
 				<a id="delete-tag" class="smaller indent1" href="#/">Delete tag</a><br>
 			  <a id="save-tag-settings" href="#/" class="smaller">Save settings</a>
+		</div>
+		<div id="dead-files" class="hidden box can-drag">
+		  <text>Re-assign tags:</text>
+		  <a id="close-dead-files" href="#/" class="close-link">x</a><br>
+		  <text class="smaller">&raquo;If you can see this box, it means that the current folder's config file
+		  contains entries for files that don't seem to exist anymore.</text><br>
+		  <ul id="dead-files-list" class="tag-list"></ul>
+		  <text class="smaller">
+		  &raquo;You can assign these entries to any files without tags below. Click the links to display files.</text><br>
+		  <br>
+		  <span id="reassign-forms"></span>
+		  <br>
+		  <a id="dead-files-settings" href="#/" class="smaller">Save and delete dead files</a>
 		</div>
 		<div id="ghost" class="hidden box"></div>
 		<a id="download-link"></a>
@@ -463,7 +488,7 @@
 			
 			// Draggable divs --------------------------------
 			//d_draggable('box');
-			$c('box').forEach((el)=>{
+			$c('can-drag').forEach((el)=>{
 			  d_draggable(el.id);
 			});
 			
@@ -775,6 +800,7 @@
 						pointer = 0,  // Place in history. 0 is most recent, 1 is 2nd-most.
 						recTags = [],
 						fullTagList = [],
+						dead = [],
 						hidLastImage = false; // For memory drawing.
 			
 			  function fetchHistory(pointer) {
@@ -962,6 +988,7 @@
 						upload = clone;
 						// Clone upload to uploadF
 						uploadF = upload.slice();
+						d_filterCount();
 						// Sort uploadF if the folder wants to be fileordered
 						if (option('display-in-file-order')) {
 							print('This folder wants to be displayed in order of file properties by default.');
@@ -1027,6 +1054,22 @@
 			  function d_configInit() {
 					// Make tagList
 					d_syncFullTagList();
+					// Check for dead files.
+					dead = extinct();
+					if (dead.length > 0) {
+					  print('Found dead files:');
+					  print(dead);
+					  // Show the dead files link.
+					  d_setVisible($('open-dead-files'), true);
+					  // Show the dead files box.
+					  d_setVisible($('dead-files'), true);
+					  // Fill out list.
+					  d_syncDeadFilesList(dead);
+					  // Add reassign forms.
+					  noTags().forEach((file)=>{
+					    d_addReassignForm(file);
+					  });
+					}
 			    // Fill out the tag lists. || generic fun, read data_ for args
 			    d_syncTagLinks('tags-list', 'tag-search', true);
 			    d_syncTagLinks('tag-images-list', 'tag-images-search');
@@ -1126,25 +1169,6 @@
 							}
 						}
 					});
-				  /*$c('tag-property').forEach((el)=>{
-				    let menuProperty = el.getAttribute('data_property');
-				    if (menuProperty) {
-				      if (el.type === 'text') {
-								if (menuProperty === 'name') {
-									el.value = tag;
-								}
-								else {
-									el.value = properties[menuProperty] || '';
-								}
-				      }
-				      else if (el.type === 'checkbox') {
-				        el.checked = properties[menuProperty];
-				      }
-				      else {
-				        print('d_setEditTagMenu() fallthrough');
-				      }
-				    }
-				  })*/;
 				}
 				
 				function d_clearEditTagMenu() {
@@ -1236,23 +1260,23 @@
 							// Check for each man tag's presence.
 							for (let r = 0; r < tags.length; r += 1) { // for (let i in x) format was causing bugs here
 								let recTag = recTags[r],
-										match = false;
+										match = true;
 								for (let i = 0; i < tags.length; i += 1) {
 									let tagName = tags[i],
 											recCategory = recTag;
 									if (/*typeof(tagName) === 'string' && */recCategory === tagName.slice(0, recCategory.length)) {
 										// Tag matches.
-										match = true;
+										match = false;
 									}
 								}
 								// None of the tags matched, this image is untagged.
 								if (!match) {
-									return false;
+									return true;
 								}
 							//});
 							}
 							// All of the images matched, this image is tagged.
-							return true;
+							return false;
 						}
 						// No man tags have been defined.
 						else {
@@ -1537,7 +1561,6 @@
 			}
 			
 			// Image tagging. --------------------------------------------------------
-			
 			// display current image's tags
 				// just below the name, but put a limit (based on char length, not tags)
 			
@@ -1549,21 +1572,153 @@
 					// custom css classes
 		    // valid search words arr
 			
+			// Hide display option || keyboard shortcut as well
+			  // Don't allow until upload, j/left/right too
+			// Get rid of the dotted outlines on click
 			// gohere
-			// Filter tags
-				// Give tag-images a filter too
+			// man tags list clear children on upload to fixbug
+				
+			//
+			function d_filterCount() {
+			  $('filter-count').innerText = uploadF.length + ' images selected';
+			}
 			
-			// Remember extinct files, allow user to transfer tags from
-				// Only save settings and delete extinct together
-					// Confirm box
-				// text inputs for no tags
-					// link labels onclick display
-				// list of nonexistent images at top
-					// hover to show tags
-				// Check for images with no tags (split untagged)
-				// if so, open-extinct-files link and box visible
-					// explanation at top
-				// during uploadInit check for nonexistent image-tags
+			function d_filterUploads(searchTags) {
+			  uploadF = filterUploads(searchTags);
+			}
+			
+			function filterUploads(searchTags) {
+			  let filtered = [];
+			  upload.forEach((file)=>{
+			    let tags = config(file.webkitRelativePath),
+			        match = true;
+			    for (let i = 0; i < searchTags.length; i += 1) {
+			      let searchTag = searchTags[i];
+			      if (searchTag) {
+			        if (searchTag[0] === '!') {
+			          if (member(tags, searchTag.slice(1))) {
+			            match = false;
+			            break;
+			          }
+			        }
+			        else {
+			          if (!member(tags, searchTag)) {
+			            match = false;
+			            break;
+			          }
+			        }
+			      }
+			      /*if (searchTag && !member(tags, searchTag)) {
+			        
+			      }*/
+			    }
+			    if (match) {
+			        filtered.push(file);
+			    }
+			  });
+			  return filtered;
+			}
+			
+			//
+			$('dead-files-settings').onclick = ()=>{
+			  // Reassign tags.
+			  let forms = Array.prototype.slice.call($('reassign-forms').children);
+			  forms.forEach((form)=>{
+			    let path = form.getAttribute('data_path'),
+			        value = form.getElementsByTagName('input')[0].value,
+			        tags = value ? config(value) : [];
+			    d_setConfig(path, tags);
+			  });
+			  // Remove dead files.
+			  dead.forEach((filename)=>{
+			    //d_deleteTagDefinition(filename);
+			    d_deleteImage(filename);
+			  });
+			  // Hide option.
+			  d_setVisible($('open-dead-files'), false);
+			  d_setVisible($('dead-files'), false);
+			  // Download new config.
+			  downloadConfig();
+			  d_configInit();
+			}
+			
+			//
+			function d_addReassignForm(file) {
+			  $('reassign-forms').appendChild(genReassignForm(file));
+			}
+			
+			function genReassignForm(file) {
+			  let container = document.createElement('span'),
+			      label = document.createElement('a'),
+			      input = document.createElement('input'),
+			      linebreak = document.createElement('br');
+			  //
+			  label.innerText = file.name;
+			  label.href = '#/';
+			  label.title = 'Click to display.'
+			  label.onclick = ()=>{
+			    d_completeDisplay(file, true);
+			  }
+			  //
+			  input.type = 'text';
+			  input.placeholder = 'Assign tags';
+			  input.className = 'indent1';
+			  //
+			  container.setAttribute('data_path', file.webkitRelativePath);
+			  //
+			  container.appendChild(label);
+			  container.appendChild(input);
+			  container.appendChild(linebreak);
+			  //
+			  return container;
+			}
+			
+			//
+			function noTags() {
+			  let emptyFiles = [];
+			  upload.forEach((file)=>{
+			    if (!hasTags(file)) {
+			      emptyFiles.push(file);
+			    }
+			  });
+			  return emptyFiles;
+			}
+			
+			function hasTags(image) {
+			  let path = image.webkitRelativePath,
+						tags = config(path);
+				if (tags && tags.length > 0) {
+				  return true;
+				}
+				else {
+				  return false;
+				}
+			}
+			
+			// /
+			function d_syncDeadFilesList(dead) {
+			  genDeadFilesList(dead).forEach((link)=>{
+			    $('dead-files-list').appendChild(link);
+			  });
+			}
+			
+			function genDeadFilesList(dead) {
+			  let links = [];
+			  dead.forEach((filename)=>{
+			    links.push(genDeadFileLink(filename));
+			  });
+			  return links;
+			}
+			
+			function genDeadFileLink(filename) {
+			  let link = document.createElement('a'),
+			      li = document.createElement('li');
+			  link.innerText = filename;
+			  link.href = '#/';
+			  link.title = config('images')[filename].join(' ');
+			  li.appendChild(link);
+			  return li;
+			}
 			
 			// Get any image tags that don't correspond to an existing image.
 			function extinct() {
@@ -1681,6 +1836,7 @@
 			  lamb.fun = (e, search)=>{
 					let query = search || searchWord(tagBox);
 			    print('searchWord(): ' + query);
+			    print(lamb.tagsHidden);
 					// Re-show old tags
 					lamb.tagsHidden.forEach((tag)=>{
 						d_setVisible(tag, 'inline');
@@ -1694,7 +1850,19 @@
 			  };
 			  return lamb.fun;
 			}
-			$('tag-search').oninput = hideTags('tag-search', 'tags-list');
+			//gohere
+			let mainHideTags = hideTags('tag-search', 'tags-list');
+			$('tag-search').oninput = ()=>{
+			  //
+			  mainHideTags();
+			  //
+			  let search = $('tag-search').value;
+			  if (search) {
+			    search = search.split(' ');
+			  }
+			  d_filterUploads(search);
+			  d_filterCount();
+			}
 			let editHideTags = hideTags('tag-images-search', 'tag-images-list');
 			$('tag-images-search').oninput = editHideTags;
 			
@@ -1757,14 +1925,22 @@
 			    // Hover text.
 			    mainLink.title = tag.description || '';
 					// Add the tag's text to destination on click.
-			    mainLink.onclick = addTag(content, destination);
+					let addTagFun = addTag(content, destination);
+			    mainLink.onclick = ()=>{
+			      addTagFun();
+			      $(destination).oninput();
+			    }
 					// Add the link to the list.
 			    li.appendChild(mainLink);
 			    if (exclude) {
 			      excludeLink.href='#/';
 			      excludeLink.innerHTML = '[!]';
 						excludeLink.title = 'Filter out images with this tag.';
-			      excludeLink.onclick = addTag('!' + content, destination, '!');
+						let exAddTagFun = addTag('!' + content, destination, '!');
+			      excludeLink.onclick = ()=>{
+			        exAddTagFun();
+			        $(destination).oninput();
+			      }
 			      li.appendChild(excludeLink);
 			    }
 			    // Keep the links from clustering together.
@@ -1891,6 +2067,12 @@
 					print(config('tag-definitions'));
 				}
 				
+				function d_deleteImage(imageName) {
+				  delete ivconfig['images'][imageName];
+					print('d_deleteImage():');
+					print(config('images'));
+				}
+				
 			  function d_setConfig(str, value) {
 			    if (str === '') {
 			      ivconfig = value;
@@ -1927,7 +2109,7 @@
 				document.onkeydown = (e)=>{
 					if (active) {
 						e = e || window.event;
-						print(e.key);
+						print('key: ' + e.key);
 						if (e.key === KEY_NEXT) {
 							$('next').click();
 						}
@@ -1977,10 +2159,10 @@
 			
 			// TODO
 			// ivconfig.txt + Image tags
-			// Get rid of the dotted outlines on click
-			// Hide display option || keyboard shortcut as well
 			// POST (and ask about flashlight)
 			// Homepage + docs
+			// probably a bug: do something about resetting and upload init -> d_reset
+			// bug: dead-files jumps all over the place when you try to drag it
 			// Chrome bugfixes fuck chrome
 			// Refactor
 			// God what a pain in the ass:
