@@ -1297,6 +1297,7 @@
 				}
 				
 				function d_syncRecTags() {
+				  recTags = [];
 					Object.keys(config('tag-definitions')).forEach((tag)=>{
 						// A tag ending in :: is recommended.
 						if (config('tag-definitions')[tag]['mandatory']) {
@@ -1561,6 +1562,7 @@
 			}
 			
 			// Image tagging. --------------------------------------------------------
+			// gohere tomorrow :)
 			// display current image's tags
 				// just below the name, but put a limit (based on char length, not tags)
 			
@@ -1573,10 +1575,8 @@
 		    // valid search words arr
 			
 			// Hide display option || keyboard shortcut as well
-			  // Don't allow until upload, j/left/right too
+			// Don't allow until upload, j/left/right too
 			// Get rid of the dotted outlines on click
-			// gohere
-			// man tags list clear children on upload to fixbug
 				
 			//
 			function d_filterCount() {
@@ -1850,7 +1850,7 @@
 			  };
 			  return lamb.fun;
 			}
-			//gohere
+
 			let mainHideTags = hideTags('tag-search', 'tags-list');
 			$('tag-search').oninput = ()=>{
 			  //
