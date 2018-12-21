@@ -210,7 +210,7 @@
 		</a><br>
 		
 		<div id="box" class="box can-drag">
-			<a id="hide" class="smaller link hide-link" href="#/">[hide]</a>
+			<a id="hide" class="smaller link hide-link" data_hidden="false" data_hide_label="[mini]" data_show_label="[max]" href="#/">[mini]</a>
 			<a id="fullscreen" class="smaller link" href="#/">[toggle fullscreen]</a><br>
 			<span class="hide-section">
 			  <br>
@@ -220,7 +220,7 @@
 				<a id="open-dead-files" href="#/" class="hidden box-link indent1 smaller">Dead files</a><br>
 				<span id="hidden-to-start-file-section" class="hidden">
 			    <text>Filter images</text>
-			    <a id="hide-filter" class="smaller hide-link" href="#/">[show]</a>
+			    <a id="hide-filter" class="smaller hide-link" data_hidden="true" data_hide_label="[hide]" data_show_label="[show]" href="#/">[show]</a>
 			    <text>:</text><br>
 			    <span class="hide-filter-section hidden">
 			      <text id="filter-count" class="smaller indent1"></text><br>
@@ -238,12 +238,13 @@
 				<a id="jump" class="link smaller indent1 jump-link" href="#/">[Jump...]</a><br>
 				<br>
 			</span><br>
+		  </span><br>
 			<a id="reset" class="gray-link" href="#/">&#8635;</a>
 			<a id="timer" class="gray-link" href="#/">10:00</a><br>
 			<span class="hide-section">
 			<br >
 				<text>Options</text>
-				<a id="hide-options" class="smaller hide-link" href="#/">[show]</a>
+				<a id="hide-options" class="smaller hide-link" data_hidden="true" data_hide_label="[hide]" data_show_label="[show]" href="#/">[show]</a>
 				<text>:</text><br>
 				<span class="hide-options-section hidden">
 				  <text class="indent1">Length:</text><br>
@@ -320,7 +321,7 @@
 		    Save settings</a><br>
 		  <br>
 		  <text>Display order</text>
-		  <a id="hide-tags-options" class="smaller link hide-link" href="#/">[show]</a>
+		  <a id="hide-tags-options" class="smaller link hide-link" data_hidden="true" data_hide_label="[hide]" data_show_label="[show]" href="#/">[show]</a>
 		  <text>:</text><br>
 		  <span class="hide-tags-options-section hidden">
 				<input id="display-untagged-first" type="checkbox" class="tags-file-sort indent1" checked>Display untagged images first<br>
@@ -450,8 +451,8 @@
 			// Hide sections within the main menu.
 			$c('hide-link').listen('click', (e)=>{
 			  let id = e.target.id,
-			      label = $(id).innerHTML;
-			  if (label === '[hide]') {
+			      hidden = $(id).getAttribute('data_hidden');
+			  if (hidden === 'false') {
 			    d_setSectionVisible(id, false);
 			  }
 			  else {
@@ -466,12 +467,14 @@
 			  sections.forEach((el)=>{
 			    d_setVisible(el, value);
 			  });
+			  // Update link state.
+			  link.setAttribute('data_hidden', !value);
 			  // Update label.
 			  if (value) {
-			    link.innerHTML = '[hide]';
+			    link.innerHTML = link.getAttribute('data_hide_label');
 			  }
 			  else {
-			    link.innerHTML = '[show]';
+			    link.innerHTML = link.getAttribute('data_show_label');
 			  }
 			  print('d_setSectionVisible(' + id + ', ' + value + ')');
 			}
