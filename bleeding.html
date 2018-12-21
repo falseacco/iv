@@ -182,6 +182,11 @@
 				padding: 0;
 				width: 250px;
 			}
+			
+			#man-tags-list {
+				padding: 0;
+				margin: 0;
+			}
 		</style>
 		<div id="bg"></div>
 		
@@ -1520,23 +1525,52 @@
 			
 			// Image tagging. --------------------------------------------------------
 			
-			// Switch between preset options/filters
-			
 			// display current image's tags
 				// just below the name, but put a limit (based on char length, not tags)
 			
 			// select tags from tag search w/ up-down-enter
+				// input modes
 			
 			// Extend tag-defs
 		    // different link colors for custom tags
 					// custom css classes
 		    // valid search words arr
 			
+			// gohere
 			// Filter tags
 				// Give tag-images a filter too
 			
-			// gohere
 			// Remember extinct files, allow user to transfer tags from
+				// Only save settings and delete extinct together
+					// Confirm box
+				// text inputs for no tags
+					// link labels onclick display
+				// list of nonexistent images at top
+					// hover to show tags
+				// Check for images with no tags (split untagged)
+				// if so, open-extinct-files link and box visible
+					// explanation at top
+				// during uploadInit check for nonexistent image-tags
+			
+			// Get any image tags that don't correspond to an existing image.
+			function extinct() {
+				let massGrave = [];
+				Object.keys(config('images')).forEach((imagePath)=>{
+					if (isExtinct(imagePath)) {
+						massGrave.push(imagePath);
+					}
+				});
+				return massGrave;
+			}
+			
+			function isExtinct(imagePath) {
+				if (!uploadP[imagePath]) {
+					return true;
+				}
+				else {
+					return false;
+				}
+			}
 			
 			// Jump to file by path.
 			$c('jump-link').listen('click', ()=>{
