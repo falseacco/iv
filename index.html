@@ -1047,14 +1047,17 @@
 							tagDefinitions = config('tag-definitions'),
 							imageTags = config('images');
 					// tag-defs
-					Object.keys(tagDefinitions).forEach((tagName)=>{
-						let tag = tagDefinitions[tagName];
-						tag['name'] = tagName;
-						tags.push(tag);
-						seenTags.push(tagName);
-					});
+					if (tagDefinitions) {
+					  Object.keys(tagDefinitions).forEach((tagName)=>{
+						  let tag = tagDefinitions[tagName];
+						  tag['name'] = tagName;
+						  tags.push(tag);
+						  seenTags.push(tagName);
+					  });
+					}
 					// images
-					Object.values(imageTags).forEach((arr)=>{
+					if (imageTags) {
+					  Object.values(imageTags).forEach((arr)=>{
 						arr.forEach((tagName)=>{
 							// If the tag isn't already defined, add it to the list.
 							if (tagName !== '') {
@@ -1065,6 +1068,7 @@
 							}
 						});
 					});
+					}
 					//print('genFullTagList():');
 					//print(tags);
 					return tags;
@@ -1361,13 +1365,16 @@
 				}
 				
 				function d_syncRecTags() {
+				  let tagDefs = config('tag-definitions');
 				  recTags = [];
-					Object.keys(config('tag-definitions')).forEach((tag)=>{
-						// A tag ending in :: is recommended.
-						if (config('tag-definitions')[tag]['mandatory']) {
-							recTags.push(tag);
-						}
-					});
+				  if (tagDefs) {
+				    Object.keys(tagDefs).forEach((tag)=>{
+						  // A tag ending in :: is recommended.
+						  if (config('tag-definitions')[tag]['mandatory']) {
+							  recTags.push(tag);
+						  }
+					  });
+				  }
 				}
 				
 				// Check if a file is good to display.
