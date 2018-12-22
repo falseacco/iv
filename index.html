@@ -964,16 +964,18 @@
 							shortName;
 				  if (img === '' || img === undefined) {
 				    name = '';
+				    shortName = '';
 				  }
 				  else {
 				    name = img.webkitRelativePath;
+				    shortName = name;
 				    if (name.length > 31) {
 				      shortName = name.slice(0, 25) + '...' + name.slice(-3);
 				    }
 				  }
 					// Update display.
-				  $('filename').innerHTML = name;
-				  $('tags-filename').innerHTML = name;
+				  $('filename').innerHTML = shortName;
+				  $('tags-filename').innerHTML = shortName;
 					// Update hover text.
 				  $('filename').title = name;
 				  $('tags-filename').title = name;
@@ -1630,6 +1632,7 @@
 			}
 				
 			function genViewTagsList() { // the gentaglists really should only be on function
+					s_print(config(fetchHistory(pointer)));
 					let acc = [],
 					    currImageTags = config(fetchHistory(pointer).webkitRelativePath),
 					    tagObjs = currImageTags.map((str)=>{
