@@ -317,7 +317,7 @@
 		  <a id="close-tag-images" href="#/" class="close-link">x</a><br>
 		  <text id="tags-filename" class="smaller filename"></text><br>
 		  <text id="untagged-images" class="smaller indent1"></text><br>
-		    <textarea id="tag-images-search" class="cancel-key tag-box indent1" spellcheck="false"
+		    <textarea id="tag-images-search" class="cancel-key2 tag-box indent1" spellcheck="false"
 			    placeholder="The current image's tags.&#10;(There are none)"></textarea><br>
 					<br>
 					<span id="man-tags-section">
@@ -1582,8 +1582,8 @@
 			                  .trim() // Remove whitespace on outside of string
 			                  .split(' '), // Convert to array
 			      currentImagePath = fetchHistory(pointer).webkitRelativePath;
-			  //print('d_syncImageTags(): ' + currentImagePath);
-			  //print(tags);
+			  print('d_syncImageTags(): ' + currentImagePath);
+			  print(tags);
 			  d_setConfig(currentImagePath, tags);
 			  d_unsavedData('download-tags', true);
 			  if (typeof(wait) === 'function') {
@@ -2347,7 +2347,8 @@
 			
 			// Disable shortcuts when focus is inside a text input.
 			{
-				let inputs = $c('cancel-key'); 
+				let inputs = $c('cancel-key'),
+				    inputs2 = $c('cancel-key2');
 				inputs.listen('focus', ()=>{
 				  //print('cancel-key focus');
 				  d_useKeys('none');
@@ -2355,6 +2356,15 @@
 				inputs.listen('blur', ()=>{
 				  //print('cancel-key blur');
 				  d_useKeys('main');
+				});
+				
+				inputs2.listen('focus', ()=>{
+				  //print('cancel-key focus');
+				  d_useKeys('none');
+				});
+				inputs2.listen('blur', ()=>{
+				  //print('cancel-key blur');
+				  d_useKeys('tag-images');
 				});
 			}
 			
@@ -2370,13 +2380,18 @@
 			// End -------------------------------------------------------------------
 			
 			// TODO
+			// tag-images save-tag should save all tags at once. -> save-tags
+			  // both save-tag and delete-tag should clear inputs
+			// next/prev rehide tags onclick, [all] link that does same
+			// split config and upload Init up, they try to do too many things
+			    // Save settings for tag-images really shouldn't redisplay, it's jarring
+			// long tag lists sometimes go past box
+			// entering tags is a bit awkward, want keyboard shortcuts after all tag-images
+			// Please refactor
 			// Bugs:
-			  // next/prev rehide tags onclick, [all] link that does same
-			  // long tag lists sometimes go past box
 			  // dead-files jumps all over the place when you try to drag it
 			  // probably a bug source: do something about resetting and upload init -> d_reset
 			  // Chrome bugfixes fuck chrome
-			// Please refactor
 			// Make it easier for users to change background colors and such, not through config
 			// God what a pain in the ass:
 			  // https://medium.com/quick-code/javascript-promises-in-twenty-minutes-3aac5b65b887
