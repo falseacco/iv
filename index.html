@@ -233,7 +233,7 @@
 			    <text>:</text><br>
 			    <span class="hide-filter-section hidden">
 			      <text id="filter-count" class="smaller indent1"></text><br>
-			      <textarea id="tag-search" class="tag-box indent1" spellcheck="false"
+			      <textarea id="tag-search" class="cancel-key tag-box indent1" spellcheck="false"
 			        placeholder="Only display images with these tags.&#10;&#10;(No tags selected)"></textarea>
 			      <ul id="tags-list" class="tag-list"></ul>
 			      <a id="open-tag-images" href="#/" class="indent1 smaller box-link">Tag images</a>
@@ -317,7 +317,7 @@
 		  <a id="close-tag-images" href="#/" class="close-link">x</a><br>
 		  <text id="tags-filename" class="smaller filename"></text><br>
 		  <text id="untagged-images" class="smaller indent1"></text><br>
-		    <textarea id="tag-images-search" class="tag-box indent1" spellcheck="false"
+		    <textarea id="tag-images-search" class="cancel-key tag-box indent1" spellcheck="false"
 			    placeholder="The current image's tags.&#10;(There are none)"></textarea><br>
 					<br>
 					<span id="man-tags-section">
@@ -339,7 +339,7 @@
 		  <a id="hide-tags-options" class="smaller link hide-link" data_hidden="true" data_hide_label="[hide]" data_show_label="[show]" href="#/">[show]</a>
 		  <text>:</text><br>
 		  <span class="hide-tags-options-section hidden">
-				<input id="display-untagged-first" type="checkbox" class="tags-file-sort indent1" checked>Display untagged images first<br>
+				<input id="display-untagged-first" type="checkbox" class="tags-file-sort indent1">Display untagged images first<br>
 		    <text class="indent1">Sort by</text><br>
 			  <text class="indent2">file property:</text><br>
 			    <input type="radio" class="tags-file-sort indent3" name="tags-file-property" value="name" checked autocomplete="off"> name<br>
@@ -497,7 +497,7 @@
 			  else {
 			    link.innerHTML = link.getAttribute('data_show_label');
 			  }
-			  print('d_setSectionVisible(' + id + ', ' + value + ')');
+			  //print('d_setSectionVisible(' + id + ', ' + value + ')');
 			}
 			
 			function d_setVisible(el, value) {
@@ -728,7 +728,7 @@
 			      // When the timer reaches zero:
 			      if (remaining <= 500) {
 			        d_endCount('reset');
-			        print('end timer');
+			        print('End timer');
 			      }
 			    }, 225);
 			  }
@@ -846,16 +846,16 @@
 				$c('file-sort').listen('click', ()=>{
 					uploadF = sortUploadsFromMenu('file-property', 'file-order');
 					d_setFileIndex(-1);
-					print('file-sort()');
-					print(uploadF);
+					//print('file-sort()');
+					//print(uploadF);
 				});
 				
 				$c('tags-file-sort').listen('click', ()=>{
 					// Sort by file property.
 					uploadF = sortUploadsFromMenu('tags-file-property', 'tags-file-order');
 					d_setFileIndex(-1);
-					print('tags-file-sort()');
-					print(uploadF);
+					//print('tags-file-sort()');
+					//print(uploadF);
 				});
 				
 				// Sort by file properties pulled from menu.
@@ -1032,9 +1032,8 @@
 		        // No cover image specified, just display the first.
 		        d_completeDisplay(upload[0], true);
 					}
-					
-					print('d_uploadInit()');
-					print(upload);
+					//print('d_uploadInit()');
+					//print(upload);
 				}
 				
 				function d_syncFullTagList() {
@@ -1066,8 +1065,8 @@
 							}
 						});
 					});
-					print('genFullTagList():');
-					print(tags);
+					//print('genFullTagList():');
+					//print(tags);
 					return tags;
 				}
 				
@@ -1132,8 +1131,8 @@
               d_completeDisplay(upload[Number(cover)], true);
             }
           }
-					print('d_configInit():');
-					print(config());
+					//print('d_configInit():');
+					//print(config());
 			  }
 			  
 			  //
@@ -1156,7 +1155,7 @@
 						link.title = tag.description || '';
 						//
 						link.onclick = ()=>{
-							print(tag);
+							//print(tag);
 							d_setEditTagMenu(tag.name);//[tag]
 						};
 						// Color.
@@ -1172,7 +1171,7 @@
 			      else if (tag.name.split(':').length > 1) {
 			        // is cat tag, use cat color instead
 			        let cat = tag.name.split(':')[0];
-		          if (config('tag-definitions')[cat]['link-color']) {
+		          if (config('tag-definitions')[cat] && config('tag-definitions')[cat]['link-color']) {
 		            link.style.color = config('tag-definitions')[cat]['link-color'];
 		            link.onmouseover = ()=>{
 		              link.style.color = '#551A8B';
@@ -1524,7 +1523,7 @@
 						  fileIndex = 0;
 						}
 						d_completeDisplay(uploadF[fileIndex], true, onload);
-						print('d_displayFileOrder()');
+						print('d_displayFileOrder():');
 						print(fileIndex);
 					}
 					
@@ -1548,7 +1547,7 @@
 				// Display the previous image in history.
 				$('previous').onclick = d_previous; function d_previous(onload) {
 					d_pause();
-					print(history);
+					//print(history);
 				  if (pointer >= 0 && pointer < (history.length - 1)) {
 				    pointer += 1;
 				    d_completeDisplay(fetchHistory(pointer), false, onload);
@@ -1561,12 +1560,11 @@
 			
 			
 			// Navigation buttons for tag-images. Constrained to fileorder.
-			$('tags-next').onclick = ()=>{
+			$('tags-next').onclick = ()=>{ // gohere
 			  d_syncImageTags(()=>{
 			    // Display the next image. (In fileorder, so no repeats)
 			    d_next(false, false, 'tags-next');
 					d_updateUntagged();
-			    //d_listTags();
 			  });
 			}
 			
@@ -1575,9 +1573,6 @@
 			  d_syncImageTags(()=>{
 			    d_previous();
 					d_updateUntagged();
-			    //if (pointer >= 0 && pointer < (history.length)) {
-			      //d_listTags();
-			    //}
 			  });
 			}
 			
@@ -1587,10 +1582,10 @@
 			                  .trim() // Remove whitespace on outside of string
 			                  .split(' '), // Convert to array
 			      currentImagePath = fetchHistory(pointer).webkitRelativePath;
+			  //print('d_syncImageTags(): ' + currentImagePath);
+			  //print(tags);
 			  d_setConfig(currentImagePath, tags);
 			  d_unsavedData('download-tags', true);
-			  print('d_syncImageTags(): ' + currentImagePath);
-			  print(tags);
 			  if (typeof(wait) === 'function') {
 			    wait();
 			  }
@@ -1612,8 +1607,8 @@
 						}
 			    });
 			  }
-			  print('d_listTags():');
-			  print(tags);
+			  //print('d_listTags():');
+			  //print(tags);
 			}
 			
 			// Let the user know when they have unsaved data.
@@ -1637,73 +1632,56 @@
 			function genViewTagsList() { // the gentaglists really should only be on function
 					let acc = [],
 					    currImageTags = config(fetchHistory(pointer).webkitRelativePath),
-					    tagObjs = [];
+					    tagObjs;
 					    
 					if (currImageTags) {
 					  tagObjs = currImageTags.map((str)=>{
-					    return config('tag-definitions')[str];
+					    return config('tag-definitions')[str] || {'name': str};
 					  });
 					}
-					
-					tagObjs.forEach((tag)=>{
-						let li = document.createElement('li'),
-								link = document.createElement('a');
-						// Set up link.
-						link.href = '#/';
-						link.innerHTML = tag.name;
-						// Hover text.
-						link.title = tag.description || '';
-						// Color.
-						if (tag['link-color']) {
-			        link.style.color = tag['link-color'];
-			        link.onmouseover = ()=>{
-			          link.style.color = '#551A8B';
-			        }
-			        link.onmouseleave = ()=>{
+					if (tagObjs) {
+					  tagObjs.forEach((tag)=>{
+						  let li = document.createElement('li'),
+								  link = document.createElement('a');
+						  // Set up link.
+						  link.href = '#/';
+						  link.innerHTML = tag.name;
+						  // Hover text.
+						  link.title = tag.description || '';
+						  // Color.
+						  if (tag['link-color']) {
 			          link.style.color = tag['link-color'];
+			          link.onmouseover = ()=>{
+			            link.style.color = '#551A8B';
+			          }
+			          link.onmouseleave = ()=>{
+			            link.style.color = tag['link-color'];
+			          }
 			        }
-			      }
-			      else if (tag.name.split(':').length > 1) {
-			        // is cat tag, use cat color instead
-			        let cat = tag.name.split(':')[0];
-		          if (config('tag-definitions')[cat]['link-color']) {
-		            link.style.color = config('tag-definitions')[cat]['link-color'];
-		            link.onmouseover = ()=>{
-		              link.style.color = '#551A8B';
-		            }
-		            link.onmouseleave = ()=>{
+			        else if (tag.name.split(':').length > 1) {
+			          // is cat tag, use cat color instead
+			          let cat = tag.name.split(':')[0];
+		            if (config('tag-definitions')[cat] && config('tag-definitions')[cat]['link-color']) {
 		              link.style.color = config('tag-definitions')[cat]['link-color'];
+		              link.onmouseover = ()=>{
+		                link.style.color = '#551A8B';
+		              }
+		              link.onmouseleave = ()=>{
+		                link.style.color = config('tag-definitions')[cat]['link-color'];
+		              }
 		            }
-		          }
-			      }
-						// Keep the links from clustering together.
-						li.style.paddingRight = '5px';
-						//
-						li.display = 'inline';
-						// Add link to the list.
-						li.appendChild(link);
-						acc.push(li);
-					});
+			        }
+						  // Keep the links from clustering together.
+						  li.style.paddingRight = '5px';
+						  //
+						  li.display = 'inline';
+						  // Add link to the list.
+						  li.appendChild(link);
+						  acc.push(li);
+					  });
+					}
 					return acc;
-				}
-				
-			// Tag search shortcuts triggers. | not really sure about this.
-			$c('tag-box').listen('focus', ()=>{
-			  d_useKeys('none');
-			  //print('box-focus');
-			});
-			$c('tag-box').listen('blur', ()=>{
-			  d_useKeys('main');
-			  //print('box-blur');
-			});
-			
-			$c('open-edit-tags').listen('click', ()=>{
-			  //print('open-tags');
-			  // toggle vis
-			});
-			$('close-edit-tags').addEventListener('click', ()=>{
-			  //print('close-tags');
-			});
+			}
 				
 			$('hide-display').onclick = ()=>{
 			  if ($('hide-display').checked) {
@@ -1726,7 +1704,7 @@
 			function filterUploads(searchTags) {
 			  let filtered = [];
 			  upload.forEach((file)=>{
-			    let tags = config(file.webkitRelativePath),
+			    let tags = config(file.webkitRelativePath) || [],
 			        match = true;
 			    for (let i = 0; i < searchTags.length; i += 1) {
 			      let searchTag = searchTags[i];
@@ -1768,7 +1746,6 @@
 			  // Remove dead files.
 			  dead.forEach((filename)=>{
 			    //d_deleteTagDefinition(filename);
-			    print(filename);
 			    d_deleteImage(filename);
 			  });
 			  // Hide option.
@@ -1912,7 +1889,6 @@
 				downloadConfig();
 				d_unsavedData('save-tag-settings', false);
 				d_configInit();
-				print(config());
 			}
 			
 			$('add-tag-property').onclick = d_addTagProperty; function d_addTagProperty(e, str) {
@@ -1946,16 +1922,18 @@
 			
 			// Hide the main menu when tag-images is opened.
 			$('open-tag-images').addEventListener('click', ()=>{
+			  d_useKeys('tag-images');
 		    d_setVisible($('box'), false);
 		    // Sort//adasdasd
 		    uploadF = sortUploadsFromMenu('tags-file-property', 'tags-file-order');
-		    print('tags-file-sort()');
-		    print(uploadF);
+		    //print('tags-file-sort()');
+		    //print(uploadF);
 		    // Display current image's tags.
 		    //d_listTags();
 			});
 			// Show the main menu again when tag-images is closed.
 			$('close-tag-images').addEventListener('click', ()=>{
+			  d_useKeys('main');
 			  d_setVisible($('box'), true);
 			});
 			
@@ -1982,7 +1960,6 @@
 						d_setVisible(tag, 'inline');
 					});
 					// Hide new tags
-					print(query);
 					lamb.tagsHidden = sortTags(query, tagBox, tagList);
 					lamb.tagsHidden.forEach((tag)=>{
 						d_setVisible(tag, false);
@@ -2023,7 +2000,7 @@
 					if (tagName.split(':').length > 1) {
 					  searchWords.unshift(tagName.split(':')[1]);
 					}
-					print(searchWords);
+					//print(searchWords);
 					
 					for (let i = 0; i < searchWords.length; i += 1) {
 					  let word = searchWords[i];
@@ -2104,7 +2081,7 @@
 			    else if (tag.name.split(':').length > 1) {
 			      // is cat tag, use cat color instead
 			      let cat = tag.name.split(':')[0];
-		        if (config('tag-definitions')[cat]['link-color']) {
+		        if (config('tag-definitions')[cat] && config('tag-definitions')[cat]['link-color']) {
 		          mainLink.style.color = config('tag-definitions')[cat]['link-color'];
 		          mainLink.onmouseover = ()=>{
 		            mainLink.style.color = '#551A8B';
@@ -2143,7 +2120,7 @@
 			      else if (tag.name.split(':').length > 1) {
 			        // is cat tag, use cat color instead
 			        let cat = tag.name.split(':')[0];
-		          if (config('tag-definitions')[cat]['link-color']) {
+		          if (config('tag-definitions')[cat] && config('tag-definitions')[cat]['link-color']) {
 		            excludeLink.style.color = config('tag-definitions')[cat]['link-color'];
 		            excludeLink.onmouseover = ()=>{
 		              excludeLink.style.color = '#551A8B';
@@ -2179,7 +2156,6 @@
 			  downloadConfig();
 				d_configInit();
 			  d_unsavedData('download-tags', false);
-			  print(config());
 			}
 			
 			// Update config file settings from menu.
@@ -2193,15 +2169,12 @@
 			    // Download the new config.
 			    downloadConfig();
 					d_configInit();
-			    print(config());
 			  }
 			  
 			  // Set the menu's settings to the current settings.
 			  function d_syncEditFolder() {
-			    print('d_syncEditFolder');
+			    //print('d_syncEditFolder');
 			    settings.forEach((el)=>{
-			      print(el);
-			      print(config(el.id));
 			      el.value = config(el.id);
 			    });
 			  }
@@ -2316,19 +2289,16 @@
 			
 			// Keyboard shortcuts. ---------------------------------------------------
 			{
-				let mode = 'no-upload',
+				let mode = 'none',
 				    KEY_NEXT = 'ArrowRight',
 						KEY_PREV = 'ArrowLeft',
 						KEY_JUMP = 'j',
-						KEY_HIDE = 'h',
-						KEY_NEXT_TAG = 'ArrowDown',
-						KEY_PREV_TAG = 'ArrowUp',
-						KEY_CONFIRM_TAG = 'Enter';
+						KEY_HIDE = 'h';
 						
 				document.onkeydown = (e)=>{
 				  e = e || window.event;
 				  let key = e.key;
-					print('key: ' + key);
+					//print('key: ' + key);
 					// Available shortcuts change based on program state.
 					if (mode === 'main') {
 						if (key === KEY_NEXT) {
@@ -2344,23 +2314,26 @@
 						  $('hide-display').click();
 						}
 					}
-					else if (mode === 'tag-search') {
-					  if (key === KEY_NEXT_TAG) {
-					    print('tagnext');
-					  }
-					  else if (key === KEY_PREV_TAG) {
-					    print('tagprev');
-					  }
-					  else if (key === KEY_CONFIRM_TAG) {
-					    print('tagconfirm');
-					  }
+					else if (mode === 'tag-images') {
+					  if (key === KEY_NEXT) {
+							$('tags-next').click();
+						}
+						else if (key === KEY_PREV) {
+							$('tags-previous').click();
+						}
+						else if (key.toLowerCase() === KEY_JUMP) {
+							$('jump').click();
+						}
+						else if (key.toLowerCase() === KEY_HIDE) {
+						  $('hide-display').click();
+						}
 					}
 					else {
-					  //
 					}
 				};
 				
 				function d_useKeys (state) {
+				  print('Using keymode: ' + state);
 					return mode = state;
 				}
 				
@@ -2374,13 +2347,14 @@
 			
 			// Disable shortcuts when focus is inside a text input.
 			{
-			  // All the inputs have nocancel
 				let inputs = $c('cancel-key'); 
 				inputs.listen('focus', ()=>{
-				  d_useKeys(false);
+				  //print('cancel-key focus');
+				  d_useKeys('none');
 				});
 				inputs.listen('blur', ()=>{
-				  d_useKeys(true);
+				  //print('cancel-key blur');
+				  d_useKeys('main');
 				});
 			}
 			
@@ -2396,10 +2370,12 @@
 			// End -------------------------------------------------------------------
 			
 			// TODO
-			// Homepage + docs
-			// bug: dead-files jumps all over the place when you try to drag it
-			// probably a bug source: do something about resetting and upload init -> d_reset
-			// Chrome bugfixes fuck chrome
+			// Bugs:
+			  // next/prev rehide tags onclick, [all] link that does same
+			  // long tag lists sometimes go past box
+			  // dead-files jumps all over the place when you try to drag it
+			  // probably a bug source: do something about resetting and upload init -> d_reset
+			  // Chrome bugfixes fuck chrome
 			// Please refactor
 			// Make it easier for users to change background colors and such, not through config
 			// God what a pain in the ass:
