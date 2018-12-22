@@ -27,14 +27,14 @@
 			  margin-left: 35px;
 			}
 		
+		  a {
+			  outline: none;
+			}
 			a:visited {
 				color: #0000EE;
 			}
-			a:hover {
+			a:hover, a:active, a:focus {
 			  color: #551A8B;
-			}
-			a:active {
-				color: #551A8B;
 			}
 			
 			.black-link {
@@ -224,7 +224,7 @@
 			    <text>:</text><br>
 			    <span class="hide-filter-section hidden">
 			      <text id="filter-count" class="smaller indent1"></text><br>
-			      <textarea id="tag-search" class="cancel-key tag-box indent1" spellcheck="false"
+			      <textarea id="tag-search" class="tag-box indent1" spellcheck="false"
 			        placeholder="Only display images with these tags.&#10;&#10;(No tags selected)"></textarea>
 			      <ul id="tags-list" class="tag-list"></ul>
 			      <a id="open-tag-images" href="#/" class="indent1 smaller box-link">Tag images</a>
@@ -232,7 +232,7 @@
 					<br>
 		      </span>
 			<br>
-				<text id="filename" class="smaller filename"></text><br>
+			  <text id="filename" class="smaller filename"></text><br>
 				<a id="previous" class="link" href="#/">previous</a>
 				<a id="next" class="link" href="#/">next</a><br>
 				<a id="jump" class="link smaller indent1 jump-link" href="#/">[Jump...]</a><br>
@@ -254,10 +254,12 @@
 					    placeholder="10" size="2" maxlength="2" autocomplete="off"> :
 					  <input id="timer-sec" type="text" class="cancel-key monospace"
 					    placeholder="00" size="2" maxlength="2" autocomplete="off"><br>
+					<input id="hide-display" type="checkbox" autocomplete="off"
+				    class="indent1">Hide display<br>
 				  <input id="prevent-recent-repeats" type="checkbox" autocomplete="off"
-				    class="indent1" checked>Prevent recent repeats<br> 
+				    class="indent1" checked>Prevent recent repeats<br>
 				  <input id="hide-every-other" type="checkbox" autocomplete="off"
-				    class="indent1">Hide every other image<br>    
+				    class="indent1">Hide every other image<br>
 					<input id="display-new" type="checkbox" autocomplete="off"
 					  class="indent1" checked>Display new images on skip<br>
 				  <text class="indent1">When timer ends:</text><br>
@@ -302,7 +304,7 @@
 		  <a id="close-tag-images" href="#/" class="close-link">x</a><br>
 		  <text id="tags-filename" class="smaller filename"></text><br>
 		  <text id="untagged-images" class="smaller indent1"></text><br>
-		    <textarea id="tag-images-search" class="cancel-key tag-box indent1" spellcheck="false"
+		    <textarea id="tag-images-search" class="tag-box indent1" spellcheck="false"
 			    placeholder="The current image's tags.&#10;(There are none)"></textarea><br>
 					<br>
 					<span id="man-tags-section">
@@ -346,6 +348,12 @@
 					      size="8" autocomplete="off"><br>
 				  <text class="indent1">Description</text>
 		      <input id="edit-tag-description" data_property="description" type="text" class="cancel-key tag-property"
+					      size="8" autocomplete="off"><br>
+					<text class="indent1">Link color</text>
+		      <input id="edit-link-color" data_property="description" type="text" class="cancel-key tag-property"
+					      size="8" autocomplete="off"><br>
+					<text class="indent1">Search words</text>
+		      <input id="edit-search-words" data_property="description" type="text" class="cancel-key tag-property"
 					      size="8" autocomplete="off"><br>
 				<span id="custom-tag-properties">
 				</span>
@@ -997,6 +1005,9 @@
 							print('This folder wants to be displayed in order of file properties by default.');
 							uploadF = sortUploadsFromMenu('file-property', 'file-order');
 						}
+						// Enable keyboard shortcuts.
+						d_useKeys('main');
+						
 					}
 					if (!hasConfig) {
 					  print('No config file found.');
@@ -1565,21 +1576,42 @@
 			}
 			
 			// Image tagging. --------------------------------------------------------
-			// gohere tomorrow :)
+			// gohere
 			// display current image's tags
 				// just below the name, but put a limit (based on char length, not tags)
 			
-			// select tags from tag search w/ up-down-enter
-				// input modes
-			
 			// Extend tag-defs
 		    // different link colors for custom tags
-					// custom css classes
+					// generate custom css classes
 		    // valid search words arr
+		      // category word by default
+				
+			// Tag search shortcuts triggers. | not really sure about this.
+			$c('tag-box').listen('focus', ()=>{
+			  d_useKeys('none');
+			  //print('box-focus');
+			});
+			$c('tag-box').listen('blur', ()=>{
+			  d_useKeys('main');
+			  //print('box-blur');
+			});
 			
-			// Hide display option || keyboard shortcut as well
-			// Don't allow until upload, j/left/right too
-			// Get rid of the dotted outlines on click
+			$c('open-edit-tags').listen('click', ()=>{
+			  //print('open-tags');
+			  // toggle vis
+			});
+			$('close-edit-tags').addEventListener('click', ()=>{
+			  //print('close-tags');
+			});
+				
+			$('hide-display').onclick = ()=>{
+			  if ($('hide-display').checked) {
+			    d_setVisible($('display'), false);
+			  }
+			  else {
+			    d_setVisible($('display'), true);
+			  }
+			}
 				
 			//
 			function d_filterCount() {
@@ -1778,6 +1810,7 @@
 				print(config());
 			}
 			
+			// gohere
 			$('add-tag-property').onclick = d_addTagProperty; function d_addTagProperty(e, str) {
 				let newPropertyName = str || $('add-tag-property-name').value;
 				if (newPropertyName) {
@@ -1869,6 +1902,7 @@
 			let editHideTags = hideTags('tag-images-search', 'tag-images-list');
 			$('tag-images-search').oninput = editHideTags;
 			
+			//gohere
 			// Make a list of tags that don't match the current search text.
 			function sortTags(searchText, tagBox, tagList) { // tagBox is obsolete
 				let search = $(tagBox),
@@ -1878,10 +1912,20 @@
 				// Hide any tags that don't match the query so far.
 				tags.forEach((tag)=>{ // can use array.filter for this
 					let tagLink = tag.firstChild,
-							tagName = tagLink.innerHTML || tagLink.innerText;
+							tagName = tagLink.innerHTML || tagLink.innerText,
+							searchWords = config('tag-definitions')[tagName];
+					print('sortTags:');
+					print(searchWords); // returns undefined if tag is unlisted
+					// add empty prop just to be sure
+					// list seto_(asils)
 					// Test for not-matches.
-					if (searchText.toUpperCase() !== tagName.slice(0, searchText.length).toUpperCase()) {
-						toHide.push(tag);
+					if (searchWords) {
+					  // run through list
+					}
+					else {
+					  if (searchText.toUpperCase() !== tagName.slice(0, searchText.length).toUpperCase()) {
+						  toHide.push(tag);
+					  }
 					}
 				});
 				return toHide;
@@ -2104,36 +2148,59 @@
 			
 			// Keyboard shortcuts. ---------------------------------------------------
 			{
-				let active = true;
+				let mode = 'no-upload',
 				    KEY_NEXT = 'ArrowRight',
 						KEY_PREV = 'ArrowLeft',
-						KEY_JUMP = 'J';
+						KEY_JUMP = 'j',
+						KEY_HIDE = 'h',
+						KEY_NEXT_TAG = 'ArrowDown',
+						KEY_PREV_TAG = 'ArrowUp',
+						KEY_CONFIRM_TAG = 'Enter';
 						
 				document.onkeydown = (e)=>{
-					if (active) {
-						e = e || window.event;
-						print('key: ' + e.key);
-						if (e.key === KEY_NEXT) {
+				  e = e || window.event;
+				  let key = e.key;
+					print('key: ' + key);
+					// Available shortcuts change based on program state.
+					if (mode === 'main') {
+						if (key === KEY_NEXT) {
 							$('next').click();
 						}
-						else if (e.key === KEY_PREV) {
+						else if (key === KEY_PREV) {
 							$('previous').click();
 						}
-						else if (e.key.toUpperCase() === KEY_JUMP) {
+						else if (key.toLowerCase() === KEY_JUMP) {
 							$('jump').click();
 						}
+						else if (key.toLowerCase() === KEY_HIDE) {
+						  $('hide-display').click();
+						}
+					}
+					else if (mode === 'tag-search') {
+					  if (key === KEY_NEXT_TAG) {
+					    print('tagnext');
+					  }
+					  else if (key === KEY_PREV_TAG) {
+					    print('tagprev');
+					  }
+					  else if (key === KEY_CONFIRM_TAG) {
+					    print('tagconfirm');
+					  }
 					}
 					else {
+					  //
 					}
 				};
 				
-				function useKeys (t) {
-					return active = t;
+				function d_useKeys (state) {
+					return mode = state;
 				}
 				
 				function listKeys () {
-					s_print('next: ' + KEY_NEXT);
-					s_print('prev: ' + KEY_PREV);
+					s_print('Next: ' + KEY_NEXT);
+					s_print('Previous: ' + KEY_PREV);
+					s_print('Jump: ' + KEY_JUMP);
+					s_print('Hide display: ' + KEY_HIDE);
 				}
 			}
 			
@@ -2142,10 +2209,10 @@
 			  // All the inputs have nocancel
 				let inputs = $c('cancel-key'); 
 				inputs.listen('focus', ()=>{
-				  useKeys(false);
+				  d_useKeys(false);
 				});
 				inputs.listen('blur', ()=>{
-				  useKeys(true);
+				  d_useKeys(true);
 				});
 			}
 			
@@ -2164,10 +2231,11 @@
 			// ivconfig.txt + Image tags
 			// POST (and ask about flashlight)
 			// Homepage + docs
-			// probably a bug: do something about resetting and upload init -> d_reset
 			// bug: dead-files jumps all over the place when you try to drag it
+			// probably a bug source: do something about resetting and upload init -> d_reset
 			// Chrome bugfixes fuck chrome
-			// Refactor
+			// Please refactor
+			// Make it easier for users to change background colors and such, not through config
 			// God what a pain in the ass:
 			  // https://medium.com/quick-code/javascript-promises-in-twenty-minutes-3aac5b65b887
 			// Image comments
