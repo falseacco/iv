@@ -5,7 +5,7 @@
     <title>image viewer</title>
   </head>
   <body>
-		<style>
+		<style id="stylesheet">
 		  body .hidden {
 		    display: none;
 		  }
@@ -199,6 +199,15 @@
         padding-bottom: 20px;
         width: 640px;
 			}
+			
+			a, text {
+			  background-color: white;
+			}
+			
+			#view-tags-list {
+			  padding: 0;
+			  margin: 0;
+			}
 		</style>
 		<div id="bg"></div>
 		
@@ -229,16 +238,17 @@
 			      <ul id="tags-list" class="tag-list"></ul>
 			      <a id="open-tag-images" href="#/" class="indent1 smaller box-link">Tag images</a>
 			      <a href="#/" class="open-edit-tags indent1 smaller">Add/edit tags</a><br>
-					<br>
+					<br class="hide-filter-section">
 		      </span>
 			<br>
-			  <text id="filename" class="smaller filename"></text><br>
 				<a id="previous" class="link" href="#/">previous</a>
 				<a id="next" class="link" href="#/">next</a><br>
 				<a id="jump" class="link smaller indent1 jump-link" href="#/">[Jump...]</a><br>
 				<br>
-			</span><br>
-		  </span><br>
+			</span>
+		  </span><br class="hide-section">
+		  <text id="filename" class="smaller filename"></text><br>
+		  <ul id="view-tags-list" class="tag-list hide-section"></ul><br class="hide-section">
 			<a id="reset" class="gray-link" href="#/">&#8635;</a>
 			<a id="timer" class="gray-link" href="#/">10:00</a><br>
 			<span class="hide-section">
@@ -922,6 +932,7 @@
 			    if (doArchive) {
 			      d_archive(img);
 			    }
+			    d_setViewTagsList();
 			    d_listTags();
 			  }
 			  
@@ -1143,6 +1154,29 @@
 							print(tag);
 							d_setEditTagMenu(tag.name);//[tag]
 						};
+						// Color.
+						if (tag['link-color']) {
+			        link.style.color = tag['link-color'];
+			        link.onmouseover = ()=>{
+			          link.style.color = '#551A8B';
+			        }
+			        link.onmouseleave = ()=>{
+			          link.style.color = tag['link-color'];
+			        }
+			      }
+			      else if (tag.name.split(':').length > 1) {
+			        // is cat tag, use cat color instead
+			        let cat = tag.name.split(':')[0];
+		          if (config('tag-definitions')[cat]['link-color']) {
+		            link.style.color = config('tag-definitions')[cat]['link-color'];
+		            link.onmouseover = ()=>{
+		              link.style.color = '#551A8B';
+		            }
+		            link.onmouseleave = ()=>{
+		              link.style.color = config('tag-definitions')[cat]['link-color'];
+		            }
+		          }
+			      }
 						// Keep the links from clustering together.
 						li.style.paddingRight = '5px';
 						//
@@ -1242,6 +1276,16 @@
 						link.onclick = ()=>{
 							editHideTags('', tag);
 						};
+						// Color.
+						if (config('tag-definitions')[tag]['link-color']) {
+			        link.style.color = config('tag-definitions')[tag]['link-color'];
+			        link.onmouseover = ()=>{
+			          link.style.color = '#551A8B';
+			        }
+			        link.onmouseleave = ()=>{
+			          link.style.color = config('tag-definitions')[tag]['link-color'];
+			        }
+			      }
 						// Keep the links from clustering together.
 						li.style.paddingRight = '5px';
 						// Add link to the list.
@@ -1578,16 +1622,60 @@
 			}
 			
 			// Image tagging. --------------------------------------------------------
-			// gohere
-			// display current image's tags
-				// just below the name, but put a limit (based on char length, not tags)
-			
-			// Extend tag-defs
-		    // different link colors for custom tags
-					// generate custom css classes
-					
-			// Generate and assign custom css.
-			//
+			function d_setViewTagsList() {
+			  $('view-tags-list').innerHTML = '';
+			  genViewTagsList().slice(0, 10).forEach((li)=>{
+			    $('view-tags-list').appendChild(li);
+			  });
+			}
+				
+			function genViewTagsList() { // the gentaglists really should only be on function
+					let acc = [],
+					    currImageTags = config(fetchHistory(pointer).webkitRelativePath),
+					    tagObjs = currImageTags.map((str)=>{
+					      return config('tag-definitions')[str];
+					    });
+					tagObjs.forEach((tag)=>{
+						let li = document.createElement('li'),
+								link = document.createElement('a');
+						// Set up link.
+						link.href = '#/';
+						link.innerHTML = tag.name;
+						// Hover text.
+						link.title = tag.description || '';
+						// Color.
+						if (tag['link-color']) {
+			        link.style.color = tag['link-color'];
+			        link.onmouseover = ()=>{
+			          link.style.color = '#551A8B';
+			        }
+			        link.onmouseleave = ()=>{
+			          link.style.color = tag['link-color'];
+			        }
+			      }
+			      else if (tag.name.split(':').length > 1) {
+			        // is cat tag, use cat color instead
+			        let cat = tag.name.split(':')[0];
+		          if (config('tag-definitions')[cat]['link-color']) {
+		            link.style.color = config('tag-definitions')[cat]['link-color'];
+		            link.onmouseover = ()=>{
+		              link.style.color = '#551A8B';
+		            }
+		            link.onmouseleave = ()=>{
+		              link.style.color = config('tag-definitions')[cat]['link-color'];
+		            }
+		          }
+			      }
+						// Keep the links from clustering together.
+						li.style.paddingRight = '5px';
+						//
+						li.display = 'inline';
+						// Add link to the list.
+						li.appendChild(link);
+						acc.push(li);
+					});
+					return acc;
+				}
 				
 			// Tag search shortcuts triggers. | not really sure about this.
 			$c('tag-box').listen('focus', ()=>{
@@ -1670,6 +1758,7 @@
 			  // Remove dead files.
 			  dead.forEach((filename)=>{
 			    //d_deleteTagDefinition(filename);
+			    print(filename);
 			    d_deleteImage(filename);
 			  });
 			  // Hide option.
@@ -1992,6 +2081,29 @@
 			    mainLink.innerHTML = content;
 			    // Hover text.
 			    mainLink.title = tag.description || '';
+			    // Color.
+			    if (tag['link-color']) {
+			      mainLink.style.color = tag['link-color'];
+			      mainLink.onmouseover = ()=>{
+			        mainLink.style.color = '#551A8B';
+			      }
+			      mainLink.onmouseleave = ()=>{
+			        mainLink.style.color = tag['link-color'];
+			      }
+			    }
+			    else if (tag.name.split(':').length > 1) {
+			      // is cat tag, use cat color instead
+			      let cat = tag.name.split(':')[0];
+		        if (config('tag-definitions')[cat]['link-color']) {
+		          mainLink.style.color = config('tag-definitions')[cat]['link-color'];
+		          mainLink.onmouseover = ()=>{
+		            mainLink.style.color = '#551A8B';
+		          }
+		          mainLink.onmouseleave = ()=>{
+		            mainLink.style.color = config('tag-definitions')[cat]['link-color'];
+		          }
+		        }
+			    }
 					// Add the tag's text to destination on click.
 					let addTagFun = addTag(content, destination);
 			    mainLink.onclick = ()=>{
@@ -2008,6 +2120,28 @@
 			      excludeLink.onclick = ()=>{
 			        exAddTagFun();
 			        $(destination).oninput();
+			      }
+			      if (tag['link-color']) {
+			        excludeLink.style.color = tag['link-color'];
+			        excludeLink.onmouseover = ()=>{
+			          excludeLink.style.color = '#551A8B';
+			        }
+			        excludeLink.onmouseleave = ()=>{
+			          excludeLink.style.color = tag['link-color'];
+			        }
+			      }
+			      else if (tag.name.split(':').length > 1) {
+			        // is cat tag, use cat color instead
+			        let cat = tag.name.split(':')[0];
+		          if (config('tag-definitions')[cat]['link-color']) {
+		            excludeLink.style.color = config('tag-definitions')[cat]['link-color'];
+		            excludeLink.onmouseover = ()=>{
+		              excludeLink.style.color = '#551A8B';
+		            }
+		            excludeLink.onmouseleave = ()=>{
+		              excludeLink.style.color = config('tag-definitions')[cat]['link-color'];
+		            }
+		          }
 			      }
 			      li.appendChild(excludeLink);
 			    }
@@ -2249,7 +2383,6 @@
 			// End -------------------------------------------------------------------
 			
 			// TODO
-			// ivconfig.txt + Image tags
 			// POST (and ask about flashlight)
 			// Homepage + docs
 			// bug: dead-files jumps all over the place when you try to drag it

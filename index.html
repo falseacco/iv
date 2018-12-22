@@ -5,13 +5,13 @@
     <title>image viewer</title>
   </head>
   <body>
-		<style>
+		<style id="stylesheet">
 		  body .hidden {
 		    display: none;
 		  }
       .smaller {
 				font-size: small;
-			}		
+			}
 		
 		  .monospace {
 				font-family: monospace;
@@ -27,14 +27,14 @@
 			  margin-left: 35px;
 			}
 		
+		  a {
+			  outline: none;
+			}
 			a:visited {
 				color: #0000EE;
 			}
-			a:hover {
+			a:hover, a:active, a:focus {
 			  color: #551A8B;
-			}
-			a:active {
-				color: #551A8B;
 			}
 			
 			.black-link {
@@ -92,13 +92,16 @@
 		  }
 			
 			.box {
-			  /* Draggy. */
 				position: absolute;
-				cursor: move;
 				/* Appearance */
 				border: 1px solid lightgray;
 				display: inline-block;
 				padding: 0 5px 5px 5px;
+			}
+			
+			.can-drag {
+			  position: absolute;
+			  cursor: move;
 			}
 			
 			#edit-folder {
@@ -110,7 +113,7 @@
 			  float: right;
 			}
 			
-			#filename {
+			.filename {
 			  background-color: white;
 			}
 			
@@ -136,36 +139,74 @@
 				left: 0;
 				height: 100%;
 				width: 100%;
-				background-size: auto 100%;
+				/*background-size: auto 100%;*/
+				background-size: contain;
 				/* Center the background image. */
 				background-position: center;
 				/* Don't use the image as a tile. */
 				background-repeat: no-repeat;
 			}
 			
-			#tag-search {
-			  font-size: 14px;
+			.tag-box {
+			  font-size: 12px;
 			  font-family: monospace;
-			  width: 200px;
+			  width: 260px;
 			  height: 80px;
 			  overflow-y: auto;
 			  resize: none;
+			  margin-top: 5px;
 			}
 			
-			#tags-list {
+			.tag-list {
 			  list-style-type: none;
 			  margin-top: 10px;
 			  padding-left: 0;
-			  width: 190px;
+			  width: 307px;
+			  
 			}
 			
-			#tags-list li {
-			  font-size: 14px;
+			.tag-list li {
+			  font-size: 12px;
 			  font-family: monospace;
-			  display: inline;
+			  display: inline-block;
 			}
 			text {
 			  cursor: pointer;
+			}
+			#edit-tags {
+			}
+			
+			.download-config {
+			  background: white;
+			}
+			
+			#man-tags {
+				border: 1px solid lightgray;
+				padding: 0;
+				width: 250px;
+			}
+			
+			#man-tags-list {
+				padding: 0;
+				margin: 0;
+			}
+			#dead-files {
+			  background-color: white;
+			  left: 0; 
+        right: 0; 
+        margin-left: auto; 
+        margin-right: auto; 
+        padding-bottom: 20px;
+        width: 640px;
+			}
+			
+			a, text {
+			  background-color: white;
+			}
+			
+			#view-tags-list {
+			  padding: 0;
+			  margin: 0;
 			}
 		</style>
 		<div id="bg"></div>
@@ -174,43 +215,46 @@
 		
 		<a id="title" class="black-link" href="https://www.github.com/ooorel/iv"
 		   target="_blank" rel="noopener noreferrer">
-		  <h1>iv</h1>
+		  <h2>iv</h2>
 		</a><br>
 		
-		<div id="box" class="box">
-			<a id="hide" class="smaller link hide-link" href="#/">[hide]</a>
+		<div id="box" class="box can-drag">
+			<a id="hide" class="smaller link hide-link" data_hidden="false" data_hide_label="[mini]" data_show_label="[max]" href="#/">[mini]</a>
 			<a id="fullscreen" class="smaller link" href="#/">[toggle fullscreen]</a><br>
 			<span class="hide-section">
 			  <br>
-			  <input id="upload" type="file" webkitdirectory directory multiple><br>
-			  <text>Filter</text>
-			  <a id="hide-filter" class="smaller hide-link" href="#/">[show]</a>
-			  <text>:</text><br>
-			  <span class="hide-filter-section hidden">
-			    <text id="filter-count" class="indent1">[num. images here, upload font]</text><br>
-			    <textarea id="tag-search" class="cancel-key indent1"
-			      placeholder="Only display images with these tags.
-			      [No tags selected.]"></textarea>
-			    <ul id="tags-list" class="indent2">
-			      <li><a href="#/" class="search-tag-link">Red</a></li>
-			      <li><a href="#/" class="search-tag-link">Milk</a></li>
-			      <li><a href="#/" class="search-tag-link">Tea</a></li>
-			    </ul>
-			    <a id="open-edit-folder" href="#/" class="indent1 smaller box-link">Edit folder</a>
-			    <a id="open-edit-tags" href="#/" class="indent1 smaller box-link">Edit tags</a><br>
-			  </span>
-		    <br>
-			</span>
-			<text id="filename" class="smaller"></text><br>
-			<a id="previous" class="link" href="#/" inactive>previous</a>
-			<a id="next" class="link" href="#/">next</a><br>
+			  <input id="upload" type="file" webkitdirectory directory multiple autocomplete="off"><br>
+			  <a id="open-edit-folder" href="#/" class="indent1 smaller box-link">Edit folder</a>
+				<a href="#/" class="open-edit-tags indent1 smaller">Add tags</a>
+				<a id="open-dead-files" href="#/" class="hidden box-link indent1 smaller">Dead files</a><br>
+				<span id="hidden-to-start-file-section" class="hidden">
+			    <text>Filter images</text>
+			    <a id="hide-filter" class="smaller hide-link" data_hidden="true" data_hide_label="[hide]" data_show_label="[show]" href="#/">[show]</a>
+			    <text>:</text><br>
+			    <span class="hide-filter-section hidden">
+			      <text id="filter-count" class="smaller indent1"></text><br>
+			      <textarea id="tag-search" class="tag-box indent1" spellcheck="false"
+			        placeholder="Only display images with these tags.&#10;&#10;(No tags selected)"></textarea>
+			      <ul id="tags-list" class="tag-list"></ul>
+			      <a id="open-tag-images" href="#/" class="indent1 smaller box-link">Tag images</a>
+			      <a href="#/" class="open-edit-tags indent1 smaller">Add/edit tags</a><br>
+					<br class="hide-filter-section">
+		      </span>
 			<br>
+				<a id="previous" class="link" href="#/">previous</a>
+				<a id="next" class="link" href="#/">next</a><br>
+				<a id="jump" class="link smaller indent1 jump-link" href="#/">[Jump...]</a><br>
+				<br>
+			</span>
+		  </span><br class="hide-section">
+		  <text id="filename" class="smaller filename"></text><br>
+		  <ul id="view-tags-list" class="tag-list hide-section"></ul><br class="hide-section">
 			<a id="reset" class="gray-link" href="#/">&#8635;</a>
 			<a id="timer" class="gray-link" href="#/">10:00</a><br>
 			<span class="hide-section">
 			<br >
 				<text>Options</text>
-				<a id="hide-options" class="smaller hide-link" href="#/">[show]</a>
+				<a id="hide-options" class="smaller hide-link" data_hidden="true" data_hide_label="[hide]" data_show_label="[show]" href="#/">[show]</a>
 				<text>:</text><br>
 				<span class="hide-options-section hidden">
 				  <text class="indent1">Length:</text><br>
@@ -220,38 +264,135 @@
 					    placeholder="10" size="2" maxlength="2" autocomplete="off"> :
 					  <input id="timer-sec" type="text" class="cancel-key monospace"
 					    placeholder="00" size="2" maxlength="2" autocomplete="off"><br>
-				  <input id="prevent-recent-repeats" type="checkbox"
-				    class="indent1" checked>Prevent recent repeats<br> 
-				  <input id="hide-every-other" type="checkbox"
-				    class="indent1">Hide every other image<br>    
-					<input id="display-new" type="checkbox"
+					<input id="hide-display" type="checkbox" autocomplete="off"
+				    class="indent1">Hide display<br>
+				  <input id="prevent-recent-repeats" type="checkbox" autocomplete="off"
+				    class="indent1" checked>Prevent recent repeats<br>
+				  <input id="hide-every-other" type="checkbox" autocomplete="off"
+				    class="indent1">Hide every other image<br>
+					<input id="display-new" type="checkbox" autocomplete="off"
 					  class="indent1" checked>Display new images on skip<br>
 				  <text class="indent1">When timer ends:</text><br>
-				    <input id="on-end-display-new" type="checkbox"
+				    <input id="on-end-display-new" type="checkbox" autocomplete="off"
 				      class="indent2" checked>display new image<br>
-					  <input id="on-end-reset" type="checkbox"
+					  <input id="on-end-reset" type="checkbox" autocomplete="off"
 					    class="indent2" checked>reset time &#8635;<br>
-					    <input id="on-end-count" type="checkbox"
+					    <input id="on-end-count" type="checkbox" autocomplete="off"
 					      class="indent3" checked>start counting down<br>
+					<input id="display-in-file-order" class="file-sort" type="checkbox" autocomplete="off"
+					  class="indent1">Display images in file order</input><br>
+					  <text class="indent2">Property:</text><br>
+					    <input type="radio" class="file-sort indent3" name="file-property" value="name" checked autocomplete="off"> name<br>
+					    <input type="radio" class="file-sort indent3" name="file-property" value="type" autocomplete="off"> type<br>
+					    <input type="radio" class="file-sort indent3" name="file-property" value="path" autocomplete="off"> path<br>
+					    <input type="radio" class="file-sort indent3" name="file-property" value="size" autocomplete="off"> size<br>
+					    <input type="radio" class="file-sort indent3" name="file-property" value="lastModified" autocomplete="off"> last modified<br>
+					  <text class="indent2">Order:</text><br>
+					    <input type="radio" class="file-sort indent3" name="file-order" value="ascending" checked autocomplete="off"> ascending<br>
+					    <input type="radio" class="file-sort indent3" name="file-order" value="descending" autocomplete="off"> descending<br>
+						<a href="#/" class="jump-to-start indent2">Jump to start</a><br>    
+						
 				</span>
 			</span>
 		</div>
-		<div id="edit-folder" class="hidden box">
+		<div id="edit-folder" class="hidden box can-drag">
 		  <text>Edit folder properties:</text>
 		  <a id="close-edit-folder" href="#/" class="close-link">x</a><br>
 		  <br>
-		  <text>Folder name:</text>
-		  <input id="name" type="text" class="cancel-key indent1 folder-setting"
+		  <text>Name</text>
+		  <input id="name" type="text" class="cancel-key folder-setting"
 					    placeholder="iv" size="8" autocomplete="off"><br>
-		  <br>
-		  <text>Cover Image:</text>
-		  <input id="cover-image" type="text" class="cancel-key indent1 folder-setting"
+		  <text>Cover Image</text>
+		  <input id="cover-image" type="text" class="cancel-key folder-setting"
 					    placeholder="none" size="8" autocomplete="off"><br>
 			<br>
-		  <a id="download-folder" href="#/" class="">Save and download</a>
+		  <a id="download-folder" href="#/" class="download-config smaller">
+		    Save settings</a>
 		</div>
-		<!--<div id="edit-tags-box" class="hidden"></div>-->
-		<!-- will have to swap class between box and hidden -->
+		<div id="tag-images" class="hidden box can-drag">
+		  <text>Tag images:</text>
+		  <a id="close-tag-images" href="#/" class="close-link">x</a><br>
+		  <text id="tags-filename" class="smaller filename"></text><br>
+		  <text id="untagged-images" class="smaller indent1"></text><br>
+		    <textarea id="tag-images-search" class="tag-box indent1" spellcheck="false"
+			    placeholder="The current image's tags.&#10;(There are none)"></textarea><br>
+					<br>
+					<span id="man-tags-section">
+						<text class="smaller">Mandatory tags:</text>
+						<div id="man-tags" class="indent1">
+							<ul id="man-tags-list" class="tag-list">
+								<text class="smaller indent1"></text>
+							</ul>
+						</div>
+					</span>
+			    <ul id="tag-images-list" class="tag-list"></ul>
+		  <a id="tags-previous" class="link" href="#/">previous</a>
+			<a id="tags-next" class="link" href="#/">next</a><br>
+			<a id="tags-jump" class="link smaller indent1 jump-link" href="#/">[Jump...]</a><br>
+			<a id="download-tags" class="download-config smaller" href="#/">
+		    Save settings</a><br>
+		  <br>
+		  <text>Display order</text>
+		  <a id="hide-tags-options" class="smaller link hide-link" data_hidden="true" data_hide_label="[hide]" data_show_label="[show]" href="#/">[show]</a>
+		  <text>:</text><br>
+		  <span class="hide-tags-options-section hidden">
+				<input id="display-untagged-first" type="checkbox" class="tags-file-sort indent1" checked>Display untagged images first<br>
+		    <text class="indent1">Sort by</text><br>
+			  <text class="indent2">file property:</text><br>
+			    <input type="radio" class="tags-file-sort indent3" name="tags-file-property" value="name" checked autocomplete="off"> name<br>
+			    <input type="radio" class="tags-file-sort indent3" name="tags-file-property" value="type" autocomplete="off"> type<br>
+			    <input type="radio" class="tags-file-sort indent3" name="tags-file-property" value="path" autocomplete="off"> path<br>
+			    <input type="radio" class="tags-file-sort indent3" name="tags-file-property" value="size" autocomplete="off"> size<br>
+			    <input type="radio" class="tags-file-sort indent3" name="tags-file-property" value="lastModified" autocomplete="off"> last modified<br>
+			  <text class="indent2">order:</text><br>
+			    <input type="radio" class="tags-file-sort indent3" name="tags-file-order" value="ascending" checked autocomplete="off"> ascending<br>
+			    <input type="radio" class="tags-file-sort indent3" name="tags-file-order" value="descending" autocomplete="off"> descending<br>
+				<a href="#/" class="jump-to-start indent2">Jump to start</a><br>
+		  </span>
+		</div>
+		<div id="edit-tags" class="hidden box can-drag">
+		  <text>Add a tag:</text>
+		  <a id="close-edit-tags" href="#/" class="close-link">x</a><br>
+		      <text class="indent1">Tag name</text>
+		      <input id="edit-tag-name" data_property="name" type="text" class="cancel-key tag-property"
+					      size="8" autocomplete="off"><br>
+				  <text class="indent1">Description</text>
+		      <input id="edit-tag-description" data_property="description" type="text" class="cancel-key tag-property"
+					      size="8" autocomplete="off"><br>
+					<text class="indent1">Link color</text>
+		      <input id="edit-tag-link-color" data_property="link-color" type="text" class="cancel-key tag-property"
+					      size="8" autocomplete="off"><br>
+					<text class="indent1">Search words</text>
+		      <input id="edit-tag-search-words" data_property="search-words" type="text" class="cancel-key tag-property"
+					      size="8" autocomplete="off"><br>
+				<span id="custom-tag-properties">
+				</span>
+				<a id="add-tag-property" href="#/" class="indent1">Add property</a>
+		    <input id="add-tag-property-name" type="text" class="cancel-key tag-property"
+					    placeholder="property name" size="10" autocomplete="off"><br>
+			  <input id="edit-tag-mandatory" data_property="mandatory" type="checkbox" class="indent1 tag-property" autocomplete="off">is mandatory category<br>
+			    <input id="edit-tag-discrete" data_property="discrete" type="checkbox" class="indent2 tag-property" autocomplete="off">is discrete tag<br>
+			  <br>
+			  <text>Edit a tag:</text>
+			  <ul id="edit-tags-list" class="tag-list"></ul>
+			  <br>
+			  <a id="save-tag" href="#/">Save tag</a>
+				<a id="delete-tag" class="smaller indent1" href="#/">Delete tag</a><br>
+			  <a id="save-tag-settings" href="#/" class="smaller">Save settings</a>
+		</div>
+		<div id="dead-files" class="hidden box can-drag">
+		  <text>Re-assign tags:</text>
+		  <a id="close-dead-files" href="#/" class="close-link">x</a><br>
+		  <text class="smaller">&raquo;If you can see this box, it means that the current folder's config file
+		  contains entries for files that don't seem to exist anymore.</text><br>
+		  <ul id="dead-files-list" class="tag-list"></ul>
+		  <text class="smaller">
+		  &raquo;You can assign these entries to any files without tags below. Click the links to display files.</text><br>
+		  <br>
+		  <span id="reassign-forms"></span>
+		  <br>
+		  <a id="dead-files-settings" href="#/" class="smaller">Save and delete dead files</a>
+		</div>
 		<div id="ghost" class="hidden box"></div>
 		<a id="download-link"></a>
 			
@@ -284,14 +425,28 @@
 			  return Array.prototype.slice.call(document.getElementsByClassName(str));
 			}
 			
+			function $n(str) {
+			  return Array.prototype.slice.call(document.getElementsByName(str));
+			}
+			
 			// Assign events to multiple objects at once. (does not hoist)
-			Array.prototype.listen = function(event, body) {
+			Array.prototype.listen = listen; function listen(event, body) {
         this.forEach((el)=>{
           el.addEventListener(event, body);
         });
       }
 
 			// Hiding things. --------------------------------------------------------
+			// Duct tape
+			$c('open-edit-tags').listen('click', ()=>{
+				let box = $('edit-tags');
+			  if (elDisplay(box) === 'none') {
+			    d_setVisible(box, true);
+			  }
+			  else {
+			    d_setVisible(box, false);
+			  }
+			});
 			// Hide the non-main menus.
 			$c('box-link').listen('click', (e)=>{
 			  let box = $(e.target.id.slice(5));
@@ -314,8 +469,8 @@
 			// Hide sections within the main menu.
 			$c('hide-link').listen('click', (e)=>{
 			  let id = e.target.id,
-			      label = $(id).innerHTML;
-			  if (label === '[hide]') {
+			      hidden = $(id).getAttribute('data_hidden');
+			  if (hidden === 'false') {
 			    d_setSectionVisible(id, false);
 			  }
 			  else {
@@ -330,24 +485,31 @@
 			  sections.forEach((el)=>{
 			    d_setVisible(el, value);
 			  });
+			  // Update link state.
+			  link.setAttribute('data_hidden', !value);
 			  // Update label.
 			  if (value) {
-			    link.innerHTML = '[hide]';
+			    link.innerHTML = link.getAttribute('data_hide_label');
 			  }
 			  else {
-			    link.innerHTML = '[show]';
+			    link.innerHTML = link.getAttribute('data_show_label');
 			  }
 			  print('d_setSectionVisible(' + id + ', ' + value + ')');
 			}
 			
 			function d_setVisible(el, value) {
-				el.style.display = value ? 'block' : 'none';
+				if (typeof(value) === 'string') {
+					el.style.display = value;
+				}
+				else {
+					el.style.display = value ? 'inline-block' : 'none';
+				}
 				return value;
 			}
 			
-			// Draggable divs | refactored copy-paste --------------------------------
+			// Draggable divs --------------------------------
 			//d_draggable('box');
-			$c('box').forEach((el)=>{
+			$c('can-drag').forEach((el)=>{
 			  d_draggable(el.id);
 			});
 			
@@ -420,7 +582,7 @@
 				}
 			}
 			
-			// Fullscreen | copy-paste -----------------------------------------------
+			// Fullscreen -----------------------------------------------
 			function requestFullscreen(el) {
 				if(el.requestFullscreen)
 					el.requestFullscreen();
@@ -651,12 +813,15 @@
 			}
 			
 			// File upload and navigation. -------------------------------------------
-			{
+			
 				let upload = [],  // Images user uploads.
 				    uploadP = {}, // path: Images in upload with filepath as id.
 				    uploadF = [], // filter: This is the collection to sort.
 				    history = [], // Record of files user's viewed this session.
 						pointer = 0,  // Place in history. 0 is most recent, 1 is 2nd-most.
+						recTags = [],
+						fullTagList = [],
+						dead = [],
 						hidLastImage = false; // For memory drawing.
 			
 			  function fetchHistory(pointer) {
@@ -668,6 +833,98 @@
 			    return file;
 			  }
 			  
+				// Jump to the first index of uploadF
+				$c('jump-to-start').listen('click', ()=>{
+					d_completeDisplay(uploadF[0], true);
+					d_setFileIndex(0);
+				});
+				
+				// Sort uploads whenever the user changes menu.
+				$c('file-sort').listen('click', ()=>{
+					uploadF = sortUploadsFromMenu('file-property', 'file-order');
+					d_setFileIndex(-1);
+					print('file-sort()');
+					print(uploadF);
+				});
+				
+				$c('tags-file-sort').listen('click', ()=>{
+					// Sort by file property.
+					uploadF = sortUploadsFromMenu('tags-file-property', 'tags-file-order');
+					d_setFileIndex(-1);
+					print('tags-file-sort()');
+					print(uploadF);
+				});
+				
+				// Sort by file properties pulled from menu.
+				function sortUploadsFromMenu(propertyName, orderName) {
+					let sorted = sortUploads(selectedRadio(propertyName), selectedRadio(orderName));
+					if ($('display-untagged-first').checked) {
+						// Display untagged images first.
+						sorted = sortUploads('is-tagged');
+					}
+					return sorted;
+				}
+				
+				// Find which radio button in a group is selected.
+				function selectedRadio(name) {
+					let options = $n(name);
+					for (let i in options) {
+						let option = options[i];
+						if (option.checked) {
+							return option.value;
+						}
+					}
+				}
+				
+			  // Sort by file properties.
+			  function sortUploads(parameter, order) {
+			    return uploadF.sort(compareFun(parameter, order));
+			  }
+			  
+			  function compareFun(parameter, order) {
+			    let modifier = -1;
+			    if (order === 'ascending' || parameter === 'is-tagged') {
+			      modifier = 1;
+			    }
+			    return (file1, file2)=>{
+			      let data1 = fileParameter(file1, parameter),
+			          data2 = fileParameter(file2, parameter);
+			      if (parameter === 'is-tagged') {
+			      }
+			      if (data1 > data2) {
+			        // data2 comes first in alphanumeric order.
+			        return 1 * modifier;
+			      }
+			      else {
+			        return -1 * modifier;
+			      }
+			    };
+			  }
+			  
+			  function fileParameter(file, parameter) {
+			    if (parameter === 'lastModified') {
+			      return file.lastModified;
+			    }
+			    else if (parameter === 'name') {
+			      return file.name;
+			    }
+			    else if (parameter === 'size') {
+			      return file.size;
+			    }
+			    else if (parameter === 'type') {
+			      return file.type;
+			    }
+			    else if (parameter === 'path') {
+			      return file.webkitRelativePath;
+			    }
+					else if (parameter === 'is-tagged') {
+						return isTagged(file); // boolean comparisons shouldn't exist
+					}
+			    else {
+			      print('fileParameter() ):');
+			    }
+			  }
+			  
 			  // Display an image, update the ui, and archive it for later.
 			  function d_completeDisplay(img, doArchive, onload) {
 			    d_display(img, onload);
@@ -675,6 +932,8 @@
 			    if (doArchive) {
 			      d_archive(img);
 			    }
+			    d_setViewTagsList();
+			    d_listTags();
 			  }
 			  
 			  // Display an image.
@@ -701,17 +960,23 @@
 			  }
 			  
 			  function d_displayFilename(img) {
-				  let name;
+				  let name,
+							shortName;
 				  if (img === '' || img === undefined) {
-				    name = '...';
+				    name = '';
 				  }
 				  else {
 				    name = img.webkitRelativePath;
 				    if (name.length > 31) {
-				      name = name.slice(0, 25) + '...' + name.slice(-3);
+				      shortName = name.slice(0, 25) + '...' + name.slice(-3);
 				    }
 				  }
+					// Update display.
 				  $('filename').innerHTML = name;
+				  $('tags-filename').innerHTML = name;
+					// Update hover text.
+				  $('filename').title = name;
+				  $('tags-filename').title = name;
 				}
 			
 				$('upload').onchange = d_uploadInit; function d_uploadInit(e) {
@@ -719,49 +984,41 @@
 					upload = Array.from($('upload').files);
 					// Make sure there's some data before working.
 					if (upload.length > 0) {
+						// Show file navigation.
+						d_setVisible($('hidden-to-start-file-section'), true);
 					  // Filter out any non-image files.
+						let clone = [];
 					  upload.forEach((file, i)=>{
 					    let name = file.name;
-					    // File isn't an image, remove it.
+					    // File isn't an image.
 					    if (!isDisplay(filetype(name))) {
-					      upload.splice(i, 1);
 					      print('Removed file from display list: ' + name);
 					      // File is a config, use it.
 					      if (name === 'ivconfig.txt') {
 					        print('Found config file!');
 					        hasConfig = true;
-					        d_readConfig(file, ()=>{ // wants named fun
-					          // Expand filter.
-					          d_setSectionVisible('hide-filter', true);
-					          // Update menu, in case they want to edit.
-					          d_syncEditFolder();
-					          // There might not have been any images in the upload.
-					          if (upload.length > 0) {
-					            // Display an image to start.
-					            let cover = config('cover-image');
-					            // Cover image is not provided.
-					            if (cover === undefined || cover === '') {
-					              d_completeDisplay(upload[0], true);
-					            }
-					            // Cover image is provided as a path.
-					            else if (isPath(cover)) {
-					              d_completeDisplay(uploadF[cover], true);
-					            }
-					            // Cover image is provided as an index.
-					            else {
-					              img = upload[Number(cover)];
-					              d_completeDisplay(upload[Number(cover)], true);
-					            }
-					          }
-					        });
+					        d_readConfig(file, d_configInit);
 					      }
 					    }
-					    // File is an image, store it in a hash for name lookup.
+					    // File is an image, store it.
 					    else {
+								clone.push(file);
 					      let path = file.webkitRelativePath;
-					      uploadF[path] = file;
+					      uploadP[path] = file;
 					    }
 					  });
+						upload = clone;
+						// Clone upload to uploadF
+						uploadF = upload.slice();
+						d_filterCount();
+						// Sort uploadF if the folder wants to be fileordered
+						if (option('display-in-file-order')) {
+							print('This folder wants to be displayed in order of file properties by default.');
+							uploadF = sortUploadsFromMenu('file-property', 'file-order');
+						}
+						// Enable keyboard shortcuts.
+						d_useKeys('main');
+						
 					}
 					if (!hasConfig) {
 					  print('No config file found.');
@@ -773,6 +1030,340 @@
 					
 					print('d_uploadInit()');
 					print(upload);
+				}
+				
+				function d_syncFullTagList() {
+					fullTagList = genFullTagList();
+				}
+				
+				// Generate an array of tags from both tag-definitions and images.
+				function genFullTagList() {
+					let tags = [],
+					    seenTags = [],
+							tagDefinitions = config('tag-definitions'),
+							imageTags = config('images');
+					// tag-defs
+					Object.keys(tagDefinitions).forEach((tagName)=>{
+						let tag = tagDefinitions[tagName];
+						tag['name'] = tagName;
+						tags.push(tag);
+						seenTags.push(tagName);
+					});
+					// images
+					Object.values(imageTags).forEach((arr)=>{
+						arr.forEach((tagName)=>{
+							// If the tag isn't already defined, add it to the list.
+							if (tagName !== '') {
+							  if (!tagDefinitions[tagName] && !member(seenTags, tagName)) {
+							    tags.push({'name': tagName});
+							    seenTags.push(tagName);
+							  }
+							}
+						});
+					});
+					print('genFullTagList():');
+					print(tags);
+					return tags;
+				}
+				
+				function member(arr, x) {
+				  for (let i = 0; i < arr.length; i += 1) {
+				    if (arr[i] === x) {
+				      return true;
+				    }
+				  }
+				  return false;
+				}
+				
+				// Run this when a config file is loaded. || Might want to move this away if displays start taking arr
+			  function d_configInit() {
+					// Make tagList
+					d_syncFullTagList();
+					// Check for dead files.
+					dead = extinct();
+					if (dead.length > 0) {
+					  print('Found dead files:');
+					  print(dead);
+					  // Show the dead files link.
+					  d_setVisible($('open-dead-files'), true);
+					  // Show the dead files box.
+					  d_setVisible($('dead-files'), true);
+					  // Fill out list.
+					  d_syncDeadFilesList(dead);
+					  // Add reassign forms.
+					  noTags().forEach((file)=>{
+					    d_addReassignForm(file);
+					  });
+					}
+			    // Fill out the tag lists. || generic fun, read data_ for args
+			    d_syncTagLinks('tags-list', 'tag-search', true);
+			    d_syncTagLinks('tag-images-list', 'tag-images-search');
+			    d_updateEditTagsList();
+					d_syncRecTags();
+					d_updateRecTagsList();
+					// Check for untagged images.
+					d_updateUntagged();
+			    // Expand filter.
+          d_setSectionVisible('hide-filter', true);
+					// Update the title.
+					d_syncTitle();
+          // Update menu, in case they want to edit.
+          d_syncEditFolder();
+          // There might not have been any images in the upload.
+          if (upload.length > 0) {
+            // Display an image to start.
+            let cover = config('cover-image');
+            // Cover image is not provided.
+            if (cover === undefined || cover === '') {
+              d_completeDisplay(upload[0], true);
+            }
+            // Cover image is provided as a path.
+            else if (isPath(cover)) {
+              d_completeDisplay(uploadP[cover], true);
+            }
+            // Cover image is provided as an index? Nobody's going to use this
+            else {
+              img = upload[Number(cover)];
+              d_completeDisplay(upload[Number(cover)], true);
+            }
+          }
+					print('d_configInit():');
+					print(config());
+			  }
+			  
+			  //
+        function d_updateEditTagsList() {
+					$('edit-tags-list').innerHTML = '';
+					genEditTagsList().forEach((li)=>{
+						$('edit-tags-list').appendChild(li);
+					});
+				}			  
+			  
+			  function genEditTagsList() {
+					let acc = [];
+					fullTagList.forEach((tag)=>{
+						let li = document.createElement('li'),
+								link = document.createElement('a');
+						// Set up link.
+						link.href = '#/';
+						link.innerHTML = tag.name;
+						// Hover text.
+						link.title = tag.description || '';
+						//
+						link.onclick = ()=>{
+							print(tag);
+							d_setEditTagMenu(tag.name);//[tag]
+						};
+						// Color.
+						if (tag['link-color']) {
+			        link.style.color = tag['link-color'];
+			        link.onmouseover = ()=>{
+			          link.style.color = '#551A8B';
+			        }
+			        link.onmouseleave = ()=>{
+			          link.style.color = tag['link-color'];
+			        }
+			      }
+			      else if (tag.name.split(':').length > 1) {
+			        // is cat tag, use cat color instead
+			        let cat = tag.name.split(':')[0];
+		          if (config('tag-definitions')[cat]['link-color']) {
+		            link.style.color = config('tag-definitions')[cat]['link-color'];
+		            link.onmouseover = ()=>{
+		              link.style.color = '#551A8B';
+		            }
+		            link.onmouseleave = ()=>{
+		              link.style.color = config('tag-definitions')[cat]['link-color'];
+		            }
+		          }
+			      }
+						// Keep the links from clustering together.
+						li.style.paddingRight = '5px';
+						//
+						li.display = 'inline';
+						// Add link to the list.
+						li.appendChild(link);
+						acc.push(li);
+					});
+					return acc;
+				}
+				
+				//
+				function d_setEditTagMenu(tagName) {
+				  let tag = findTag(tagName);
+					// Clear custom tag properties.
+					$('custom-tag-properties').innerHTML = '';
+					//
+					d_clearEditTagMenu();
+					//
+					Object.keys(tag).forEach((propertyName)=>{
+						let maybeEl = $('edit-tag-' + propertyName);
+						if (maybeEl) {
+							if (maybeEl.type === 'text') {
+								maybeEl.value = tag[propertyName] || '';
+							}
+							else if (maybeEl.type === 'checkbox') {
+								maybeEl.checked = tag[propertyName];
+							}
+							else {
+								print('d_setEditTagMenu() fallthrough');
+							}
+						}
+						else {
+							if (propertyName && propertyName !== 'null') { // buggy mess
+								// Entry for property isn't there, so make one.
+								d_addTagProperty('', propertyName);
+								$('edit-tag-' + propertyName).value = tag[propertyName];
+							}
+						}
+					});
+				}
+				
+				function d_clearEditTagMenu() {
+					$c('tag-property').forEach((el)=>{
+						if (el.type === 'text') {
+							el.value = '';
+						}
+						else {
+							el.checked = false;
+						}
+					});
+				}
+				
+				function editTagMenu() {
+					let tag = {};
+					$c('tag-property').forEach((el)=>{
+						let property = el.getAttribute('data_property');
+						if (property !== null) {
+						  if (el.type === 'text') {
+							  tag[property] = el.value || '';
+						  }
+						  else if (el.type === 'checkbox') {
+							  tag[property] = el.checked;
+						  }
+						  else {
+							  print('editTagMenu() fallthrough');
+						  }
+						}
+					});
+					return tag;
+				}
+				
+				function findTag(tagName) {
+				  let tags = config('tag-definitions');
+				  return tags[tagName] || {'name': tagName};
+				}
+						
+				// 
+				function d_updateRecTagsList() {
+					$('man-tags-list').innerHTML = '';
+					genRecTagsList().forEach((li)=>{
+						$('man-tags-list').appendChild(li);
+					});
+				}
+				
+				function genRecTagsList() {
+					let acc = [];
+					recTags.forEach((tag)=>{
+						let li = document.createElement('li'),
+								link = document.createElement('a');
+						// Set up link.
+						link.href = '#/';
+						link.innerHTML = tag;
+						// Hover text.
+						link.title = config('tag-definitions')[tag]['description'] || '';
+						// 
+						link.onclick = ()=>{
+							editHideTags('', tag);
+						};
+						// Color.
+						if (config('tag-definitions')[tag]['link-color']) {
+			        link.style.color = config('tag-definitions')[tag]['link-color'];
+			        link.onmouseover = ()=>{
+			          link.style.color = '#551A8B';
+			        }
+			        link.onmouseleave = ()=>{
+			          link.style.color = config('tag-definitions')[tag]['link-color'];
+			        }
+			      }
+						// Keep the links from clustering together.
+						li.style.paddingRight = '5px';
+						// Add link to the list.
+						li.appendChild(link);
+						acc.push(li);
+					});
+					return acc;
+				}
+				
+				function d_updateUntagged() {
+					$('untagged-images').innerText = untagged().length + ' untagged images'
+				}
+				
+				// Return an array of all the untagged images uploaded.
+				function untagged() {
+					let acc = [];
+					upload.forEach((file)=>{
+						if (!isTagged(file)) {
+							acc.push(file);
+						}
+					});
+					return acc;
+				}
+				
+				function isTagged(image) {
+					let path = image.webkitRelativePath,
+							tags = config(path);
+					// The image has an array for tags.
+					if (tags) {
+						// man tags have been defined.
+						if (recTags.length > 0) {
+							// Check for each man tag's presence.
+							for (let r = 0; r < tags.length; r += 1) { // for (let i in x) format was causing bugs here
+								let recTag = recTags[r],
+										match = true;
+								for (let i = 0; i < tags.length; i += 1) {
+									let tagName = tags[i],
+											recCategory = recTag;
+									if (/*typeof(tagName) === 'string' && */recCategory === tagName.slice(0, recCategory.length)) {
+										// Tag matches.
+										match = false;
+									}
+								}
+								// None of the tags matched, this image is untagged.
+								if (!match) {
+									return true;
+								}
+							//});
+							}
+							// All of the images matched, this image is tagged.
+							return false;
+						}
+						// No man tags have been defined.
+						else {
+							// The image has tags.
+							if (tags.length > 0) {
+								return true;
+							}
+							// The image's tags are empty.
+							else {
+								return false;
+							}
+						}
+					}
+					// The image has no tags entry.
+					else {
+						return false;
+					}
+				}
+				
+				function d_syncRecTags() {
+				  recTags = [];
+					Object.keys(config('tag-definitions')).forEach((tag)=>{
+						// A tag ending in :: is recommended.
+						if (config('tag-definitions')[tag]['mandatory']) {
+							recTags.push(tag);
+						}
+					});
 				}
 				
 				// Check if a file is good to display.
@@ -797,13 +1388,22 @@
 				  return name.split('.').slice(-1)[0];
 				}
 				
-				$('next').onclick = d_next; function d_next(e, onload, from) {
-				  if (upload.length !== 0) {
+				$('next').onclick = ()=>{
+					d_pause();
+					d_next();
+				}
+				
+				function d_next(e, onload, from) {
+				  if (uploadF.length !== 0) {
 				    if (pointer > 0) {
 				      d_displayNextHistory(onload);
 				    }
 				    else {
-				      if (option('display-new') ||
+							if (option('display-in-file-order') ||
+							    from === 'tags-next') {
+								d_displayFileOrder(onload);
+							}
+				      else if (option('display-new') ||
 				          from === 'reset' && option('on-end-display-new')) {
 				        if (option('hide-every-other')) {
 				          if (hidLastImage) {
@@ -835,10 +1435,23 @@
 				  }
 				}
 				
+				// Update title based on config.
+				function d_syncTitle() {
+					let title = $('title')
+							newText = config('name'),
+							newHref = config('homepage');
+					if (newText) {
+						title.innerHTML = '<h2>' + newText + '</h2>';
+					}
+					if(newHref) {
+						title.href = newHref;
+					}
+				}
+				
 				// Display a random image.
 				function d_displayRandom(onload) {
 				  if (pointer === 0) {
-				    let img = upload[exclusiveRandomIndex()];
+				    let img = uploadF[exclusiveRandomIndex()];
 				    d_completeDisplay(img, true, onload);
 				    print('d_displayRandom() active');
 				  }
@@ -853,7 +1466,7 @@
 				    let i,
 				      unique = true,
 				      memory = 20,
-			        length = upload.length;
+			        length = uploadF.length;
 				    if (length <= memory) {
 				      memory = length - 1;
 				    }
@@ -863,7 +1476,7 @@
 				      i = randomIndex();
 				      unique = true;
 				      for (let prev of memory) {
-				        if (prev === upload[i]) {
+				        if (prev === uploadF[i]) {
 				          unique = false;
 				          break;
 				        }
@@ -879,7 +1492,7 @@
 				}
 				
 				function randomIndex() {
-					return random(0, upload.length);
+					return random(0, uploadF.length);
 				}
 				
 				function random(min, max) { // Don't use negative numbers.
@@ -889,7 +1502,30 @@
 				// Display the void.
 				function d_displayBlank(onload) {
 				  d_completeDisplay('', true, onload);
-				  print('d_displayBlank');
+				  print('d_displayBlank()');
+				}
+				
+				// Display the next image in file order.
+				{
+					// Have to keep track of this separately.
+					let fileIndex = -1;
+					function d_displayFileOrder(onload) {
+						// Go to next image in file order.
+						if (fileIndex < uploadF.length - 1) {
+						  fileIndex += 1;
+						}
+						// Reached end of folder, loop back around.
+						else {
+						  fileIndex = 0;
+						}
+						d_completeDisplay(uploadF[fileIndex], true, onload);
+						print('d_displayFileOrder()');
+						print(fileIndex);
+					}
+					
+					function d_setFileIndex(n) {
+						fileIndex = n;
+					}
 				}
 				
 				// Display the next image in history.
@@ -906,6 +1542,8 @@
 				
 				// Display the previous image in history.
 				$('previous').onclick = d_previous; function d_previous(onload) {
+					d_pause();
+					print(history);
 				  if (pointer >= 0 && pointer < (history.length - 1)) {
 				    pointer += 1;
 				    d_completeDisplay(fetchHistory(pointer), false, onload);
@@ -915,53 +1553,626 @@
 						print('d_previous() inactive');
 					}
 				}
+			
+			
+			// Navigation buttons for tag-images. Constrained to fileorder.
+			$('tags-next').onclick = ()=>{
+			  d_syncImageTags(()=>{
+			    // Display the next image. (In fileorder, so no repeats)
+			    d_next(false, false, 'tags-next');
+					d_updateUntagged();
+			    //d_listTags();
+			  });
+			}
+			
+			// Previous is always the same.
+			$('tags-previous').onclick = ()=>{
+			  d_syncImageTags(()=>{
+			    d_previous();
+					d_updateUntagged();
+			    //if (pointer >= 0 && pointer < (history.length)) {
+			      //d_listTags();
+			    //}
+			  });
+			}
+			
+			// Update current image's tags based on the menu.
+			function d_syncImageTags(wait) { // wait is probably stupid but idk
+			  let tags = $('tag-images-search').value // Get the textbox's value
+			                  .trim() // Remove whitespace on outside of string
+			                  .split(' '), // Convert to array
+			      currentImagePath = fetchHistory(pointer).webkitRelativePath;
+			  d_setConfig(currentImagePath, tags);
+			  d_unsavedData('download-tags', true);
+			  print('d_syncImageTags(): ' + currentImagePath);
+			  print(tags);
+			  if (typeof(wait) === 'function') {
+			    wait();
+			  }
+			}
+			
+			// List current image's tags.
+			function d_listTags() {
+			  let current = fetchHistory(pointer),
+			      path = current.webkitRelativePath,
+			      tags = config('images')[path];
+			  // Clear the last image's tags.
+			  $('tag-images-search').value = '';
+			  // Update text box.
+			  if (tags !== undefined) {
+			    tags.forEach((tag)=>{
+						// If there's no tag, don't edit the box and remove the placeholder.
+						if (tag.length !== 0) {
+							$('tag-images-search').value += (tag + ' ');
+						}
+			    });
+			  }
+			  print('d_listTags():');
+			  print(tags);
+			}
+			
+			// Let the user know when they have unsaved data.
+			function d_unsavedData(downloadLink, has) {
+			  if (has) {
+			    $(downloadLink).innerHTML = 'Save settings (unsaved data)';
+			  }
+			  else {
+			    $(downloadLink).innerHTML = 'Save settings';
+			  }
 			}
 			
 			// Image tagging. --------------------------------------------------------
-			// gohere
+			function d_setViewTagsList() {
+			  $('view-tags-list').innerHTML = '';
+			  genViewTagsList().slice(0, 10).forEach((li)=>{
+			    $('view-tags-list').appendChild(li);
+			  });
+			}
+				
+			function genViewTagsList() { // the gentaglists really should only be on function
+					let acc = [],
+					    currImageTags = config(fetchHistory(pointer).webkitRelativePath),
+					    tagObjs = currImageTags.map((str)=>{
+					      return config('tag-definitions')[str];
+					    });
+					tagObjs.forEach((tag)=>{
+						let li = document.createElement('li'),
+								link = document.createElement('a');
+						// Set up link.
+						link.href = '#/';
+						link.innerHTML = tag.name;
+						// Hover text.
+						link.title = tag.description || '';
+						// Color.
+						if (tag['link-color']) {
+			        link.style.color = tag['link-color'];
+			        link.onmouseover = ()=>{
+			          link.style.color = '#551A8B';
+			        }
+			        link.onmouseleave = ()=>{
+			          link.style.color = tag['link-color'];
+			        }
+			      }
+			      else if (tag.name.split(':').length > 1) {
+			        // is cat tag, use cat color instead
+			        let cat = tag.name.split(':')[0];
+		          if (config('tag-definitions')[cat]['link-color']) {
+		            link.style.color = config('tag-definitions')[cat]['link-color'];
+		            link.onmouseover = ()=>{
+		              link.style.color = '#551A8B';
+		            }
+		            link.onmouseleave = ()=>{
+		              link.style.color = config('tag-definitions')[cat]['link-color'];
+		            }
+		          }
+			      }
+						// Keep the links from clustering together.
+						li.style.paddingRight = '5px';
+						//
+						li.display = 'inline';
+						// Add link to the list.
+						li.appendChild(link);
+						acc.push(li);
+					});
+					return acc;
+				}
+				
+			// Tag search shortcuts triggers. | not really sure about this.
+			$c('tag-box').listen('focus', ()=>{
+			  d_useKeys('none');
+			  //print('box-focus');
+			});
+			$c('tag-box').listen('blur', ()=>{
+			  d_useKeys('main');
+			  //print('box-blur');
+			});
 			
-			// Config file sets default options and filter, title change
+			$c('open-edit-tags').listen('click', ()=>{
+			  //print('open-tags');
+			  // toggle vis
+			});
+			$('close-edit-tags').addEventListener('click', ()=>{
+			  //print('close-tags');
+			});
+				
+			$('hide-display').onclick = ()=>{
+			  if ($('hide-display').checked) {
+			    d_setVisible($('display'), false);
+			  }
+			  else {
+			    d_setVisible($('display'), true);
+			  }
+			}
+				
+			//
+			function d_filterCount() {
+			  $('filter-count').innerText = uploadF.length + ' images selected';
+			}
 			
-			// Jump to file, both modes (probably different impl.)
+			function d_filterUploads(searchTags) {
+			  uploadF = filterUploads(searchTags);
+			}
 			
-			// nond Filter tags, return arr
+			function filterUploads(searchTags) {
+			  let filtered = [];
+			  upload.forEach((file)=>{
+			    let tags = config(file.webkitRelativePath),
+			        match = true;
+			    for (let i = 0; i < searchTags.length; i += 1) {
+			      let searchTag = searchTags[i];
+			      if (searchTag) {
+			        if (searchTag[0] === '!') {
+			          if (member(tags, searchTag.slice(1))) {
+			            match = false;
+			            break;
+			          }
+			        }
+			        else {
+			          if (!member(tags, searchTag)) {
+			            match = false;
+			            break;
+			          }
+			        }
+			      }
+			      /*if (searchTag && !member(tags, searchTag)) {
+			        
+			      }*/
+			    }
+			    if (match) {
+			        filtered.push(file);
+			    }
+			  });
+			  return filtered;
+			}
 			
-			// Folder tag editor
+			//
+			$('dead-files-settings').onclick = ()=>{
+			  // Reassign tags.
+			  let forms = Array.prototype.slice.call($('reassign-forms').children);
+			  forms.forEach((form)=>{
+			    let path = form.getAttribute('data_path'),
+			        value = form.getElementsByTagName('input')[0].value,
+			        tags = value ? config(value) : [];
+			    d_setConfig(path, tags);
+			  });
+			  // Remove dead files.
+			  dead.forEach((filename)=>{
+			    //d_deleteTagDefinition(filename);
+			    print(filename);
+			    d_deleteImage(filename);
+			  });
+			  // Hide option.
+			  d_setVisible($('open-dead-files'), false);
+			  d_setVisible($('dead-files'), false);
+			  // Download new config.
+			  downloadConfig();
+			  d_configInit();
+			}
 			
-			// Implement tags
-			  // Tag descriptions with "ivconfig!-descr" entry in JSON
-			  // normal tag: |red|
-			    // "ivconfig!-color"
-			  // category tag: |color:red|
-			    // but can have multiple of one category
-			    // "ivconfig!-children" true/false determines if you have to include next layer, and how many if so
-			      // This doesn't apply when you're just filtering
-			  // mandatory tag: category tag that must be included
-			  // recommended tag: everything that's not mandatory
-			  // dependent tags:
-			    // are actually just non-man cat tags
-			    // click on tag color
-			    // expands to color:red, color:blue, color:green, etc.
-			    // tags list should have option to expand dependent tags
+			//
+			function d_addReassignForm(file) {
+			  $('reassign-forms').appendChild(genReassignForm(file));
+			}
 			
-			// Edit tags box
+			function genReassignForm(file) {
+			  let container = document.createElement('span'),
+			      label = document.createElement('a'),
+			      input = document.createElement('input'),
+			      linebreak = document.createElement('br');
+			  //
+			  label.innerText = file.name;
+			  label.href = '#/';
+			  label.title = 'Click to display.'
+			  label.onclick = ()=>{
+			    d_completeDisplay(file, true);
+			  }
+			  //
+			  input.type = 'text';
+			  input.placeholder = 'Assign tags';
+			  input.className = 'indent1';
+			  //
+			  container.setAttribute('data_path', file.webkitRelativePath);
+			  //
+			  container.appendChild(label);
+			  container.appendChild(input);
+			  container.appendChild(linebreak);
+			  //
+			  return container;
+			}
 			
-			// Make it work like the r34 searchbar
+			//
+			function noTags() {
+			  let emptyFiles = [];
+			  upload.forEach((file)=>{
+			    if (!hasTags(file)) {
+			      emptyFiles.push(file);
+			    }
+			  });
+			  return emptyFiles;
+			}
 			
-		  // Generate tags-list from config | d_configInit
-		    // make-link + exclude link
+			function hasTags(image) {
+			  let path = image.webkitRelativePath,
+						tags = config(path);
+				if (tags && tags.length > 0) {
+				  return true;
+				}
+				else {
+				  return false;
+				}
+			}
 			
-			// Tag search links.
-			$c('search-tag-link').listen('click', addTag('tag-search'));
+			// /
+			function d_syncDeadFilesList(dead) {
+			  genDeadFilesList(dead).forEach((link)=>{
+			    $('dead-files-list').appendChild(link);
+			  });
+			}
 			
-			function addTag(destination) { // isExclude
+			function genDeadFilesList(dead) {
+			  let links = [];
+			  dead.forEach((filename)=>{
+			    links.push(genDeadFileLink(filename));
+			  });
+			  return links;
+			}
+			
+			function genDeadFileLink(filename) {
+			  let link = document.createElement('a'),
+			      li = document.createElement('li');
+			  link.innerText = filename;
+			  link.href = '#/';
+			  link.title = config('images')[filename].join(' ');
+			  li.appendChild(link);
+			  return li;
+			}
+			
+			// Get any image tags that don't correspond to an existing image.
+			function extinct() {
+				let massGrave = [];
+				Object.keys(config('images')).forEach((imagePath)=>{
+					if (isExtinct(imagePath)) {
+						massGrave.push(imagePath);
+					}
+				});
+				return massGrave;
+			}
+			
+			function isExtinct(imagePath) {
+				if (!uploadP[imagePath]) {
+					return true;
+				}
+				else {
+					return false;
+				}
+			}
+			
+			// Jump to file by path.
+			$c('jump-link').listen('click', ()=>{
+				d_pause();
+				let destination = prompt("Jump to where?", "filepath"),
+						image = uploadP[destination];
+				if (image) {
+					d_completeDisplay(image, true);
+					print('Jump to ' + destination);
+				}
+				else {
+					print('Nowhere to jump to.');
+				}
+			});
+			
+			// A bit reckless but fine for now
+			$('save-tag').onclick = ()=>{
+				let tag = editTagMenu();
+				if (tag.name) {
+					d_addTagDefinition(tag);
+					d_unsavedData('save-tag-settings', true);
+					d_configInit();
+				}
+			}
+			
+			$('delete-tag').onclick = ()=>{
+				let tagName = $('edit-tag-name').value;
+				d_deleteTagDefinition(tagName);
+				d_unsavedData('save-tag-settings', true);
+				d_configInit();
+			}
+			
+			$('save-tag-settings').onclick = ()=>{
+				downloadConfig();
+				d_unsavedData('save-tag-settings', false);
+				d_configInit();
+				print(config());
+			}
+			
+			$('add-tag-property').onclick = d_addTagProperty; function d_addTagProperty(e, str) {
+				let newPropertyName = str || $('add-tag-property-name').value;
+				if (newPropertyName) {
+					// Add the new tag to the form.
+					$('custom-tag-properties').appendChild(genTagProperty(newPropertyName));
+					// Clear the input.
+					$('add-tag-property-name').value = '';
+				}
+				print('d_addTagProperty(): ' + newPropertyName);
+			}
+			
+			function genTagProperty(propertyName) {
+				let container = document.createElement('span'),
+						label = document.createElement('text'),
+						input = document.createElement('input'),
+						linebreak = document.createElement('br');
+				label.innerText = propertyName + ' ';
+				input.type = 'text';
+				input.id = 'edit-tag-' + propertyName;
+				input.className = 'cancel-key tag-property';
+				input.setAttribute('data_property', propertyName);
+				// Return as a single element.
+				container.appendChild(label);
+				container.appendChild(input);
+				container.appendChild(linebreak); // Might want to add multiple tags.
+				container.style.marginLeft = '10px';
+				return container;
+			}
+			
+			// Hide the main menu when tag-images is opened.
+			$('open-tag-images').addEventListener('click', ()=>{
+		    d_setVisible($('box'), false);
+		    // Sort//adasdasd
+		    uploadF = sortUploadsFromMenu('tags-file-property', 'tags-file-order');
+		    print('tags-file-sort()');
+		    print(uploadF);
+		    // Display current image's tags.
+		    //d_listTags();
+			});
+			// Show the main menu again when tag-images is closed.
+			$('close-tag-images').addEventListener('click', ()=>{
+			  d_setVisible($('box'), true);
+			});
+			
+			// Same for edit-tags, probably shouldn't repeat, put in $c func
+			// Hide the main menu when tag-images is opened.
+			$c('open-edit-tags').listen('click', ()=>{
+		    d_setVisible($('box'), false);
+			});
+			// Show the main menu again when tag-images is closed.
+			$('close-edit-tags').addEventListener('click', ()=>{
+			  d_setVisible($('box'), true);
+			});
+			
+			// Hide and show tags based on user search.
+			function hideTags (tagBox, tagList) {
+			  let lamb = {};
+			  lamb.tagsHidden = [];
+			  lamb.fun = (e, search)=>{
+					let query = search || searchWord(tagBox);
+			    print('searchWord(): ' + query);
+			    print(lamb.tagsHidden);
+					// Re-show old tags
+					lamb.tagsHidden.forEach((tag)=>{
+						d_setVisible(tag, 'inline');
+					});
+					// Hide new tags
+					print(query);
+					lamb.tagsHidden = sortTags(query, tagBox, tagList);
+					lamb.tagsHidden.forEach((tag)=>{
+						d_setVisible(tag, false);
+					});
+			  };
+			  return lamb.fun;
+			}
+
+			let mainHideTags = hideTags('tag-search', 'tags-list');
+			$('tag-search').oninput = ()=>{
+			  //
+			  mainHideTags();
+			  //
+			  let search = $('tag-search').value;
+			  if (search) {
+			    search = search.split(' ');
+			  }
+			  d_filterUploads(search);
+			  d_filterCount();
+			}
+			let editHideTags = hideTags('tag-images-search', 'tag-images-list');
+			$('tag-images-search').oninput = editHideTags;
+			
+			// Make a list of tags that don't match the current search text.
+			function sortTags(searchText, tagBox, tagList) { // tagBox is obsolete
+				let search = $(tagBox),
+						tagsContainer = $(tagList),
+						tags = Array.prototype.slice.call(tagsContainer.childNodes),
+						toHide = [];
+				// Hide any tags that don't match the query so far.
+				tags.forEach((tag)=>{ // can use array.filter for this
+					let tagLink = tag.firstChild,
+							tagName = tagLink.innerHTML || tagLink.innerText,
+							searchWords = getSearchWords(tagName),
+							doHide = true;
+					
+					searchWords.unshift(tagName);
+					if (tagName.split(':').length > 1) {
+					  searchWords.unshift(tagName.split(':')[1]);
+					}
+					print(searchWords);
+					
+					for (let i = 0; i < searchWords.length; i += 1) {
+					  let word = searchWords[i];
+					  if (searchText.toUpperCase() === word.slice(0, searchText.length).toUpperCase()) {
+					    doHide = false;
+					    break;
+					  }
+					}
+					
+					if (doHide) {
+					  toHide.push(tag);
+					}
+				});
+				return toHide;
+			}
+			
+			function getSearchWords(tagName) {
+			  let tagEntry = config('tag-definitions')[tagName] && config('tag-definitions')[tagName]['search-words'],
+			      words = [];
+			  if (tagEntry) {
+			    tagEntry.split(' ').forEach((word)=>{
+			      words.push(word);
+			    });
+			  }
+			  return words;
+			}
+			
+			// Get the current search text.
+			function searchWord(tagBox) {
+				return $(tagBox).value
+				.replace(/^\s/, '') // Remove any leading spaces.
+				.split(' ').slice(-1)[0]; // Get the last word in the search.
+			}
+			
+			// Sync the tag links with the current config file.
+			function d_syncTagLinks(tagList, destination, exclude) {
+			  let list = $(tagList);
+			  // Clear children.
+			  list.innerHTML = '';
+			  // Add tags from config.
+			  genTagLinks(destination, exclude).forEach((li)=>{
+			    if (li) {
+			      list.appendChild(li);
+			    }
+			  });
+			}
+			
+			function genTagLinks(destination, exclude) {
+			  let links = [];
+			  fullTagList.forEach((tag)=>{
+			    links.push(genTagLink(tag, destination, exclude));
+			  });
+			  return links;
+			}
+			
+			function genTagLink(tag, destination, exclude) {
+			  // Only proceed if the tag is not a category tag.
+			  if (!tag.mandatory) {
+			    let li = document.createElement('li'),
+			        mainLink = document.createElement('a'),
+			        excludeLink = document.createElement('a'),
+			        content = tag.name;
+			    // Set up links.
+			    mainLink.href='#/';
+			    mainLink.innerHTML = content;
+			    // Hover text.
+			    mainLink.title = tag.description || '';
+			    // Color.
+			    if (tag['link-color']) {
+			      mainLink.style.color = tag['link-color'];
+			      mainLink.onmouseover = ()=>{
+			        mainLink.style.color = '#551A8B';
+			      }
+			      mainLink.onmouseleave = ()=>{
+			        mainLink.style.color = tag['link-color'];
+			      }
+			    }
+			    else if (tag.name.split(':').length > 1) {
+			      // is cat tag, use cat color instead
+			      let cat = tag.name.split(':')[0];
+		        if (config('tag-definitions')[cat]['link-color']) {
+		          mainLink.style.color = config('tag-definitions')[cat]['link-color'];
+		          mainLink.onmouseover = ()=>{
+		            mainLink.style.color = '#551A8B';
+		          }
+		          mainLink.onmouseleave = ()=>{
+		            mainLink.style.color = config('tag-definitions')[cat]['link-color'];
+		          }
+		        }
+			    }
+					// Add the tag's text to destination on click.
+					let addTagFun = addTag(content, destination);
+			    mainLink.onclick = ()=>{
+			      addTagFun();
+			      $(destination).oninput();
+			    }
+					// Add the link to the list.
+			    li.appendChild(mainLink);
+			    if (exclude) {
+			      excludeLink.href='#/';
+			      excludeLink.innerHTML = '[!]';
+						excludeLink.title = 'Filter out images with this tag.';
+						let exAddTagFun = addTag('!' + content, destination, '!');
+			      excludeLink.onclick = ()=>{
+			        exAddTagFun();
+			        $(destination).oninput();
+			      }
+			      if (tag['link-color']) {
+			        excludeLink.style.color = tag['link-color'];
+			        excludeLink.onmouseover = ()=>{
+			          excludeLink.style.color = '#551A8B';
+			        }
+			        excludeLink.onmouseleave = ()=>{
+			          excludeLink.style.color = tag['link-color'];
+			        }
+			      }
+			      else if (tag.name.split(':').length > 1) {
+			        // is cat tag, use cat color instead
+			        let cat = tag.name.split(':')[0];
+		          if (config('tag-definitions')[cat]['link-color']) {
+		            excludeLink.style.color = config('tag-definitions')[cat]['link-color'];
+		            excludeLink.onmouseover = ()=>{
+		              excludeLink.style.color = '#551A8B';
+		            }
+		            excludeLink.onmouseleave = ()=>{
+		              excludeLink.style.color = config('tag-definitions')[cat]['link-color'];
+		            }
+		          }
+			      }
+			      li.appendChild(excludeLink);
+			    }
+			    // Keep the links from clustering together.
+			    li.style.paddingRight = '5px';
+			    return li;//<here>
+			  }
+			}
+			
+			function addTag(value, destination, prefix) { // ):
 			  return (el)=>{
-			    $(destination).value += el.target.innerHTML + ' ';
+					let curr = $(destination).value,
+							startIndex = curr.length - searchWord(destination).length;
+					$(destination).value = curr.slice(0, startIndex) + // Remove word fragments.
+						value + ' '; // Add a space to keep tags separate.
 			  }
 			}
 			
 			// Config files. ---------------------------------------------------------
-			// Update config file from menu.
+			//
+			$('download-tags').onclick = ()=>{
+			  // Update tags.
+			  d_syncImageTags();
+			  // Download the new config.
+			  downloadConfig();
+				d_configInit();
+			  d_unsavedData('download-tags', false);
+			  print(config());
+			}
+			
+			// Update config file settings from menu.
 			{
 			  let settings = $c('folder-setting');
 			  $('download-folder').onclick = ()=>{
@@ -969,9 +2180,10 @@
 			    settings.forEach((el)=>{
 			      d_setConfig(el.id, el.value);
 			    });
-			    print(config());
 			    // Download the new config.
 			    downloadConfig();
+					d_configInit();
+			    print(config());
 			  }
 			  
 			  // Set the menu's settings to the current settings.
@@ -1023,17 +2235,9 @@
 			  let ivconfig = {
 			    'name': '',
 			    'cover-image': '',
+			    'tag-definitions': {}, // holds descriptions and colors and such
 			    'images': {},
-			    'tags-list': [] // holds descriptions and colors and such
 			  };
-			  /*
-			  // Generate an array of every tag used.x
-			  function generateTagsList() {
-			    let acc = [],
-			        tags = config('tags');
-			    
-			    return tags;
-			  }*/
 			  
 			  function config(str) {
 			    // Get the whole obj.
@@ -1042,21 +2246,45 @@
 			    }
 			    // Accessing an image's tags.
 			    else if (isPath(str)) {
-			      return ivconfig['tags'][str];
+			      return ivconfig['images'][str];
 			    }
+					else if (str === 'name' || str === 'homepage') {
+						return ivconfig['name'][str];
+					}
 			    // Accessing a property of the folder.
 			    else {
 			      return ivconfig[str];
 			    }
 			  }
 			  
+				function d_addTagDefinition(tag) {
+					ivconfig['tag-definitions'][tag.name] = tag;
+					print('d_addTagDefinition():');
+					print(config('tag-definitions'));
+				}
+				
+				function d_deleteTagDefinition(tagName) {
+					delete ivconfig['tag-definitions'][tagName];
+					print('d_deleteTagDefinition():');
+					print(config('tag-definitions'));
+				}
+				
+				function d_deleteImage(imageName) {
+				  delete ivconfig['images'][imageName];
+					print('d_deleteImage():');
+					print(config('images'));
+				}
+				
 			  function d_setConfig(str, value) {
 			    if (str === '') {
 			      ivconfig = value;
 			    }
 			    else if (isPath(str)) {
-			      ivconfig['tags'][str] = value;
+			      ivconfig['images'][str] = value;
 			    } 
+			    else if (str === 'name' || str === 'homepage') {
+						ivconfig['name'][str] = value;
+					}
 			    else {
 			      ivconfig[str] = value;
 			    }
@@ -1075,31 +2303,59 @@
 			
 			// Keyboard shortcuts. ---------------------------------------------------
 			{
-				let active = true;
+				let mode = 'no-upload',
 				    KEY_NEXT = 'ArrowRight',
-						KEY_PREV = 'ArrowLeft';
+						KEY_PREV = 'ArrowLeft',
+						KEY_JUMP = 'j',
+						KEY_HIDE = 'h',
+						KEY_NEXT_TAG = 'ArrowDown',
+						KEY_PREV_TAG = 'ArrowUp',
+						KEY_CONFIRM_TAG = 'Enter';
 						
 				document.onkeydown = (e)=>{
-					if (active) {
-						e = e || window.event;
-						if (e.key === KEY_NEXT) {
+				  e = e || window.event;
+				  let key = e.key;
+					print('key: ' + key);
+					// Available shortcuts change based on program state.
+					if (mode === 'main') {
+						if (key === KEY_NEXT) {
 							$('next').click();
 						}
-						else if (e.key === KEY_PREV) {
+						else if (key === KEY_PREV) {
 							$('previous').click();
 						}
+						else if (key.toLowerCase() === KEY_JUMP) {
+							$('jump').click();
+						}
+						else if (key.toLowerCase() === KEY_HIDE) {
+						  $('hide-display').click();
+						}
+					}
+					else if (mode === 'tag-search') {
+					  if (key === KEY_NEXT_TAG) {
+					    print('tagnext');
+					  }
+					  else if (key === KEY_PREV_TAG) {
+					    print('tagprev');
+					  }
+					  else if (key === KEY_CONFIRM_TAG) {
+					    print('tagconfirm');
+					  }
 					}
 					else {
+					  //
 					}
 				};
 				
-				function useKeys (t) {
-					return active = t;
+				function d_useKeys (state) {
+					return mode = state;
 				}
 				
 				function listKeys () {
-					s_print('next: ' + KEY_NEXT);
-					s_print('prev: ' + KEY_PREV);
+					s_print('Next: ' + KEY_NEXT);
+					s_print('Previous: ' + KEY_PREV);
+					s_print('Jump: ' + KEY_JUMP);
+					s_print('Hide display: ' + KEY_HIDE);
 				}
 			}
 			
@@ -1108,34 +2364,32 @@
 			  // All the inputs have nocancel
 				let inputs = $c('cancel-key'); 
 				inputs.listen('focus', ()=>{
-				  useKeys(false);
+				  d_useKeys(false);
 				});
 				inputs.listen('blur', ()=>{
-				  useKeys(true);
+				  d_useKeys(true);
 				});
 			}
 			
 			// Run the following on <startup>: ---------------------------------------
 			window.onload = ()=>{
 			  printTest(false);
-			  
-			  // In case they're reloading the page.
-			  d_uploadInit();
+			
+			
+				// ---------------------------------------------------------------------
+			
+			
 			}
-			
-			// -----------------------------------------------------------------------
-			
-			
-			
 			// End -------------------------------------------------------------------
 			
 			// TODO
-			// ivconfig.txt + Image tags
-			// File order sort
-			// Hide display option || keyboard shortcut as well
-			// exclusiveRNG is a bit naive, don't create a new mem every call
-			// POST (and ask about flashlights)
-			// God what a pain in the ass. Learn this:
+			// Homepage + docs
+			// bug: dead-files jumps all over the place when you try to drag it
+			// probably a bug source: do something about resetting and upload init -> d_reset
+			// Chrome bugfixes fuck chrome
+			// Please refactor
+			// Make it easier for users to change background colors and such, not through config
+			// God what a pain in the ass:
 			  // https://medium.com/quick-code/javascript-promises-in-twenty-minutes-3aac5b65b887
 			// Image comments
 		</script>
