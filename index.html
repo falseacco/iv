@@ -302,6 +302,9 @@
 		  <text>Name</text>
 		  <input id="name" type="text" class="cancel-key folder-setting"
 					    placeholder="iv" size="8" autocomplete="off"><br>
+			<text>Homepage</text>
+		  <input id="homepage" type="text" class="cancel-key folder-setting"
+					    placeholder="iv" size="8" autocomplete="off"><br>
 		  <text>Cover Image</text>
 		  <input id="cover-image" type="text" class="cancel-key folder-setting"
 					    placeholder="none" size="8" autocomplete="off"><br>
@@ -1632,12 +1635,16 @@
 			}
 				
 			function genViewTagsList() { // the gentaglists really should only be on function
-					s_print(config(fetchHistory(pointer)));
 					let acc = [],
 					    currImageTags = config(fetchHistory(pointer).webkitRelativePath),
-					    tagObjs = currImageTags.map((str)=>{
-					      return config('tag-definitions')[str];
-					    });
+					    tagObjs = [];
+					    
+					if (currImageTags) {
+					  tagObjs = currImageTags.map((str)=>{
+					    return config('tag-definitions')[str];
+					  });
+					}
+					
 					tagObjs.forEach((tag)=>{
 						let li = document.createElement('li'),
 								link = document.createElement('a');
@@ -2191,7 +2198,10 @@
 			  
 			  // Set the menu's settings to the current settings.
 			  function d_syncEditFolder() {
+			    print('d_syncEditFolder');
 			    settings.forEach((el)=>{
+			      print(el);
+			      print(config(el.id));
 			      el.value = config(el.id);
 			    });
 			  }
@@ -2236,7 +2246,7 @@
 			// Config object.
 			{
 			  let ivconfig = {
-			    'name': '',
+			    'name': {},
 			    'cover-image': '',
 			    'tag-definitions': {}, // holds descriptions and colors and such
 			    'images': {},
