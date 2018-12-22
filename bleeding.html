@@ -350,10 +350,10 @@
 		      <input id="edit-tag-description" data_property="description" type="text" class="cancel-key tag-property"
 					      size="8" autocomplete="off"><br>
 					<text class="indent1">Link color</text>
-		      <input id="edit-link-color" data_property="description" type="text" class="cancel-key tag-property"
+		      <input id="edit-tag-link-color" data_property="link-color" type="text" class="cancel-key tag-property"
 					      size="8" autocomplete="off"><br>
 					<text class="indent1">Search words</text>
-		      <input id="edit-search-words" data_property="description" type="text" class="cancel-key tag-property"
+		      <input id="edit-tag-search-words" data_property="search-words" type="text" class="cancel-key tag-property"
 					      size="8" autocomplete="off"><br>
 				<span id="custom-tag-properties">
 				</span>
@@ -1156,7 +1156,7 @@
 				
 				//
 				function d_setEditTagMenu(tagName) {
-				  let tag = findTag(tagName) || {};
+				  let tag = findTag(tagName);
 					// Clear custom tag properties.
 					$('custom-tag-properties').innerHTML = '';
 					//
@@ -1200,14 +1200,16 @@
 					let tag = {};
 					$c('tag-property').forEach((el)=>{
 						let property = el.getAttribute('data_property');
-						if (el.type === 'text') {
-							tag[property] = el.value || '';
-						}
-						else if (el.type === 'checkbox') {
-							tag[property] = el.checked;
-						}
-						else {
-							print('editTagMenu() fallthrough');
+						if (property !== null) {
+						  if (el.type === 'text') {
+							  tag[property] = el.value || '';
+						  }
+						  else if (el.type === 'checkbox') {
+							  tag[property] = el.checked;
+						  }
+						  else {
+							  print('editTagMenu() fallthrough');
+						  }
 						}
 					});
 					return tag;
@@ -1215,7 +1217,7 @@
 				
 				function findTag(tagName) {
 				  let tags = config('tag-definitions');
-				  return tags[tagName];
+				  return tags[tagName] || {'name': tagName};
 				}
 						
 				// 
@@ -1583,8 +1585,9 @@
 			// Extend tag-defs
 		    // different link colors for custom tags
 					// generate custom css classes
-		    // valid search words arr
-		      // category word by default
+					
+			// Generate and assign custom css.
+			//
 				
 			// Tag search shortcuts triggers. | not really sure about this.
 			$c('tag-box').listen('focus', ()=>{
@@ -1794,6 +1797,7 @@
 				let tag = editTagMenu();
 				if (tag.name) {
 					d_addTagDefinition(tag);
+					d_unsavedData('save-tag-settings', true);
 					d_configInit();
 				}
 			}
@@ -1801,16 +1805,17 @@
 			$('delete-tag').onclick = ()=>{
 				let tagName = $('edit-tag-name').value;
 				d_deleteTagDefinition(tagName);
+				d_unsavedData('save-tag-settings', true);
 				d_configInit();
 			}
 			
 			$('save-tag-settings').onclick = ()=>{
 				downloadConfig();
+				d_unsavedData('save-tag-settings', false);
 				d_configInit();
 				print(config());
 			}
 			
-			// gohere
 			$('add-tag-property').onclick = d_addTagProperty; function d_addTagProperty(e, str) {
 				let newPropertyName = str || $('add-tag-property-name').value;
 				if (newPropertyName) {
@@ -1830,7 +1835,7 @@
 				label.innerText = propertyName + ' ';
 				input.type = 'text';
 				input.id = 'edit-tag-' + propertyName;
-				input.className = 'cancel-key tag-property'; // cancel-key probably won't work right, maybe just assign individually?
+				input.className = 'cancel-key tag-property';
 				input.setAttribute('data_property', propertyName);
 				// Return as a single element.
 				container.appendChild(label);
@@ -1902,7 +1907,6 @@
 			let editHideTags = hideTags('tag-images-search', 'tag-images-list');
 			$('tag-images-search').oninput = editHideTags;
 			
-			//gohere
 			// Make a list of tags that don't match the current search text.
 			function sortTags(searchText, tagBox, tagList) { // tagBox is obsolete
 				let search = $(tagBox),
@@ -1913,22 +1917,39 @@
 				tags.forEach((tag)=>{ // can use array.filter for this
 					let tagLink = tag.firstChild,
 							tagName = tagLink.innerHTML || tagLink.innerText,
-							searchWords = config('tag-definitions')[tagName];
-					print('sortTags:');
-					print(searchWords); // returns undefined if tag is unlisted
-					// add empty prop just to be sure
-					// list seto_(asils)
-					// Test for not-matches.
-					if (searchWords) {
-					  // run through list
+							searchWords = getSearchWords(tagName),
+							doHide = true;
+					
+					searchWords.unshift(tagName);
+					if (tagName.split(':').length > 1) {
+					  searchWords.unshift(tagName.split(':')[1]);
 					}
-					else {
-					  if (searchText.toUpperCase() !== tagName.slice(0, searchText.length).toUpperCase()) {
-						  toHide.push(tag);
+					print(searchWords);
+					
+					for (let i = 0; i < searchWords.length; i += 1) {
+					  let word = searchWords[i];
+					  if (searchText.toUpperCase() === word.slice(0, searchText.length).toUpperCase()) {
+					    doHide = false;
+					    break;
 					  }
+					}
+					
+					if (doHide) {
+					  toHide.push(tag);
 					}
 				});
 				return toHide;
+			}
+			
+			function getSearchWords(tagName) {
+			  let tagEntry = config('tag-definitions')[tagName] && config('tag-definitions')[tagName]['search-words'],
+			      words = [];
+			  if (tagEntry) {
+			    tagEntry.split(' ').forEach((word)=>{
+			      words.push(word);
+			    });
+			  }
+			  return words;
 			}
 			
 			// Get the current search text.
