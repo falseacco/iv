@@ -6,6 +6,10 @@
   </head>
   <body>
 		<style id="stylesheet">
+		  body {
+		    max-width: 100%;
+		    overflow-x: hidden;
+		  }
 		  body .hidden {
 		    display: none;
 		  }
@@ -81,16 +85,17 @@
 				If the main link had this it wouldn't be clickable. */
 				position: relative;
 		    z-index: -2;
-				/* Positioning */
-				margin: 40px 0 20px 20px;
 		  }
 			
 			.box {
 				position: absolute;
 				/* Appearance */
-				border: 1px solid lightgray;
+				border-left: 1px solid lightgray;
 				display: inline-block;
 				padding: 0 5px 5px 5px;
+			}
+			#ghost {
+			  border: 1px dotted black;
 			}
 			
 			.can-drag {
@@ -202,6 +207,17 @@
 			  padding: 0;
 			  margin: 0;
 			}
+			#image-info {
+			  width: 220px;
+			  right: 40px;
+			  top: 40px;
+			}
+			#edit-folder, #tag-images, #edit-tags {
+			  border: 1px solid lightgray;
+			}
+			.hidden-before-upload {
+			  display: none;
+			}
 		</style>
 		<div id="bg"></div>
 		
@@ -214,80 +230,96 @@
 		
 		<div id="box" class="box can-drag">
 			<a id="hide" class="smaller link hide-link" data_hidden="false" data_hide_label="[mini]" data_show_label="[max]" href="#/">[mini]</a>
-			<a id="fullscreen" class="smaller link" href="#/">[toggle fullscreen]</a><br>
+			<a id="open-image-info" class="box-link smaller link" href="#/">[image info]</a>
+			<a id="fullscreen" class="smaller link" href="#/">[fullscreen]</a><br>
+			
 			<span class="hide-section">
 			  <br>
 			  <input id="upload" type="file" webkitdirectory directory multiple autocomplete="off"><br>
 			  <a id="open-edit-folder" href="#/" class="indent1 smaller box-link">Edit folder</a>
 				<a href="#/" class="open-edit-tags indent1 smaller">Add tags</a>
-				<a id="open-dead-files" href="#/" class="hidden box-link indent1 smaller">Dead files</a><br>
-				<span id="hidden-to-start-file-section" class="hidden">
-			    <text>Filter images</text>
-			    <a id="hide-filter" class="smaller hide-link" data_hidden="true" data_hide_label="[hide]" data_show_label="[show]" href="#/">[show]</a>
-			    <text>:</text><br>
-			    <span class="hide-filter-section hidden">
-			      <text id="filter-count" class="smaller indent1"></text><br>
-			      <textarea id="tag-search" class="cancel-key tag-box indent1" spellcheck="false"
-			        placeholder="Only display images with these tags.&#10;&#10;(No tags selected)"></textarea>
-			      <ul id="tags-list" class="tag-list"></ul>
-			      <a id="open-tag-images" href="#/" class="indent1 smaller box-link">Tag images</a>
-			      <a href="#/" class="open-edit-tags indent1 smaller">Add/edit tags</a><br>
-					<br class="hide-filter-section">
-		      </span>
-			<br>
-				<a id="previous" class="link" href="#/">previous</a>
-				<a id="next" class="link" href="#/">next</a><br>
-				<a id="jump" class="link smaller indent1 jump-link" href="#/">[Jump...]</a><br>
-				<br>
-			</span>
-		  </span><br class="hide-section">
-		  <text id="filename" class="smaller filename"></text><br>
-		  <ul id="view-tags-list" class="tag-list hide-section"></ul><br class="hide-section">
+				<a id="open-dead-files" href="#/" class="hidden box-link indent1 smaller">Dead files</a>
+			</span><br class="hide-section">
+			<br class="hide-section">
+		  <!--Timer control.-->
 			<a id="reset" class="gray-link" href="#/">&#8635;</a>
 			<a id="timer" class="gray-link" href="#/">10:00</a><br>
-			<span class="hide-section">
-			<br >
-				<text>Options</text>
-				<a id="hide-options" class="smaller hide-link" data_hidden="true" data_hide_label="[hide]" data_show_label="[show]" href="#/">[show]</a>
-				<text>:</text><br>
-				<span class="hide-options-section hidden">
-				  <text class="indent1">Length:</text><br>
-					  <input id="timer-hr" type="text" class="cancel-key indent2 monospace"
-					    placeholder="00" size="2" maxlength="2" autocomplete="off"> :
-					  <input id="timer-min" type="text" class="cancel-key monospace"
-					    placeholder="10" size="2" maxlength="2" autocomplete="off"> :
-					  <input id="timer-sec" type="text" class="cancel-key monospace"
-					    placeholder="00" size="2" maxlength="2" autocomplete="off"><br>
-					<input id="hide-display" type="checkbox" autocomplete="off"
-				    class="indent1">Hide display<br>
-				  <input id="prevent-recent-repeats" type="checkbox" autocomplete="off"
-				    class="indent1" checked>Prevent recent repeats<br>
-				  <input id="hide-every-other" type="checkbox" autocomplete="off"
-				    class="indent1">Hide every other image<br>
-					<input id="display-new" type="checkbox" autocomplete="off"
-					  class="indent1" checked>Display new images on skip<br>
-				  <text class="indent1">When timer ends:</text><br>
-				    <input id="on-end-display-new" type="checkbox" autocomplete="off"
-				      class="indent2" checked>display new image<br>
-					  <input id="on-end-reset" type="checkbox" autocomplete="off"
-					    class="indent2" checked>reset time &#8635;<br>
-					    <input id="on-end-count" type="checkbox" autocomplete="off"
-					      class="indent3" checked>start counting down<br>
-					<input id="display-in-file-order" class="file-sort" type="checkbox" autocomplete="off"
-					  class="indent1">Display images in file order</input><br>
-					  <text class="indent2">Property:</text><br>
-					    <input type="radio" class="file-sort indent3" name="file-property" value="name" checked autocomplete="off"> name<br>
-					    <input type="radio" class="file-sort indent3" name="file-property" value="type" autocomplete="off"> type<br>
-					    <input type="radio" class="file-sort indent3" name="file-property" value="path" autocomplete="off"> path<br>
-					    <input type="radio" class="file-sort indent3" name="file-property" value="size" autocomplete="off"> size<br>
-					    <input type="radio" class="file-sort indent3" name="file-property" value="lastModified" autocomplete="off"> last modified<br>
-					  <text class="indent2">Order:</text><br>
-					    <input type="radio" class="file-sort indent3" name="file-order" value="ascending" checked autocomplete="off"> ascending<br>
-					    <input type="radio" class="file-sort indent3" name="file-order" value="descending" autocomplete="off"> descending<br>
-						<a href="#/" class="jump-to-start indent2">Jump to start</a><br>    
-						
-				</span>
+			<br class="hide-section">
+			<!--Navigation buttons.-->
+			<a id="previous" class="link" href="#/">previous</a>
+			<a id="next" class="link" href="#/">next</a><br>
+			<a id="jump" class="link smaller indent1 jump-link" href="#/">[Jump...]</a><br>
+			
+		  <span class="hide-section">
+			<br>
+			<!--Image filter options.-->
+			<span class="hidden-before-upload">
+		    <text>Filter</text>
+		    <a id="hide-filter" class="smaller hide-link" data_hidden="true" data_hide_label="[hide]" data_show_label="[show]" href="#/">[show]</a>
+		    <text>:</text>
+		    </span><br class="hidden-before-upload">
+	      <span class="hide-filter-section hidden">
+	        <text id="filter-count" class="smaller indent1"></text><br>
+	        <textarea id="tag-search" class="cancel-key tag-box indent1" spellcheck="false"
+	          placeholder="Only display images with these tags.&#10;&#10;(No tags selected)"></textarea>
+	        <ul id="tags-list" class="tag-list"></ul>
+	        <a id="open-tag-images" href="#/" class="indent1 smaller box-link">Tag images</a>
+	        <a href="#/" class="open-edit-tags indent1 smaller">Add/edit tags</a><br>
+      </span><br class="hidden hide-filter-section">
+      <!--Timer behavior options.-->
+			<text>Timer</text>
+			<a id="hide-options" class="smaller hide-link" data_hidden="true" data_hide_label="[hide]" data_show_label="[show]" href="#/">[show]</a>
+			<text>:</text><br>
+			<span class="hide-options-section hidden">
+			  <text class="indent1">Length:</text><br>
+				  <input id="timer-hr" type="text" class="cancel-key indent2 monospace"
+				    placeholder="00" size="2" maxlength="2" autocomplete="off"> :
+				  <input id="timer-min" type="text" class="cancel-key monospace"
+				    placeholder="10" size="2" maxlength="2" autocomplete="off"> :
+				  <input id="timer-sec" type="text" class="cancel-key monospace"
+				    placeholder="00" size="2" maxlength="2" autocomplete="off"><br>
+				<input id="hide-display" type="checkbox" autocomplete="off"
+			    class="indent1">Hide display<br>
+			  <input id="prevent-recent-repeats" type="checkbox" autocomplete="off"
+			    class="indent1" checked>Prevent recent repeats<br>
+			  <input id="hide-every-other" type="checkbox" autocomplete="off"
+			    class="indent1">Hide every other image<br>
+				<input id="display-new" type="checkbox" autocomplete="off"
+				  class="indent1" checked>Display new images on skip<br>
+			  <text class="indent1">When timer ends:</text><br>
+			    <input id="on-end-display-new" type="checkbox" autocomplete="off"
+			      class="indent2" checked>display new image<br>
+				  <input id="on-end-reset" type="checkbox" autocomplete="off"
+				    class="indent2" checked>reset time &#8635;<br>
+				    <input id="on-end-count" type="checkbox" autocomplete="off"
+				      class="indent3" checked>start counting down<br>
+		  </span><br class="hidden hide-options-section">
+		  <!--Display order.-->
+		  <span class="hidden-before-upload">
+		    <text>Display order</text>
+		    <a id="hide-display-order" class="smaller hide-link" data_hidden="true" data_hide_label="[hide]" data_show_label="[show]" href="#/">[show]</a>
+		    <text>:</text>
+		  </span><br class="hidden-before-upload">
+	    <span class="hide-display-order-section hidden">
+	      <input id="display-in-file-order" class="file-sort" type="checkbox" autocomplete="off"
+				  class="indent1">Display images in file order</input><br>
+				  <text class="indent2">Property:</text><br>
+				    <input type="radio" class="file-sort indent3" name="file-property" value="name" checked autocomplete="off"> name<br>
+				    <input type="radio" class="file-sort indent3" name="file-property" value="type" autocomplete="off"> type<br>
+				    <input type="radio" class="file-sort indent3" name="file-property" value="path" autocomplete="off"> path<br>
+				    <input type="radio" class="file-sort indent3" name="file-property" value="size" autocomplete="off"> size<br>
+				    <input type="radio" class="file-sort indent3" name="file-property" value="lastModified" autocomplete="off"> last modified<br>
+				  <text class="indent2">Order:</text><br>
+				    <input type="radio" class="file-sort indent3" name="file-order" value="ascending" checked autocomplete="off"> ascending<br>
+				    <input type="radio" class="file-sort indent3" name="file-order" value="descending" autocomplete="off"> descending<br>
+			  <a href="#/" class="jump-to-start">Jump to start</a><br>
+      </span><br class="hidden hide-display-order-section">
 			</span>
+		</div>
+		<div id="image-info" class="hidden-before-upload box can-drag">
+		  <text id="filename" class="smaller filename">hi</text>
+		  <a id="close-image-info" href="#/" class="close-link">x</a><br>
+		  <ul id="view-tags-list" class="tag-list"></ul><br>
 		</div>
 		<div id="edit-folder" class="hidden box can-drag">
 		  <text>Edit folder properties:</text>
@@ -539,6 +571,9 @@
 					// Set ghost size.
 					ghost.style.paddingRight = rect.width + 'px';
 					ghost.style.height = rect.height + 'px';
+					// Move the ghost preview.
+					ghost.style.left = (posx - xOffset) + 'px';
+					ghost.style.top = (posy - yOffset) + 'px';
 					// Show the ghost.
 					d_setVisible(ghost, true);
 					// And hide the box.
@@ -728,7 +763,7 @@
 			  }
 			  
 			  function getGoal(arr) {
-			    return Date.now() + arrToMs(arr);
+			    return Date.now() + arrToMs(arr) + 500;
 			  }
 			  
 			  // Update timer's display.
@@ -984,7 +1019,9 @@
 					// Make sure there's some data before working.
 					if (upload.length > 0) {
 						// Show file navigation.
-						d_setVisible($('hidden-to-start-file-section'), true);
+						$c('hidden-before-upload').forEach((el)=>{
+						  d_setVisible(el, true);
+						});
 					  // Filter out any non-image files.
 						let clone = [];
 					  upload.forEach((file, i)=>{
@@ -1105,8 +1142,6 @@
 					d_updateRecTagsList();
 					// Check for untagged images.
 					d_updateUntagged();
-			    // Expand filter.
-          d_setSectionVisible('hide-filter', true);
 					// Update the title.
 					d_syncTitle();
           // Update menu, in case they want to edit.
@@ -1399,7 +1434,7 @@
 				}
 				
 				function d_next(e, onload, from) {
-				  if (uploadF.length !== 0) {
+				  if (uploadF && uploadF.length > 0) {
 				    if (pointer > 0) {
 				      d_displayNextHistory(onload);
 				    }
@@ -1436,6 +1471,12 @@
 				          }
 				        }
 				      }
+				    }
+				  }
+				  // There are no images to display, but still:
+				  else {
+				    if (typeof(onload) === 'function') {
+				      onload();
 				    }
 				  }
 				}
@@ -2372,6 +2413,11 @@
 			// Run the following on <startup>: ---------------------------------------
 			window.onload = ()=>{
 			  printTest(false);
+			  
+			  // Text box css doesn't seem to acknowledge autocomplete.
+			  $c('tag-box').forEach((box)=>{
+			    box.value = '';
+			  });
 			
 			
 				// ---------------------------------------------------------------------
@@ -2381,8 +2427,7 @@
 			// End -------------------------------------------------------------------
 			
 			// TODO
-			// tag-images save-tag should save all tags at once. -> save-tags
-			  // both save-tag and delete-tag should clear inputs
+			// both save-tag and delete-tag should clear inputs
 			// next/prev rehide tags onclick, [all] link that does same
 			// split config and upload Init up, they try to do too many things
 			    // Save settings for tag-images really shouldn't redisplay, it's jarring
@@ -2391,6 +2436,7 @@
 			// Look for an .ivconfig file instead, it's too easy to save over different ones
 			// untagged should list both empty arrays and undefined as untagged
         // when there are no man tags
+      // Shortcuts to zoom in and out
 			// Please refactor
 			// Bugs:
 			  // dead-files jumps all over the place when you try to drag it
