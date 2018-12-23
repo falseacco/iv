@@ -1602,10 +1602,11 @@
 			
 			
 			// Navigation buttons for tag-images. Constrained to fileorder.
-			$('tags-next').onclick = ()=>{ // gohere
+			$('tags-next').onclick = ()=>{
 			  d_syncImageTags(()=>{
 			    // Display the next image. (In fileorder, so no repeats)
 			    d_next(false, false, 'tags-next');
+			    editHideTags('', '');
 					d_updateUntagged();
 			  });
 			}
@@ -1614,6 +1615,7 @@
 			$('tags-previous').onclick = ()=>{
 			  d_syncImageTags(()=>{
 			    d_previous();
+			    editHideTags('', '');
 					d_updateUntagged();
 			  });
 			}
@@ -1913,6 +1915,7 @@
 			// A bit reckless but fine for now
 			$('save-tag').onclick = ()=>{
 				let tag = editTagMenu();
+				d_clearEditTagMenu();
 				if (tag.name) {
 					d_addTagDefinition(tag);
 					d_unsavedData('save-tag-settings', true);
@@ -1922,6 +1925,7 @@
 			
 			$('delete-tag').onclick = ()=>{
 				let tagName = $('edit-tag-name').value;
+				d_clearEditTagMenu();
 				d_deleteTagDefinition(tagName);
 				d_unsavedData('save-tag-settings', true);
 				d_configInit();
@@ -2002,10 +2006,10 @@
 						d_setVisible(tag, 'inline');
 					});
 					// Hide new tags
-					lamb.tagsHidden = sortTags(query, tagBox, tagList);
-					lamb.tagsHidden.forEach((tag)=>{
-						d_setVisible(tag, false);
-					});
+				  lamb.tagsHidden = sortTags(query, tagBox, tagList);
+				    lamb.tagsHidden.forEach((tag)=>{
+					  d_setVisible(tag, false);
+				  });
 			  };
 			  return lamb.fun;
 			}
@@ -2414,7 +2418,7 @@
 			window.onload = ()=>{
 			  printTest(false);
 			  
-			  // Text box css doesn't seem to acknowledge autocomplete.
+			  // Text box css doesn't seem to acknowledge autocomplete=false.
 			  $c('tag-box').forEach((box)=>{
 			    box.value = '';
 			  });
@@ -2427,16 +2431,15 @@
 			// End -------------------------------------------------------------------
 			
 			// TODO
-			// both save-tag and delete-tag should clear inputs
-			// next/prev rehide tags onclick, [all] link that does same
-			// split config and upload Init up, they try to do too many things
-			    // Save settings for tag-images really shouldn't redisplay, it's jarring
+			// Look for an .ivconfig file instead, it's too easy to save over the configs for different folders
 			// long tag lists sometimes go past box
-			// entering tags is a bit awkward, want keyboard shortcuts after all tag-images
-			// Look for an .ivconfig file instead, it's too easy to save over different ones
+			// Shortcuts to zoom in and out
+			  // Jump to top on skip option
 			// untagged should list both empty arrays and undefined as untagged
         // when there are no man tags
-      // Shortcuts to zoom in and out
+      // keyboard shortcuts for tagging images after all
+			// split config and upload Init up, they try to do too many things
+			  // Save settings for tag-images really shouldn't redisplay, it's jarring
 			// Please refactor
 			// Bugs:
 			  // dead-files jumps all over the place when you try to drag it
