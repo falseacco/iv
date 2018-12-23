@@ -1025,12 +1025,13 @@
 					  // Filter out any non-image files.
 						let clone = [];
 					  upload.forEach((file, i)=>{
-					    let name = file.name;
+					    let name = file.name,
+					        extension = fileExtension(name);
 					    // File isn't an image.
-					    if (!isDisplay(filetype(name))) {
+					    if (!isDisplay(extension)) {
 					      print('Removed file from display list: ' + name);
 					      // File is a config, use it.
-					      if (name === 'ivconfig.txt') {
+					      if (extension === 'ivconfig') {
 					        print('Found config file!');
 					        hasConfig = true;
 					        d_readConfig(file, d_configInit);
@@ -1424,7 +1425,7 @@
 				}
 				
 				// Get a file's extension.
-				function filetype(name) {
+				function fileExtension(name) {
 				  return name.split('.').slice(-1)[0];
 				}
 				
@@ -2249,7 +2250,7 @@
 			
 			// Make a text file from ivconfig.
 			function downloadConfig() {
-			  downloadText('ivconfig.txt', JSON.stringify(config()));
+			  downloadText(config('name') + '.ivconfig', JSON.stringify(config()));
 			}
 			
 			function downloadText(filename, text) {
@@ -2431,10 +2432,9 @@
 			// End -------------------------------------------------------------------
 			
 			// TODO
-			// Look for an .ivconfig file instead, it's too easy to save over the configs for different folders
-			// long tag lists sometimes go past box
 			// Shortcuts to zoom in and out
 			  // Jump to top on skip option
+			// long tag lists sometimes go past box
 			// untagged should list both empty arrays and undefined as untagged
         // when there are no man tags
       // keyboard shortcuts for tagging images after all
