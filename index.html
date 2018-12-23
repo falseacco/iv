@@ -6,10 +6,6 @@
   </head>
   <body>
 		<style id="stylesheet">
-		  body {
-		    max-width: 100%;
-		    overflow-x: hidden;
-		  }
 		  body .hidden {
 		    display: none;
 		  }
@@ -209,8 +205,10 @@
 			}
 			#image-info {
 			  width: 220px;
-			  right: 40px;
-			  top: 40px;
+			  right: 100px;
+			  top: 10px;
+			  border-left: none;
+			  border-right: 1px solid lightgray;
 			}
 			#edit-folder, #tag-images, #edit-tags {
 			  border: 1px solid lightgray;
@@ -224,14 +222,17 @@
 		<div id="display"></div>
 		
 		<a id="title" class="black-link" href="https://www.github.com/ooorel/iv"
-		   target="_blank" rel="noopener noreferrer"><br/>
-		  <h1>iv</h1>
-		</a><br>
+		   target="_blank" rel="noopener noreferrer">
+		  <h1>
+		    <text>iv</text>
+		  </h1>
+		</a>
 		
 		<div id="box" class="box can-drag">
 			<a id="hide" class="smaller link hide-link" data_hidden="false" data_hide_label="[mini]" data_show_label="[max]" href="#/">[mini]</a>
-			<a id="open-image-info" class="box-link smaller link" href="#/">[image info]</a>
-			<a id="fullscreen" class="smaller link" href="#/">[fullscreen]</a><br>
+			<a id="help" class="smaller link" href="#/">?</a>
+			<a id="open-image-info" class="box-link smaller link" href="#/">tags</a>
+			<a id="fullscreen" class="smaller link" href="#/">fscreen</a><br>
 			
 			<span class="hide-section">
 			  <br>
@@ -2337,45 +2338,57 @@
 			// Keyboard shortcuts. ---------------------------------------------------
 			{
 				let mode = 'none',
-				    KEY_NEXT = 'ArrowRight',
-						KEY_PREV = 'ArrowLeft',
+				    KEY_NEXT = 'd',
+						KEY_PREV = 'a',
 						KEY_JUMP = 'j',
-						KEY_HIDE = 'h';
+						KEY_HIDE = 'h',
+						ZOOM_IN_KEYS = ['=', '+'],
+						ZOOM_OUT_KEYS = ['-', '_'];
+				// can decrease/increase display height, string parse though
+				  // and also do that to height of body?
 						
 				document.onkeydown = (e)=>{
 				  e = e || window.event;
 				  let key = e.key;
-					//print('key: ' + key);
+					//s_print('key: ' + key);
 					// Available shortcuts change based on program state.
-					if (mode === 'main') {
-						if (key === KEY_NEXT) {
-							$('next').click();
-						}
-						else if (key === KEY_PREV) {
-							$('previous').click();
-						}
-						else if (key.toLowerCase() === KEY_JUMP) {
-							$('jump').click();
-						}
-						else if (key.toLowerCase() === KEY_HIDE) {
-						  $('hide-display').click();
-						}
-					}
-					else if (mode === 'tag-images') {
-					  if (key === KEY_NEXT) {
-							$('tags-next').click();
-						}
-						else if (key === KEY_PREV) {
-							$('tags-previous').click();
-						}
-						else if (key.toLowerCase() === KEY_JUMP) {
-							$('jump').click();
-						}
-						else if (key.toLowerCase() === KEY_HIDE) {
-						  $('hide-display').click();
-						}
-					}
-					else {
+					if (mode !== 'none') {
+					  // Some are available pretty much globally.
+					  if (key.toLowerCase() === KEY_JUMP) {
+						  $('jump').click();
+					  }
+					  else if (key.toLowerCase() === KEY_HIDE) {
+					    $('hide-display').click();
+					  }
+					  else if (member(ZOOM_IN_KEYS, key)) {
+					    //s_print('zoom int');
+					  }
+					  else if (member(ZOOM_OUT_KEYS, key)) {
+					    //s_print('zoom out');
+					  }
+					  else if (mode === 'main') {
+						  if (key === KEY_NEXT) {
+							  $('next').click();
+						  }
+						  else if (key === KEY_PREV) {
+							  $('previous').click();
+						  }
+						  
+					  }
+					  else if (mode === 'tag-images') {
+					    if (key === KEY_NEXT) {
+							  $('tags-next').click();
+						  }
+						  else if (key === KEY_PREV) {
+							  $('tags-previous').click();
+						  }
+						  else if (key.toLowerCase() === KEY_JUMP) {
+							  $('jump').click();
+						  }
+						  else if (key.toLowerCase() === KEY_HIDE) {
+						    $('hide-display').click();
+						  }
+					  }
 					}
 				};
 				
@@ -2437,9 +2450,17 @@
 			// long tag lists sometimes go past box
 			// untagged should list both empty arrays and undefined as untagged
         // when there are no man tags
-      // keyboard shortcuts for tagging images after all
-			// split config and upload Init up, they try to do too many things
-			  // Save settings for tag-images really shouldn't redisplay, it's jarring
+      
+      // ... ;)
+      
+      // help documentation
+			// Save settings for tag-images really shouldn't redisplay, it's jarring
+			  // split config and upload Init up, they try to do too many things
+			// fucking post already
+			
+			// ...
+			
+			// keyboard shortcuts for tagging images after all
 			// Please refactor
 			// Bugs:
 			  // dead-files jumps all over the place when you try to drag it
