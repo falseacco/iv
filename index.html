@@ -279,21 +279,13 @@
 				    placeholder="10" size="2" maxlength="2" autocomplete="off"> :
 				  <input id="timer-sec" type="text" class="cancel-key monospace"
 				    placeholder="00" size="2" maxlength="2" autocomplete="off"><br>
-				<input id="hide-display" type="checkbox" autocomplete="off"
-			    class="indent1">Hide display<br>
-			  <input id="prevent-recent-repeats" type="checkbox" autocomplete="off"
-			    class="indent1" checked>Prevent recent repeats<br>
-			  <input id="hide-every-other" type="checkbox" autocomplete="off"
-			    class="indent1">Hide every other image<br>
-				<input id="display-new" type="checkbox" autocomplete="off"
-				  class="indent1" checked>Display new images on skip<br>
 			  <text class="indent1">When timer ends:</text><br>
 			    <input id="on-end-display-new" type="checkbox" autocomplete="off"
 			      class="indent2" checked>display new image<br>
 				  <input id="on-end-reset" type="checkbox" autocomplete="off"
 				    class="indent2" checked>reset time &#8635;<br>
 				    <input id="on-end-count" type="checkbox" autocomplete="off"
-				      class="indent3" checked>start counting down<br>
+				      class="indent3" checked>start counting down again<br>
 		  </span><br class="hidden hide-options-section">
 		  <!--Display order.-->
 		  <span class="hidden-before-upload">
@@ -315,6 +307,25 @@
 				    <input type="radio" class="file-sort indent3" name="file-order" value="descending" autocomplete="off"> descending<br>
 			  <a href="#/" class="jump-to-start">Jump to start</a><br>
       </span><br class="hidden hide-display-order-section">
+			</span>
+			<!--General options.-->
+		  <span class="hidden-before-upload">
+		    <text>Etic</text>
+		    <a id="hide-etc" class="smaller hide-link" data_hidden="true" data_hide_label="[hide]" data_show_label="[show]" href="#/">[show]</a>
+		    <text>:</text>
+		  </span><br class="hidden-before-upload">
+	    <span class="hide-etc-section hidden">
+	      <input id="hide-display" type="checkbox" autocomplete="off"
+			    class="indent1">Hide display<br>
+			  <input id="prevent-recent-repeats" type="checkbox" autocomplete="off"
+			    class="indent1" checked>Prevent recent repeats<br>
+			  <input id="hide-every-other" type="checkbox" autocomplete="off"
+			    class="indent1">Hide every other image<br>
+				<input id="display-new" type="checkbox" autocomplete="off"
+				  class="indent1" checked>Display new images on skip to next<br>
+				<input id="goto-top" type="checkbox" autocomplete="off"
+				  class="indent1" checked>Go to top of page on skip<br>
+      </span><br class="hidden hide-etc-section">
 			</span>
 		</div>
 		<div id="image-info" class="hidden-before-upload box can-drag">
@@ -1441,6 +1452,10 @@
 				      d_displayNextHistory(onload);
 				    }
 				    else {
+				      if (option('goto-top')) {
+				        d_gotoTop();
+				      }
+				      
 							if (option('display-in-file-order') ||
 							    from === 'tags-next') {
 								d_displayFileOrder(onload);
@@ -2334,12 +2349,35 @@
 			    return false;
 			  }
 			}
+			// Image zoom. -----------------------------------------------------------
+			function d_zoomIn() {
+			  d_setDisplayHeight(displayHeight() * 1.1);
+			}
+			
+			function d_zoomOut() {
+			  d_setDisplayHeight(displayHeight() * 0.9);
+			}
+			
+			function displayHeight() {
+			  return Number( // Convert string result to int for arithmetic.
+			          window.getComputedStyle($('display'))['height']
+			         .slice(0, -2)); // Height is returned in px, remove suffix.
+			}
+			
+			function d_setDisplayHeight(newHeight) {
+			  $('display').style.height = newHeight + 'px';
+			}
+			
+			// They might not like having to scroll back up each time.
+			function d_gotoTop() {
+			  scroll(0,0);
+			}
 			
 			// Keyboard shortcuts. ---------------------------------------------------
 			{
 				let mode = 'none',
-				    KEY_NEXT = 'd',
-						KEY_PREV = 'a',
+				    KEY_NEXT = 'ArrowRight',
+						KEY_PREV = 'ArrowLeft',
 						KEY_JUMP = 'j',
 						KEY_HIDE = 'h',
 						ZOOM_IN_KEYS = ['=', '+'],
@@ -2362,9 +2400,11 @@
 					  }
 					  else if (member(ZOOM_IN_KEYS, key)) {
 					    //s_print('zoom int');
+					    d_zoomIn();
 					  }
 					  else if (member(ZOOM_OUT_KEYS, key)) {
 					    //s_print('zoom out');
+					    d_zoomOut();
 					  }
 					  else if (mode === 'main') {
 						  if (key === KEY_NEXT) {
@@ -2445,8 +2485,6 @@
 			// End -------------------------------------------------------------------
 			
 			// TODO
-			// Shortcuts to zoom in and out
-			  // Jump to top on skip option
 			// long tag lists sometimes go past box
 			// untagged should list both empty arrays and undefined as untagged
         // when there are no man tags
@@ -2461,15 +2499,17 @@
 			// ...
 			
 			// keyboard shortcuts for tagging images after all
+			// Make it easier for users to change background colors and such, not through config
+			  // And make a few presets
 			// Please refactor
+			// Class mode
 			// Bugs:
 			  // dead-files jumps all over the place when you try to drag it
 			  // probably a bug source: do something about resetting and upload init -> d_reset
 			  // Chrome bugfixes fuck chrome
-			// Make it easier for users to change background colors and such, not through config
 			// God what a pain in the ass:
 			  // https://medium.com/quick-code/javascript-promises-in-twenty-minutes-3aac5b65b887
-			// Image comments
+			// Image comments?
 		</script>
   </body>
 </html>
