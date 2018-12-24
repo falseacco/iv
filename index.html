@@ -231,7 +231,7 @@
 		<div id="box" class="box can-drag">
 			<a id="hide" class="smaller link hide-link" data_hidden="false" data_hide_label="[mini]" data_show_label="[max]" href="#/">[mini]</a>
 			<a id="help" class="smaller link" href="#/">?</a>
-			<a id="open-image-info" class="box-link smaller link" href="#/">tags</a>
+			<a id="open-image-info" class="box-link smaller link" href="#/">info</a>
 			<a id="fullscreen" class="smaller link" href="#/">fscreen</a><br>
 			
 			<span class="hide-section">
@@ -331,7 +331,7 @@
 			</span>
 		</div>
 		<div id="image-info" class="hidden-before-upload box can-drag">
-		  <text id="filename" class="smaller filename">hi</text>
+		  <text id="filename" class="smaller filename">Hi. (Image name and tags)</text>
 		  <a id="close-image-info" href="#/" class="close-link">x</a><br>
 		  <ul id="view-tags-list" class="tag-list"></ul><br>
 		</div>
@@ -2367,6 +2367,7 @@
 			    return false;
 			  }
 			}
+			
 			// Image zoom. -----------------------------------------------------------
 			function d_zoomIn() {
 			  d_setDisplayHeight(displayHeight() * 1.1);
@@ -2456,10 +2457,14 @@
 				}
 				
 				function listKeys () {
-					s_print('Next: ' + KEY_NEXT);
-					s_print('Previous: ' + KEY_PREV);
-					s_print('Jump: ' + KEY_JUMP);
-					s_print('Hide display: ' + KEY_HIDE);
+				  let keys = [];
+				  keys.push('Skip to next image: ' + KEY_NEXT);
+					keys.push('Previous image: ' + KEY_PREV);
+					keys.push('Jump to specific image: ' + KEY_JUMP);
+					keys.push('Hide display: ' + KEY_HIDE),
+					keys.push('Zoom into display: ' + KEY_ZOOM_IN);
+					keys.push('Zoom out of display: ' + KEY_ZOOM_OUT);
+					return keys;
 				}
 			}
 			
@@ -2486,6 +2491,40 @@
 				});
 			}
 			
+			// Help box.
+			$('help').onclick = ()=>{
+			  let docs =
+`
+Hey, thanks for using iv.
+
+Tags
+Tag-images
+  - Images can be assigned a list of descriptive words(tags).
+  - These words can be used to find and sort images later.
+  - A tag containing a colon is a category tag
+    - ex: view:side, color:red
+    
+Add/edit-tags
+  - Tags can also be assigned a set of properties to differentiate them.
+    - Most of these are just for fun.
+  - Tags can be used without defining them in this menu.
+  - However, mandatory category tags can only be defined in this menu.
+  - Man tags are a way of encouraging a minimum of identification for images.
+    - Images without man tags are considered untagged in the Tag Images menu.
+    
+- In my limited experience, smaller folders with just one or two man tags are
+the least fuss to maintain and use.
+
+Keyboard shortcuts
+`;
+        listKeys().forEach((str)=>{
+          docs += (str + '\n');
+        });
+
+        // Hard to miss.
+			  alert(docs);
+			}
+			
 			// Run the following on <startup>: ---------------------------------------
 			window.onload = ()=>{
 			  printTest(false);
@@ -2503,7 +2542,6 @@
 			// End -------------------------------------------------------------------
 			
 			// TODO
-      // help documentation
 			// Save settings for tag-images really shouldn't redisplay, it's jarring
 			  // split config and upload Init up, they try to do too many things
 			// fucking post already
