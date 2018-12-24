@@ -6,6 +6,9 @@
   </head>
   <body>
 		<style id="stylesheet">
+		  body {
+		    overflow-y: visible;
+		  }
 		  body .hidden {
 		    display: none;
 		  }
@@ -683,7 +686,7 @@
 					exitFullscreen();
 				}
 				else {
-					requestFullscreen(document.body);
+					requestFullscreen(document.documentElement); // document body? Might not allow scroll in chrome
 				}
 			}
 			
