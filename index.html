@@ -238,7 +238,8 @@
 			  <br>
 			  <input id="upload" type="file" webkitdirectory directory multiple autocomplete="off"><br>
 			  <a id="open-edit-folder" href="#/" class="indent1 smaller box-link">Edit folder</a>
-				<a href="#/" class="open-edit-tags indent1 smaller">Add tags</a>
+			  <a href="#/" class="indent1 open-edit-tags smaller">Add tags</a>
+				<a href="#/" class="hidden-before-upload open-tag-images indent1 smaller">Tag images</a>
 				<a id="open-dead-files" href="#/" class="hidden box-link indent1 smaller">Dead files</a>
 			</span><br class="hide-section">
 			<br class="hide-section">
@@ -264,8 +265,8 @@
 	        <textarea id="tag-search" class="cancel-key tag-box indent1" spellcheck="false"
 	          placeholder="Only display images with these tags.&#10;&#10;(No tags selected)"></textarea>
 	        <ul id="tags-list" class="tag-list"></ul>
-	        <a id="open-tag-images" href="#/" class="indent1 smaller box-link">Tag images</a>
-	        <a href="#/" class="open-edit-tags indent1 smaller">Add/edit tags</a><br>
+	        <a href="#/" class="open-edit-tags indent1 smaller">Add/edit tags</a>
+	        <a href="#/" class="open-tag-images indent1 smaller">Tag images</a><br>
       </span><br class="hidden hide-filter-section">
       <!--Timer behavior options.-->
 			<text>Timer</text>
@@ -307,7 +308,7 @@
 				    <input type="radio" class="file-sort indent3" name="file-order" value="descending" autocomplete="off"> descending<br>
 			  <a href="#/" class="jump-to-start">Jump to start</a><br>
       </span><br class="hidden hide-display-order-section">
-			</span>
+			
 			<!--General options.-->
 		  <span class="hidden-before-upload">
 		    <text>Etic</text>
@@ -326,6 +327,7 @@
 				<input id="goto-top" type="checkbox" autocomplete="off"
 				  class="indent1" checked>Go to top of page on skip<br>
       </span><br class="hidden hide-etc-section">
+			</span>
 			</span>
 		</div>
 		<div id="image-info" class="hidden-before-upload box can-drag">
@@ -481,6 +483,16 @@
 			// Duct tape
 			$c('open-edit-tags').listen('click', ()=>{
 				let box = $('edit-tags');
+			  if (elDisplay(box) === 'none') {
+			    d_setVisible(box, true);
+			  }
+			  else {
+			    d_setVisible(box, false);
+			  }
+			});
+			
+			$c('open-tag-images').listen('click', ()=>{
+				let box = $('tag-images');
 			  if (elDisplay(box) === 'none') {
 			    d_setVisible(box, true);
 			  }
@@ -1230,7 +1242,7 @@
 						// Keep the links from clustering together.
 						li.style.paddingRight = '5px';
 						//
-						li.display = 'inline';
+						li.display = 'inline-block';
 						// Add link to the list.
 						li.appendChild(link);
 						acc.push(li);
@@ -1391,7 +1403,7 @@
 						// No man tags have been defined.
 						else {
 							// The image has tags.
-							if (tags.length > 0) {
+							if (tags.length > 0 && tags[0] !== '') {
 								return true;
 							}
 							// The image's tags are empty.
@@ -1607,6 +1619,10 @@
 				$('previous').onclick = d_previous; function d_previous(onload) {
 					d_pause();
 					//print(history);
+					if (option('goto-top')) {
+					  d_gotoTop();
+				  }
+					
 				  if (pointer >= 0 && pointer < (history.length - 1)) {
 				    pointer += 1;
 				    d_completeDisplay(fetchHistory(pointer), false, onload);
@@ -1735,7 +1751,7 @@
 						  // Keep the links from clustering together.
 						  li.style.paddingRight = '5px';
 						  //
-						  li.display = 'inline';
+						  li.display = 'inline-block';
 						  // Add link to the list.
 						  li.appendChild(link);
 						  acc.push(li);
@@ -1984,9 +2000,11 @@
 			}
 			
 			// Hide the main menu when tag-images is opened.
-			$('open-tag-images').addEventListener('click', ()=>{
+			$c('open-tag-images').listen('click', ()=>{
 			  d_useKeys('tag-images');
 		    d_setVisible($('box'), false);
+		    // Show untagged images to start.
+		    d_updateUntagged();
 		    // Sort//adasdasd
 		    uploadF = sortUploadsFromMenu('tags-file-property', 'tags-file-order');
 		    //print('tags-file-sort()');
@@ -2020,7 +2038,7 @@
 			    print(lamb.tagsHidden);
 					// Re-show old tags
 					lamb.tagsHidden.forEach((tag)=>{
-						d_setVisible(tag, 'inline');
+						d_setVisible(tag, 'inline-block');
 					});
 					// Hide new tags
 				  lamb.tagsHidden = sortTags(query, tagBox, tagList);
@@ -2380,8 +2398,8 @@
 						KEY_PREV = 'ArrowLeft',
 						KEY_JUMP = 'j',
 						KEY_HIDE = 'h',
-						ZOOM_IN_KEYS = ['=', '+'],
-						ZOOM_OUT_KEYS = ['-', '_'];
+						KEY_ZOOM_IN = '=';
+						KEY_ZOOM_OUT = '-';
 				// can decrease/increase display height, string parse though
 				  // and also do that to height of body?
 						
@@ -2398,11 +2416,11 @@
 					  else if (key.toLowerCase() === KEY_HIDE) {
 					    $('hide-display').click();
 					  }
-					  else if (member(ZOOM_IN_KEYS, key)) {
+					  else if (key === KEY_ZOOM_IN) {
 					    //s_print('zoom int');
 					    d_zoomIn();
 					  }
-					  else if (member(ZOOM_OUT_KEYS, key)) {
+					  else if (key === KEY_ZOOM_OUT) {
 					    //s_print('zoom out');
 					    d_zoomOut();
 					  }
@@ -2485,22 +2503,19 @@
 			// End -------------------------------------------------------------------
 			
 			// TODO
-			// long tag lists sometimes go past box
-			// untagged should list both empty arrays and undefined as untagged
-        // when there are no man tags
-      
-      // ... ;)
-      
       // help documentation
 			// Save settings for tag-images really shouldn't redisplay, it's jarring
 			  // split config and upload Init up, they try to do too many things
 			// fucking post already
 			
-			// ...
+			// ... ;)
 			
+			// Config file folder default settings
 			// keyboard shortcuts for tagging images after all
 			// Make it easier for users to change background colors and such, not through config
 			  // And make a few presets
+			// Add-tags should be linked from tag-images
+			  // Will need to write a sys to keep track of box state.
 			// Please refactor
 			// Class mode
 			// Bugs:
