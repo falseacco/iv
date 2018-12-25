@@ -382,7 +382,7 @@
 		  <a id="hide-tags-options" class="smaller link hide-link" data_hidden="true" data_hide_label="[hide]" data_show_label="[show]" href="#/">[show]</a>
 		  <text>:</text><br>
 		  <span class="hide-tags-options-section hidden">
-				<input id="display-untagged-first" type="checkbox" class="tags-file-sort indent1">Display untagged images first<br>
+				<input id="display-untagged-first" type="checkbox" class="tags-file-sort indent1" checked>Display untagged images first<br>
 		    <text class="indent1">Sort by</text><br>
 			  <text class="indent2">file property:</text><br>
 			    <input type="radio" class="tags-file-sort indent3" name="tags-file-property" value="name" checked autocomplete="off"> name<br>
@@ -1061,7 +1061,26 @@
 					      if (extension === 'ivconfig') {
 					        print('Found config file!');
 					        hasConfig = true;
-					        d_readConfig(file, d_configInit);
+					        d_readConfig(file, ()=>{
+					          d_configInit();
+					          // Display an image to start.
+                    if (upload.length > 0) {
+                      let cover = config('cover-image');
+                      // Cover image is not provided.
+                      if (cover === undefined || cover === '') {
+                        d_completeDisplay(upload[0], true);
+                      }
+                      // Cover image is provided as a path.
+                      else if (isPath(cover)) {
+                        d_completeDisplay(uploadP[cover], true);
+                      }
+                      // Cover image is provided as an index? Nobody's going to use this
+                      else {
+                        img = upload[Number(cover)];
+                        d_completeDisplay(upload[Number(cover)], true);
+                      }
+                    }
+					        });
 					      }
 					    }
 					    // File is an image, store it.
@@ -1174,24 +1193,6 @@
 					d_syncTitle();
           // Update menu, in case they want to edit.
           d_syncEditFolder();
-          // There might not have been any images in the upload.
-          if (upload.length > 0) {
-            // Display an image to start.
-            let cover = config('cover-image');
-            // Cover image is not provided.
-            if (cover === undefined || cover === '') {
-              d_completeDisplay(upload[0], true);
-            }
-            // Cover image is provided as a path.
-            else if (isPath(cover)) {
-              d_completeDisplay(uploadP[cover], true);
-            }
-            // Cover image is provided as an index? Nobody's going to use this
-            else {
-              img = upload[Number(cover)];
-              d_completeDisplay(upload[Number(cover)], true);
-            }
-          }
 					//print('d_configInit():');
 					//print(config());
 			  }
