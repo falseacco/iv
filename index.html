@@ -6,16 +6,23 @@
   </head>
   <body>
 		<style id="stylesheet">
-		  body {
-		    overflow-y: visible;
-		  }
+		  /*Top CSS****************************************************************/
 		  body .hidden {
 		    display: none;
 		  }
+		  
+		  text {
+		    cursor: default;
+		  }
+		  
+		  text, a {
+			  background-color: white;
+			}
+		  
       .smaller {
 				font-size: small;
 			}
-		
+		  
 		  .monospace {
 				font-family: monospace;
 			}
@@ -89,9 +96,13 @@
 			.box {
 				position: absolute;
 				/* Appearance */
-				border-left: 1px solid lightgray;
+				border: 1px solid lightgray;
 				display: inline-block;
 				padding: 0 5px 5px 5px;
+			}
+			#box {
+			  border: none;
+			  border-left: 1px solid lightgray;
 			}
 			#ghost {
 			  border: 1px dotted black;
@@ -162,20 +173,10 @@
 			  width: 307px;
 			  
 			}
-			
 			.tag-list li {
 			  font-size: 12px;
 			  font-family: monospace;
 			  display: inline-block;
-			}
-			text {
-			  cursor: pointer;
-			}
-			#edit-tags {
-			}
-			
-			.download-config {
-			  background: white;
 			}
 			
 			#man-tags {
@@ -183,11 +184,11 @@
 				padding: 0;
 				width: 250px;
 			}
-			
 			#man-tags-list {
 				padding: 0;
 				margin: 0;
 			}
+			
 			#dead-files {
 			  background-color: white;
 			  left: 0; 
@@ -198,59 +199,70 @@
         width: 640px;
 			}
 			
-			a, text {
-			  background-color: white;
-			}
-			
 			#view-tags-list {
 			  padding: 0;
 			  margin: 0;
 			}
+			
 			#image-info {
 			  width: 220px;
 			  right: 100px;
 			  top: 10px;
-			  border-left: none;
+			  border: none;
 			  border-right: 1px solid lightgray;
 			}
-			#edit-folder, #tag-images, #edit-tags {
-			  border: 1px solid lightgray;
-			}
+			
 			.hidden-before-upload {
 			  display: none;
 			}
+			/*End CSS****************************************************************/
 		</style>
+		<!--Top HTML--------------------------------------------------------------->
+		<!--Background color.-->
 		<div id="bg"></div>
-		
+		<!--Image is displayed as the background of this div.-->
 		<div id="display"></div>
-		
+		<!--Title of the current folder, links to homepage in new tab.-->
 		<a id="title" class="black-link" href="https://www.github.com/ooorel/iv"
 		   target="_blank" rel="noopener noreferrer">
 		  <h1>
 		    <text>iv</text>
 		  </h1>
 		</a>
-		
+		<!--Main menu.-->
 		<div id="box" class="box can-drag">
+		  <!--Menubar across the top-->
+		  <!--Toggle box size, if it's getting in the way.-->
 			<a id="hide" class="smaller link hide-link" data_hidden="false" data_hide_label="[mini]" data_show_label="[max]" href="#/">[mini]</a>
+			<!--Opens an alert box with some documentation.-->
 			<a id="help" class="smaller link" href="#/">?</a>
+			<!--Toggles a box that displays the current image's path and tags.-->
 			<a id="open-image-info" class="box-link smaller link" href="#/">info</a>
+			<!--Toggles fullscreen.-->
 			<a id="fullscreen" class="smaller link" href="#/">fscreen</a><br>
 			
+			<!--Hide this content when hide is clicked.-->
 			<span class="hide-section">
 			  <br>
+			  <!--Upload files.-->
 			  <input id="upload" type="file" webkitdirectory directory multiple autocomplete="off"><br>
+			  <!--Edit folder properties.-->
 			  <a id="open-edit-folder" href="#/" class="indent1 smaller box-link">Edit folder</a>
+			  <!--Define tags.-->
 			  <a href="#/" class="indent1 open-edit-tags smaller">Add tags</a>
+			  <!--Add tags to images.-->
 				<a href="#/" class="hidden-before-upload open-tag-images indent1 smaller">Tag images</a>
+				<!--Reassign the tags of image entries that no longer have images.-->
 				<a id="open-dead-files" href="#/" class="hidden box-link indent1 smaller">Dead files</a>
 			</span><br class="hide-section">
 			<br class="hide-section">
+			
 		  <!--Timer control.-->
 			<a id="reset" class="gray-link" href="#/">&#8635;</a>
+			<!--Clicking the timer text starts it.-->
 			<a id="timer" class="gray-link" href="#/">10:00</a><br>
 			<br class="hide-section">
-			<!--Navigation buttons.-->
+			<!--File navigation buttons.-->
 			<a id="previous" class="link" href="#/">previous</a>
 			<a id="next" class="link" href="#/">next</a><br>
 			<a id="jump" class="link smaller indent1 jump-link" href="#/">[Jump...]</a><br>
@@ -262,20 +274,26 @@
 		    <text>Filter</text>
 		    <a id="hide-filter" class="smaller hide-link" data_hidden="true" data_hide_label="[hide]" data_show_label="[show]" href="#/">[show]</a>
 		    <text>:</text>
-		    </span><br class="hidden-before-upload">
-	      <span class="hide-filter-section hidden">
-	        <text id="filter-count" class="smaller indent1"></text><br>
-	        <textarea id="tag-search" class="cancel-key tag-box indent1" spellcheck="false"
-	          placeholder="Only display images with these tags.&#10;&#10;(No tags selected)"></textarea>
-	        <ul id="tags-list" class="tag-list"></ul>
-	        <a href="#/" class="open-edit-tags indent1 smaller">Add/edit tags</a>
-	        <a href="#/" class="open-tag-images indent1 smaller">Tag images</a><br>
+		  </span><br class="hidden-before-upload">
+	    <span class="hide-filter-section hidden">
+	      <!--Display # of images that match current tags.-->
+	      <text id="filter-count" class="smaller indent1"></text><br>
+	      <!--Type the tags to search for here.-->
+	      <textarea id="tag-search" class="cancel-key tag-box indent1" spellcheck="false"
+	        placeholder="Only display images with these tags.&#10;&#10;(No tags selected)"></textarea>
+	      <!--Display the tags this folder uses.-->
+	      <ul id="tags-list" class="tag-list"></ul>
+	      <!--Misc. utility links.-->
+	      <a href="#/" class="open-edit-tags indent1 smaller">Add/edit tags</a>
+	      <a href="#/" class="open-tag-images indent1 smaller">Tag images</a><br>
+	      <a href="#/" class="jump-to-start indent1">Jump to start</a><br>
       </span><br class="hidden hide-filter-section">
       <!--Timer behavior options.-->
 			<text>Timer</text>
 			<a id="hide-options" class="smaller hide-link" data_hidden="true" data_hide_label="[hide]" data_show_label="[show]" href="#/">[show]</a>
 			<text>:</text><br>
 			<span class="hide-options-section hidden">
+			  <!--Set the timer's length.-->
 			  <text class="indent1">Length:</text><br>
 				  <input id="timer-hr" type="text" class="cancel-key indent2 monospace"
 				    placeholder="00" size="2" maxlength="2" autocomplete="off"> :
@@ -283,6 +301,7 @@
 				    placeholder="10" size="2" maxlength="2" autocomplete="off"> :
 				  <input id="timer-sec" type="text" class="cancel-key monospace"
 				    placeholder="00" size="2" maxlength="2" autocomplete="off"><br>
+				<!--Set the timer's behavior when its count reaches zero.-->
 			  <text class="indent1">When timer ends:</text><br>
 			    <input id="on-end-display-new" type="checkbox" autocomplete="off"
 			      class="indent2" checked>display new image<br>
@@ -298,8 +317,10 @@
 		    <text>:</text>
 		  </span><br class="hidden-before-upload">
 	    <span class="hide-display-order-section hidden">
-	      <input id="display-in-file-order" class="file-sort" type="checkbox" autocomplete="off"
-				  class="indent1">Display images in file order</input><br>
+	      <!--Choose between shuffle and file order. Shuffle by default.-->
+	      <input type="radio" class="file-sort indent1" name="file-display-order" value="shuffle" checked autocomplete="off"> Shuffle<br>
+	      <input id="display-in-file-order" type="radio" class="file-sort indent1" name="file-display-order" value="file-property" autocomplete="off"> File property<br>
+				  <!--If file properties, which ones?-->
 				  <text class="indent2">Property:</text><br>
 				    <input type="radio" class="file-sort indent3" name="file-property" value="name" checked autocomplete="off"> name<br>
 				    <input type="radio" class="file-sort indent3" name="file-property" value="type" autocomplete="off"> type<br>
@@ -309,10 +330,10 @@
 				  <text class="indent2">Order:</text><br>
 				    <input type="radio" class="file-sort indent3" name="file-order" value="ascending" checked autocomplete="off"> ascending<br>
 				    <input type="radio" class="file-sort indent3" name="file-order" value="descending" autocomplete="off"> descending<br>
-			  <a href="#/" class="jump-to-start">Jump to start</a><br>
+			  <a href="#/" class="jump-to-start indent1">Jump to start</a><br>
       </span><br class="hidden hide-display-order-section">
 			
-			<!--General options.-->
+			<!--General options.--><!-- comment checkpoint left off here -->
 		  <span class="hidden-before-upload">
 		    <text>Etic</text>
 		    <a id="hide-etc" class="smaller hide-link" data_hidden="true" data_hide_label="[hide]" data_show_label="[show]" href="#/">[show]</a>
@@ -440,9 +461,10 @@
 		</div>
 		<div id="ghost" class="hidden box"></div>
 		<a id="download-link"></a>
-			
+	  <!--End HTML--------------------------------------------------------------->
 		<script type="text/javascript">
 			"use strict;"
+			// Top Js ----------------------------------------------------------------
 			{
 			  let testing = true;
 			  
@@ -475,7 +497,8 @@
 			}
 			
 			// Assign events to multiple objects at once. (does not hoist)
-			Array.prototype.listen = listen; function listen(event, body) {
+			Array.prototype.listen = listen;
+			function listen(event, body) {
         this.forEach((el)=>{
           el.addEventListener(event, body);
         });
@@ -523,8 +546,9 @@
 			
 			// Hide sections within the main menu.
 			$c('hide-link').listen('click', (e)=>{
-			  let id = e.target.id,
-			      hidden = $(id).getAttribute('data_hidden');
+			  let id, hidden;
+			  id = e.target.id,
+			  hidden = $(id).getAttribute('data_hidden');
 			  if (hidden === 'false') {
 			    d_setSectionVisible(id, false);
 			  }
@@ -534,8 +558,9 @@
 			});
 			
 			function d_setSectionVisible(id, value) {
-			  let link = $(id),
-			      sections = $c(id + '-section');
+			  let link, sections;
+			  link = $(id),
+			  sections = $c(id + '-section');
 			  // Hide or show content.
 			  sections.forEach((el)=>{
 			    d_setVisible(el, value);
@@ -569,12 +594,9 @@
 			});
 			
 			function d_draggable(id) {
-				let posx,
-						posy,
-						xOffset,
-						yOffset,
-						el = $(id),
-						ghost = $('ghost');
+				let posx, posy, xOffset, yOffset, el, ghost;
+			  el = $(id),
+				ghost = $('ghost');
 						
 				el.addEventListener('mousedown', click);
 				
@@ -691,9 +713,9 @@
 			
 			// Timer. ----------------------------------------------------------------
 			{
-			  let counting = false,
-			      hidLastImage = false,
-			      i;
+			  let counting, hidLastImage, i;
+			  counting = false;
+			  hidLastImage = false;
 			  
 			  $('reset').onclick = d_reset;
 			  
@@ -825,9 +847,8 @@
 			  
 			  // Convert a time array to milliseconds and vice versa.
 			  function msToArr(ms) {
-			    let sec = Math.floor(ms / 1000),
-			        hr,
-			        min;
+			    let hr, min, sec;
+			    sec = Math.floor(ms / 1000);
 			    hr = Math.floor(sec / 3600);
 			    sec -= hr * 3600;
 			    min = Math.floor(sec / 60);
@@ -901,16 +922,12 @@
 				$c('file-sort').listen('click', ()=>{
 					uploadF = sortUploadsFromMenu('file-property', 'file-order');
 					d_setFileIndex(-1);
-					//print('file-sort()');
-					//print(uploadF);
 				});
 				
 				$c('tags-file-sort').listen('click', ()=>{
 					// Sort by file property.
 					uploadF = sortUploadsFromMenu('tags-file-property', 'tags-file-order');
 					d_setFileIndex(-1);
-					//print('tags-file-sort()');
-					//print(uploadF);
 				});
 				
 				// Sort by file properties pulled from menu.
@@ -1018,22 +1035,21 @@
 			  }
 			  
 			  function d_displayFilename(img) {
-				  let name,
-							shortName;
+				  let name, shortenedName;
 				  if (img === '' || img === undefined) {
 				    name = '';
-				    shortName = '';
+				    shortenedName = '';
 				  }
 				  else {
 				    name = img.webkitRelativePath;
-				    shortName = name;
+				    shortenedName = name;
 				    if (name.length > 31) {
-				      shortName = name.slice(0, 25) + '...' + name.slice(-3);
+				      shortenedName = name.slice(0, 25) + '...' + name.slice(-3);
 				    }
 				  }
 					// Update display.
-				  $('filename').innerHTML = shortName;
-				  $('tags-filename').innerHTML = shortName;
+				  $('filename').innerHTML = shortenedName;
+				  $('tags-filename').innerHTML = shortenedName;
 					// Update hover text.
 				  $('filename').title = name;
 				  $('tags-filename').title = name;
@@ -1051,8 +1067,9 @@
 					  // Filter out any non-image files.
 						let clone = [];
 					  upload.forEach((file, i)=>{
-					    let name = file.name,
-					        extension = fileExtension(name);
+					    let name, extension;
+					    name = file.name;
+					    extension = fileExtension(name);
 					    // File isn't an image.
 					    if (!isDisplay(extension)) {
 					      print('Removed file from display list: ' + name);
@@ -1109,8 +1126,6 @@
 		        // No cover image specified, just display the first.
 		        d_completeDisplay(upload[0], true);
 					}
-					//print('d_uploadInit()');
-					//print(upload);
 				}
 				
 				function d_syncFullTagList() {
@@ -1119,10 +1134,11 @@
 				
 				// Generate an array of tags from both tag-definitions and images.
 				function genFullTagList() {
-					let tags = [],
-					    seenTags = [],
-							tagDefinitions = config('tag-definitions'),
-							imageTags = config('images');
+					let tags, seenTags, tagDefinitions, imageTags;
+					tags = [];
+					seenTags = [];
+					tagDefinitions = config('tag-definitions');
+					imageTags = config('images');
 					// tag-defs
 					if (tagDefinitions) {
 					  Object.keys(tagDefinitions).forEach((tagName)=>{
@@ -1376,8 +1392,9 @@
 				}
 				
 				function isTagged(image) {
-					let path = image.webkitRelativePath,
-							tags = config(path);
+					let path, tags;
+					path = image.webkitRelativePath;
+					tags = config(path);
 					// The image has an array for tags.
 					if (tags) {
 						// man tags have been defined.
@@ -1515,9 +1532,10 @@
 				
 				// Update title based on config.
 				function d_syncTitle() {
-					let title = $('title')
-							newText = config('name'),
-							newHref = config('homepage');
+					let title, newText, newHref;
+					title = $('title');
+					newText = config('name');
+					newHref = config('homepage');
 					if (newText) {
 						title.innerHTML = '<h2>' + newText + '</h2>';
 					}
@@ -1541,10 +1559,10 @@
 				// Random number generator.
 				function exclusiveRandomIndex() {
 				  if (option('prevent-recent-repeats')) {
-				    let i,
-				      unique = true,
-				      memory = 20,
-			        length = uploadF.length;
+				    let i, unique, memory, length;
+				    unique = true;
+				    memory = 20;
+			      length = uploadF.length;
 				    if (length <= memory) {
 				      memory = length - 1;
 				    }
@@ -1658,10 +1676,11 @@
 			
 			// Update current image's tags based on the menu.
 			function d_syncImageTags(wait) { // wait is probably stupid but idk
-			  let tags = $('tag-images-search').value // Get the textbox's value
+			  let currentImagePath, tags;
+			  currentImagePath = fetchHistory(pointer).webkitRelativePath;
+			  tags = $('tag-images-search').value // Get the textbox's value
 			                  .trim() // Remove whitespace on outside of string
-			                  .split(' '), // Convert to array
-			      currentImagePath = fetchHistory(pointer).webkitRelativePath;
+			                  .split(' '); // Convert to array
 			  print('d_syncImageTags(): ' + currentImagePath);
 			  print(tags);
 			  d_setConfig(currentImagePath, tags);
@@ -1673,9 +1692,16 @@
 			
 			// List current image's tags.
 			function d_listTags() {
-			  let current = fetchHistory(pointer),
-			      path = current.webkitRelativePath,
-			      tags = config('images')[path];
+			  let current, path, tags;
+			  current = fetchHistory(pointer);
+			  if (current) {
+			    path = current.webkitRelativePath;
+			  }
+			  else {
+			    path = 'foo/foo'; //placeholder
+			  }
+			  tags = config('images')[path];
+			  
 			  // Clear the last image's tags.
 			  $('tag-images-search').value = '';
 			  // Update text box.
@@ -1709,11 +1735,11 @@
 			  });
 			}
 				
-			function genViewTagsList() { // the gentaglists really should only be on function
-					let acc = [],
-					    currImageTags = config(fetchHistory(pointer).webkitRelativePath),
-					    tagObjs;
-					    
+			function genViewTagsList() { // the gentaglists really should only be one function
+					let acc, currImageTags, tagObjs;
+					acc = [];
+					currImageTags = config((fetchHistory(pointer) && fetchHistory(pointer).webkitRelativePath)) || []; // foo
+					currImageTags = Array.prototype.slice.call(currImageTags);
 					if (currImageTags) {
 					  tagObjs = currImageTags.map((str)=>{
 					    return config('tag-definitions')[str] || {'name': str};
@@ -1842,10 +1868,11 @@
 			}
 			
 			function genReassignForm(file) {
-			  let container = document.createElement('span'),
-			      label = document.createElement('a'),
-			      input = document.createElement('input'),
-			      linebreak = document.createElement('br');
+			  let container, label, input, linebreak;
+			  container = document.createElement('span');
+			  label = document.createElement('a');
+			  input = document.createElement('input');
+			  linebreak = document.createElement('br');
 			  //
 			  label.innerText = file.name;
 			  label.href = '#/';
@@ -1879,8 +1906,9 @@
 			}
 			
 			function hasTags(image) {
-			  let path = image.webkitRelativePath,
-						tags = config(path);
+			  let path, tags;
+			  path = image.webkitRelativePath;
+				tags = config(path);
 				if (tags && tags.length > 0) {
 				  return true;
 				}
@@ -1905,8 +1933,9 @@
 			}
 			
 			function genDeadFileLink(filename) {
-			  let link = document.createElement('a'),
-			      li = document.createElement('li');
+			  let link, li; 
+			  link = document.createElement('a');
+			  li = document.createElement('li');
 			  link.innerText = filename;
 			  link.href = '#/';
 			  link.title = config('images')[filename].join(' ');
@@ -1985,10 +2014,12 @@
 			}
 			
 			function genTagProperty(propertyName) {
-				let container = document.createElement('span'),
-						label = document.createElement('text'),
-						input = document.createElement('input'),
-						linebreak = document.createElement('br');
+				let container, label, input, linebreak;
+				container = document.createElement('span');
+				label = document.createElement('text');
+				input = document.createElement('input');
+				linebreak = document.createElement('br');
+				//
 				label.innerText = propertyName + ' ';
 				input.type = 'text';
 				input.id = 'edit-tag-' + propertyName;
@@ -2069,10 +2100,11 @@
 			
 			// Make a list of tags that don't match the current search text.
 			function sortTags(searchText, tagBox, tagList) { // tagBox is obsolete
-				let search = $(tagBox),
-						tagsContainer = $(tagList),
-						tags = Array.prototype.slice.call(tagsContainer.childNodes),
-						toHide = [];
+				let search, tagsContainer, tags, toHide;
+				search = $(tagBox);
+				tagsContainer = $(tagList);
+				tags = Array.prototype.slice.call(tagsContainer.childNodes);
+				toHide = [];
 				// Hide any tags that don't match the query so far.
 				tags.forEach((tag)=>{ // can use array.filter for this
 					let tagLink = tag.firstChild,
@@ -2102,8 +2134,10 @@
 			}
 			
 			function getSearchWords(tagName) {
-			  let tagEntry = config('tag-definitions')[tagName] && config('tag-definitions')[tagName]['search-words'],
-			      words = [];
+			  let words, tagEntry;
+			  words = [];
+			  tagEntry = config('tag-definitions')[tagName] && config('tag-definitions')[tagName]['search-words'];
+			  //
 			  if (tagEntry) {
 			    tagEntry.split(' ').forEach((word)=>{
 			      words.push(word);
@@ -2143,10 +2177,11 @@
 			function genTagLink(tag, destination, exclude) {
 			  // Only proceed if the tag is not a category tag.
 			  if (!tag.mandatory) {
-			    let li = document.createElement('li'),
-			        mainLink = document.createElement('a'),
-			        excludeLink = document.createElement('a'),
-			        content = tag.name;
+			    let li, mainLink, excludeLink, content;
+			    li = document.createElement('li');
+			    mainLink = document.createElement('a');
+			    excludeLink = document.createElement('a');
+			    content = tag.name;
 			    // Set up links.
 			    mainLink.href='#/';
 			    mainLink.innerHTML = content;
@@ -2544,30 +2579,37 @@ Keyboard shortcuts
 			
 			
 			}
-			// End -------------------------------------------------------------------
+			// End Js ----------------------------------------------------------------
 			
 			// TODO
+			// webkitrel is causing a lot of errors, fun that accounts for und
+			// tags lists
+			// Smarter extinct, look for similar named images
+			  // and autofill
+			  // change links to path
+			
+			// landmark comments?
+			  // Smarter jump too
+			    // Keep track of parent folder, path access fun
+			    // add cancel-key to extinct inputs
 			// Please refactor
-			  // tags lists
-			  // empty var declarations
 			  // be more straightforward about globals
+			    // actually globals are hard to debug, closure instead
+			
+			
 			// Testing
 			  // Test on browsers other than firefox
 			  // And devices other than a laptop (emulate?)
-			    // webkit file upload apparently doesn't work for all devices
+			    // webkit file upload apparently doesn't work for all devices (ipad)
 
+      // Class mode
 			// Config file folder default settings
-			// Class modes
-			// Smarter extinct, look for similar named images
-			  // Smarter jump too
-			    // Keep track of parent folder, path access fun
+			
 			// Add-tags should be linked from tag-images
 			  // Will need to write a sys to keep track of box state.
 			// keyboard shortcuts for tagging images after all?
 			// Make it easier for users to change background colors and such, not through config
 			  // And make a few presets
-			  // Will have to organize css first
-			// Class mode
 			// Bugs:
 			  // dead-files jumps all over the place when you try to drag it
 			  // probably a bug source: do something about resetting and upload init -> d_reset
